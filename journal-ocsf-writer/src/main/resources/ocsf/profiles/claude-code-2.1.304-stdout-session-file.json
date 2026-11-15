@@ -1,6 +1,6 @@
 {
   "profile_id": "claude-code/2.1.304/stdout+session-file",
-  "version": "0.1.0-prototype",
+  "version": "1.0.0",
   "status": "experimental",
   "status_meaning": "the stream route is admitted on its own; this two-source assembly is an experimental profile tested on one sanitized live pair",
   "cli": {

@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * The declaration records of a standalone {@code events.jsonl} (layout {@code 0.3.0-prototype}), read from the raw
+ * The declaration records of a standalone {@code events.jsonl} (layout {@code 1.0.0}), read from the raw
  * lines alone: the format, schema and run declarations, every contract, source, definition (with amendments
  * merged), session, child link, source end and the finalization record, each with the line it was declared on.
  * From these it derives the same manifest view ({@link RunManifest}) that the two-file layouts carried in

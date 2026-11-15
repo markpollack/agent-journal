@@ -187,7 +187,7 @@ class AntigravityStreamTest {
      * The usage view keeps each step's total in its own group and the session's cumulative total in another, with no
      * applicable value summed across them. On the interrupted run the session exceeds the only emitted step (input 9422
      * against 6925, output 238 against 192) and the view reconciles nothing. The same steps written at Model-response
-     * scope (0.1.0-prototype of the contract) pool into one unidentified response whose distinct step totals read as a
+     * scope (the first contract) pool into one unidentified response whose distinct step totals read as a
      * conflict, which is why a step is stated at its own unit.
      */
     @Test

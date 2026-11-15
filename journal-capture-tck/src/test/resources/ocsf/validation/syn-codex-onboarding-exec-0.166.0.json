@@ -4,7 +4,7 @@
  "fixture": "syn-codex-onboarding-exec-0.166.0",
  "core": "main",
  "events_jsonl": "fixtures/syn-codex-onboarding-exec-0.166.0/package/events.jsonl",
- "events_jsonl_sha256": "ae2f603975b8b3ecb47953c032de2a84a8c0a9dd527136272d826dfd0ce8718b",
+ "events_jsonl_sha256": "eaaef39680b5375af63402571eef3c3933d2b47b41380e0cea2ead2eeb8fa96c",
  "execution_records": 6,
  "declarations_skipped": 50,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
@@ -14,7 +14,7 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef",
+ "compiled_schema_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2",
  "result": {
   "event_files_processed": 6,
   "error_events": 0,

@@ -1,6 +1,6 @@
 {
   "profile_id": "codex-cli/0.166.0/exec-stdio+rollout",
-  "version": "0.2.0-prototype",
+  "version": "1.0.0",
   "status": "experimental",
   "status_meaning": "Experimental qualified fresh single-turn acquisition with source-checked observations; only observed and independently verified meanings qualify.",
   "cli": {

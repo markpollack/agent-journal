@@ -1,5 +1,5 @@
 {
-  "contract_uid": "agent-journal/final-assembly/0.2.0-prototype",
+  "contract_uid": "agent-journal/final-assembly/1.0.0",
   "applies_to": {
     "profiles": "every reviewed assembly profile under ocsf/profiles/",
     "scope": "the consolidated canonical events of a final assembly; every observation keeps the mapping contract of the source that produced it"
@@ -77,6 +77,6 @@
   "accounting": "one canonical event per entity and stage carries one usage observation per scope, aggregation, finality and model, with every source that reported it in its field evidence, so overlapping reports of one quantity are never counted twice; different quantity kinds (money, premium requests, model cost multipliers, nano-AIU, credits) are separate observations and never compared or added; cumulative snapshots and per-call observations keep their own scopes and aggregations",
   "order": "each observation is written in precedence and arrival order (a canonical single observation, or a supporting observation) and each consolidated event right after its primary observation; journal.sequence is import order, never occurrence order",
   "candidate": {
-    "status": "final assembly 0.1.0-prototype (2026-10-24), candidate for review: tested candidate behaviour, not approved support"
+    "status": "final assembly (2026-10-24), candidate for review: tested candidate behaviour, not approved support"
   }
 }

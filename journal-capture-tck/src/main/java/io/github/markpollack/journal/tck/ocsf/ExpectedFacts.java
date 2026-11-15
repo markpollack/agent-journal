@@ -281,7 +281,7 @@ public final class ExpectedFacts {
     public boolean directFacts;
     /** The tool call a context names as the spawner of the child run it accounts for, by {@code recordIndex:contextKind}; absent means none. */
     public final Map<String, String> contextToolCalls = new LinkedHashMap<>();
-    /** Records this core owns and must retain (owner-scoped for a split core; admission-scoped for a bounded source). */
+    /** Records this core owns and must retain (owner-scoped for a split core). */
     public final Set<Integer> owned = new LinkedHashSet<>();
     /** The native session id each parsed record reports (or inherits, for a stream that states it once), by record index; empty when the profile cannot read one. */
     public final Map<Integer, String> sessionOf = new LinkedHashMap<>();
@@ -293,8 +293,6 @@ public final class ExpectedFacts {
     public final Map<Integer, String> unresolvedMeanings = new java.util.LinkedHashMap<>();
 
     public boolean classUnjudged;
-    /** Records excluded by a declared admission, by record index, with the declared family name. */
-    public final Map<Integer, String> excluded = new LinkedHashMap<>();
     /** Records whose timestamp text the event must carry verbatim as {@code metadata.original_time}. */
     public final Map<Integer, String> nativeTime = new LinkedHashMap<>();
 
@@ -336,7 +334,6 @@ public final class ExpectedFacts {
         toolErrors.stream().filter(x -> !records.contains(x.recordIndex())).forEach(f.toolErrors::add);
         f.owned.addAll(owned);
         normalized.stream().filter(i -> !records.contains(i)).forEach(f.normalized::add);
-        f.excluded.putAll(excluded);
         provenanceWithout(records, f);
         return f;
     }
@@ -363,7 +360,6 @@ public final class ExpectedFacts {
         Map<String, Integer> m = new LinkedHashMap<>();
         m.put("owned", owned.size());
         m.put("normalized", normalized.size());
-        m.put("excluded", excluded.size());
         m.put("requests", requests.size());
         m.put("results", results.size());
         m.put("responses", responses.size());

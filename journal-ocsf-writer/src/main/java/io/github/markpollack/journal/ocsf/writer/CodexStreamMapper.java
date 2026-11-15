@@ -9,7 +9,7 @@ import static io.github.markpollack.journal.ocsf.writer.MapperSupport.TOOL_KIND;
 import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
 
 /**
- * Codex CLI {@code exec --json} live output (contract {@code codex-cli-0.160.1-exec-stream}, 0.6.0-prototype, whose
+ * Codex CLI {@code exec --json} live output (contract {@code codex-cli-0.160.1-exec-stream}, whose
  * revised meanings await the managing reviewer's binding). The exec processor assigns its own item ids ({@code item_N}):
  * they are stream-local, unique only within this artifact of this Journal invocation, never a model-facing call id or a
  * provider's response id, which the stream omits. Agent messages and reasoning items are completed content items of

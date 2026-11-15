@@ -1,6 +1,6 @@
 {
   "kind": "agent-journal/conformance-baseline",
-  "version": "0.7",
+  "version": "0.8",
   "catalog": "schema/vendor/claude-code/stream-json/obligations.json",
   "meaning": "the reviewed obligation set (id, revision, meaning digest, relevant digest), the reviewed residual set (variant, path, classification, digest), the judged population (per binding: its entry's admission, every recording with its native stream hash, every occurrence id) and the frozen debt by exact finding identity (category and id) with its reason. CanonicalConformanceTest fails on a new finding, on frozen debt that no longer occurs, and on any changed obligation, residual or population: an edit here is the reviewable change, never its approval. Holding the baseline is not acceptance: category 6 keeps the semantic review state",
   "changes": [
@@ -27,6 +27,10 @@
     {
       "revision": "0.7 (semantic acceptance, 2026-10-31)",
       "summary": "Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT approves the 13 obligations at their 0.6 meaning and relevant digests and the 4 vendor_specific residual classifications at their 0.6 digests, so the 17 category-6 approval findings no longer occur: 17 -> 0 frozen ids. Obligation set, residual set, population, native hashes and semantic definitions are unchanged; the catalog (0.6) carries the decision in its review labels. No route admission, mapping-catalog claim, Java expected-fact meaning or unresolved measurement is approved by this revision."
+    },
+    {
+      "revision": "0.8 (2.0 identifier rename, 2026-11-15)",
+      "summary": "The 9 obligations below have new relevant digests and unchanged meaning digests: the Owner-directed 2.0 rename removed version-history wording from the agentic_cli descriptions of rule_uid and uncached_input_tokens and from the Claude stream contract's rule notes and task_lifecycle disposition; no meaning, mapping or value changed. Re-approved at the new digests by OWNER-2026-11-15-JOURNAL-RENAME-REBIND: claude.stream.usage.model-response r1, claude.stream.usage.run r1, claude.stream.usage.run.last-response r1, claude.stream.usage.model r1, claude.stream.usage.child-run.agent-result r3, claude.stream.usage.child-run.task-progress r2, claude.stream.usage.child-run.task-notification r2, claude.stream.child-run.agent-result.status r2, claude.stream.child-run.agent-result.duration r1. The other 4 obligations and the 4 residuals are unchanged."
     }
   ],
   "obligations": [
@@ -34,43 +38,43 @@
       "meaning_digest": "sha256:53e758952b66e16280d5804822e08b6e60d849a0a696f4e235a32b007a5067d0",
       "revision": 1,
       "id": "claude.stream.usage.model-response",
-      "relevant_digest": "sha256:7e12115c9f71697598905531cf99b8464db3cd2450faae673f3a5b6d6c9e4995"
+      "relevant_digest": "sha256:d4132aa0b1b0216804b41695a238e32bbe77f9b0f5b9bceb1bd7b723c39c1351"
     },
     {
       "meaning_digest": "sha256:3577e092bf9291483ef0e91850882aa0a134bd13a3c5ec3f0c022525975d13fb",
       "revision": 1,
       "id": "claude.stream.usage.run",
-      "relevant_digest": "sha256:30b4c5c8f61acc5fada6e88383d001e30be89290799c0a7a15a9c26b8887f009"
+      "relevant_digest": "sha256:62f1041ef9c01bfe59c0a627e1bced26e87d43e9be49a63bb580342a7a019660"
     },
     {
       "meaning_digest": "sha256:f2d10fd3f4ffa2e13ea113fc20d333b88f3bc9ca70824d57313000222d75fd2f",
       "revision": 1,
       "id": "claude.stream.usage.run.last-response",
-      "relevant_digest": "sha256:4bfcab20418ddfac207f0334c9a7f7fe0fe3f58117a6d6a2503e726df141679b"
+      "relevant_digest": "sha256:59663f28fa9174c24daffc3be442b38f94f94efed0abfb9ffcc80a8f327534d2"
     },
     {
       "meaning_digest": "sha256:fceec05bd0a9faeb86b9a48f23bdd730ab0f4d1cd16d14a27a0219524c1d6123",
       "revision": 1,
       "id": "claude.stream.usage.model",
-      "relevant_digest": "sha256:30b4c5c8f61acc5fada6e88383d001e30be89290799c0a7a15a9c26b8887f009"
+      "relevant_digest": "sha256:62f1041ef9c01bfe59c0a627e1bced26e87d43e9be49a63bb580342a7a019660"
     },
     {
       "meaning_digest": "sha256:def36909c43c702241f70a2ce607aa08a72d4b4d5b4aba33274f1a9570cef290",
       "revision": 3,
       "id": "claude.stream.usage.child-run.agent-result",
-      "relevant_digest": "sha256:b6c0b302bd52eb8525d0d616aec28ecc1112de883a9c85fbbae198b7f93a0394"
+      "relevant_digest": "sha256:77b1abc581411c05a2a91021c8859fb9ecf6130bb7d85586860cd0ed1ce0b9a9"
     },
     {
       "meaning_digest": "sha256:adacb96c2034dfb0168f609d04323ef2670383096189fde960a81285330cb4f0",
       "revision": 2,
       "id": "claude.stream.usage.child-run.task-progress",
-      "relevant_digest": "sha256:6b9b4f9d806479c17b8c1f128ecbb851ee2ac65a487615c037fdddeacd5b2779"
+      "relevant_digest": "sha256:69a1ab5abda5e37d7d0f8b86acebe6257e977319d4d2f1de09d103abb6f97494"
     },
     {
       "meaning_digest": "sha256:6d3d85e2f615aafd554d094ab3b27b362e03ae357ee6dff88fd0a09413ae15ac",
       "revision": 2,
       "id": "claude.stream.usage.child-run.task-notification",
-      "relevant_digest": "sha256:6b9b4f9d806479c17b8c1f128ecbb851ee2ac65a487615c037fdddeacd5b2779"
+      "relevant_digest": "sha256:69a1ab5abda5e37d7d0f8b86acebe6257e977319d4d2f1de09d103abb6f97494"
     },
     {
       "meaning_digest": "sha256:29d6cd8ece53ea5a197125fc9681446cb4c619a8347ce601fee30f65b73c7b42",
@@ -88,13 +92,13 @@
       "meaning_digest": "sha256:f28919519d6d0c4f212758cf9199d49771d7957f95409d9f826a1a3d8255d152",
       "revision": 2,
       "id": "claude.stream.child-run.agent-result.status",
-      "relevant_digest": "sha256:b85a51334c4fe247b36658d3f5996e0aadb386ccf1b595321a3ef085d8fc8666"
+      "relevant_digest": "sha256:2125e3423366b5d16698fb71bffa1805fe45a101df235ca1e08a2da7f88dd9e3"
     },
     {
       "meaning_digest": "sha256:58931b1bec14e147be814dd5709b23ecd394618b5fe7db6d0285d124f3a5c1ba",
       "revision": 1,
       "id": "claude.stream.child-run.agent-result.duration",
-      "relevant_digest": "sha256:2de5fbc33a328bf26ff3c94c3d66795961e8bccd7a3010818634b4046f40004f"
+      "relevant_digest": "sha256:94b742ba6add0dc8ae6964ef8cb577cf178f17d0d78991c76e626d0675439d24"
     },
     {
       "meaning_digest": "sha256:fa4cde924ffc4f326cadb4c79b79ba76c8e147bd2437a04604474a3f06d3d300",

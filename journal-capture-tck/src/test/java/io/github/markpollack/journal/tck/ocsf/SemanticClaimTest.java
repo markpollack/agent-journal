@@ -351,16 +351,16 @@ class SemanticClaimTest {
     static SemanticClaims.Context bumped() {
         Map<String, Json> contracts = new LinkedHashMap<>(ctx.contracts());
         String uid = claim(APPROVED).path("applicability", "contracts").elements().get(0).text();
-        contracts.put(uid.replaceAll("/[0-9.]+-prototype$", "/9.9.9-prototype"), with(contracts.get(uid), "contract_uid", new Json.JString(uid.replaceAll("/[0-9.]+-prototype$", "/9.9.9-prototype"))));
+        contracts.put(uid.replaceAll("/[0-9.]+$", "/9.9.9"), with(contracts.get(uid), "contract_uid", new Json.JString(uid.replaceAll("/[0-9.]+$", "/9.9.9"))));
         return new SemanticClaims.Context(ctx.schema(), ctx.reportedProperties(), ctx.compatibilityEntries(), contracts.keySet(), ctx.definitions(), contracts, ctx.exampleFiles(),
-                "agentic_cli 9.9.9-prototype");
+                "agentic_cli 9.9.9");
     }
 
     static Json repinned(Json cat, SemanticClaims.Context c) {
         return claimChanged(cat, APPROVED, k -> {
             String uid = k.path("applicability", "contracts").elements().get(0).text();
-            Json app = with(with(k.member("applicability"), "contracts", new Json.JArray(List.of(new Json.JString(uid.replaceAll("/[0-9.]+-prototype$", "/9.9.9-prototype"))))),
-                    "extension", new Json.JString("agentic_cli 9.9.9-prototype"));
+            Json app = with(with(k.member("applicability"), "contracts", new Json.JArray(List.of(new Json.JString(uid.replaceAll("/[0-9.]+$", "/9.9.9"))))),
+                    "extension", new Json.JString("agentic_cli 9.9.9"));
             return restated(with(k, "applicability", app), c);
         });
     }
@@ -379,7 +379,7 @@ class SemanticClaimTest {
         SemanticClaims.Claim carried = SemanticClaims.claims(cat).stream().filter(x -> APPROVED.equals(x.id())).findFirst().orElseThrow();
         assertThat(SemanticClaims.support(carried, true, true)).startsWith("approved, verified").contains("binding carried");
         // the same bump without restating the binding is caught: stale pins are not silently accepted
-        Json unstated = claimChanged(approvedCatalog, APPROVED, x -> with(x, "applicability", with(x.member("applicability"), "extension", new Json.JString("agentic_cli 9.9.9-prototype"))));
+        Json unstated = claimChanged(approvedCatalog, APPROVED, x -> with(x, "applicability", with(x.member("applicability"), "extension", new Json.JString("agentic_cli 9.9.9"))));
         assertThat(problems(unstated, examples, approvedDecisions, c)).anyMatch(p -> p.contains("binding digest"));
     }
 

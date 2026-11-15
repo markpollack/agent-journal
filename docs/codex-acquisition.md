@@ -54,7 +54,7 @@ originals unavailable. Qualification alone is not semantic acceptance, live qual
 readiness. Existing Claude one-shot/retained profiles and prior artifacts remain independent.
 
 The current mapping also reads source-reported command aggregate output, declared tools and namespaces,
-thread settings, and empty/text/opaque reasoning items. Extension `0.16.0-prototype` records the native
+thread settings, and empty/text/opaque reasoning items. Extension `1.0.0` records the native
 combined stdout/stderr aggregate in `tool_operation.combined_output`; it does not invent separated
 stdout or stderr. Source-reported identifiers remain at their native occurrence; absent IDs remain
 absent. The complete structural synthetic example is
@@ -65,7 +65,7 @@ Whole-field authority is explicitly selected with `mode: "whole-field"` on this 
 values retain equal-value semantics; an unknown mode is invalid. The new profile explicitly rejects
 repeated canonical final accounting identities. Older profiles retain their declared accounting rules.
 
-Historical extension `0.15.0-prototype` files remain immutable and structurally readable. A historical
+Files written with the extension before the current one remain immutable and structurally readable. A historical
 Codex tool-bearing package that labelled combined output as `stdout` does not pass the new reader's
 current output semantics: it is reported defective, not silently corrected. Prior text-only Codex and
 supported Claude one-shot/retained archives remain separate regression obligations.
@@ -80,8 +80,8 @@ registration, a missing known obligation, zero selected occurrences or an unrela
 cannot count as support. `target/mapping-catalog/cli-onboarding.json` in the TCK reports the measured
 partial slices and remaining gaps. No live run or new source capability is implied by this offline gate.
 
-The reader selects an exact verification expectation by the saved profile/schema pair: historical
-profile `0.1.0-prototype` with extension `0.15.0-prototype`, or current profile `0.2.0-prototype` with
-extension `0.16.0-prototype`. Cross-pairings, arbitrary expectations and substituting the historical
+The reader selects an exact verification expectation by the saved profile/schema pair: the historical
+first profile with its extension, or the current profile `1.0.0` with extension `1.0.0` (a file written before 2.0.0 names
+the same pair by its earlier identifiers). Cross-pairings, arbitrary expectations and substituting the historical
 expectation for a current archive are refused. Historical text archives retain their original rules;
 original-source qualification still applies. This does not waive the old combined-output/stdout defect.

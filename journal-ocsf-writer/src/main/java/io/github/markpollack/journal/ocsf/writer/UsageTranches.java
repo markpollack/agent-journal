@@ -8,7 +8,7 @@ import java.util.Set;
 import static io.github.markpollack.journal.ocsf.writer.MapperSupport.isIntegral;
 
 /**
- * The canonical usage tranches of extension 0.6.0-prototype, from each vendor's native usage object: uncached input,
+ * The canonical usage tranches, from each vendor's native usage object: uncached input,
  * cache reads, cache writes with their tiers, and output with its reasoning part. Each component is copied from one
  * reported member, derived exactly by a declared rule whose arithmetic the pinned source establishes, or stated
  * unavailable; {@code components[]} says which, with RFC 6901 pointers into the observation's {@code data}, which keeps

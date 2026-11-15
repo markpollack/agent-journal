@@ -11,9 +11,7 @@ import java.util.List;
 
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CHILD;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CODEX;
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.HISTORICAL_0_2_0;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copy;
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copyHistorical;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.declaration;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editDeclarations;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editEvents;
@@ -42,124 +40,12 @@ class PackageReaderTest {
         assertThat(fromEvents.events).hasSize(39);
         assertThat(fromDir.events).hasSize(39);
         assertThat(fromEvents.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
-        assertThat(fromEvents.manifest.packageVersion()).isEqualTo("0.3.0-prototype");
+        assertThat(fromEvents.manifest.packageVersion()).isEqualTo("1.0.0");
         assertThat(fromEvents.standalone()).as("read from the file's declarations; run.json is ancillary").isTrue();
         assertThat(fromEvents.manifest.packageState()).isEqualTo("COMPLETED");
         assertThat(fromEvents.manifest.extensionUid()).isEqualTo(901);
-        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("0.16.0-prototype");
-        assertThat(fromEvents.manifest.contracts()).containsKey("codex-cli/rollout/0.160.1/0.5.0-prototype");
-    }
-
-    @Test
-    void anEventsFileAloneIsReadFromItsDeclarationsWhileAHistoricalDetachedFileIsRefused(@TempDir Path work) throws Exception {
-        Path fixture = copy(CODEX, work);
-        Path alone = work.resolve("alone");
-        Files.createDirectories(alone);
-        Files.copy(pkg(fixture).resolve("events.jsonl"), alone.resolve("events.jsonl"));
-        OcsfPackage p = PackageReader.open(alone.resolve("events.jsonl"));
-        assertThat(p.refused()).as(p.diagnostics.toString()).isFalse();
-        assertThat(p.diagnosticsWithCode("ANCILLARY_ABSENT")).hasSize(1);
-        assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
-        assertThat(p.events).hasSize(39);
-        assertThat(p.manifest.runUid()).isEqualTo("syn-codex-counterexamples");
-        assertThat(p.manifest.packageState()).isEqualTo("COMPLETED");
-
-        Path historical = copyHistorical(HISTORICAL_0_2_0, CODEX, work.resolve("hist"));
-        Path detached = work.resolve("detached");
-        Files.createDirectories(detached);
-        Files.copy(pkg(historical).resolve("events.jsonl"), detached.resolve("events.jsonl"));
-        OcsfPackage d = PackageReader.open(detached.resolve("events.jsonl"));
-        assertThat(d.refused()).isTrue();
-        assertThat(d.diagnosticsWithCode("NO_MANIFEST")).hasSize(1);
-        assertThat(d.rawLines).hasSize(39);
-        assertThat(d.events).isEmpty();
-    }
-
-    /**
-     * A package written before cli_agent stopped extending ai_agent (extension 0.4.0) reads from its own embedded
-     * definitions. Judged by today's Codex profile (the SEM-1 candidate reading of contract 0.3.0), only the changed
-     * meanings differ: its usage observation states the superseded turn scope, and its operations carry no command
-     * string or identity basis. Nothing is missing and nothing else is defective.
-     */
-    @Test
-    void aPackageWrittenWithExtension030StillReadsFromItsOwnDefinitions(@TempDir Path work) {
-        Path historical = copyHistorical("extension-0.3.0-prototype", OcsfFixtures.LIVE_CODEX, work);
-        OcsfPackage p = open(historical);
-        assertThat(p.refused()).isFalse();
-        assertThat(p.manifest.extensionVersion()).isEqualTo("0.3.0-prototype");
-        assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
-        OracleReport report = OcsfFixtures.verify(historical);
-        // under the 0.6.0 reading this old package also presents its stream-local agent-message ids as response identities
-        assertThat(report.defects()).extracting(Check::property).containsOnly("population.usage", "operation.values", "population.responses");
-        assertThat(report.missingRequired()).isEmpty();
-        Path current = copy(OcsfFixtures.LIVE_CODEX, work.resolve("current"));
-        assertThat(open(current).manifest.extensionVersion()).isEqualTo("0.16.0-prototype");
-    }
-
-    /**
-     * The 0.4.0 package of the live MCP recording, written before the SEM-1 candidate: its rule ids are in OCSF
-     * unmapped and its MCP items are retained whole. It reads from its own definitions; today's profile, which reads
-     * the MCP items as tool calls and the usage at session scope, finds exactly those meanings changed.
-     */
-    @Test
-    void aPackageWrittenWithExtension040StillReadsAndShowsOnlyTheChangedCodexMeanings(@TempDir Path work) {
-        Path historical = copyHistorical("extension-0.4.0-prototype", OcsfFixtures.LIVE_CODEX_MCP, work);
-        OcsfPackage p = open(historical);
-        assertThat(p.refused()).isFalse();
-        assertThat(p.manifest.extensionVersion()).isEqualTo("0.4.0-prototype");
-        assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
-        OracleReport report = OcsfFixtures.verify(historical);
-        // population.responses: under the 0.6.0 reading its stream-local agent-message ids are not response identities;
-        // population.mcp and population.tool_errors: it predates the MCP observations and layered errors of 0.11.0
-        assertThat(report.defects()).extracting(Check::property).containsOnly("population.usage", "population.requests", "population.results", "whole_record.class", "population.responses",
-                "population.mcp", "population.tool_errors");
-        assertThat(report.missingRequired()).isEmpty();
-    }
-
-    /**
-     * The 0.5.0 package of the live MCP recording, written before the delegated semantic closure: it reads from its own
-     * embedded definitions without defect, and the current oracle names exactly the revised meanings it predates
-     * (fixtures-historical/extension-0.5.0-prototype/README.md): a stream-local item presented as a response identity,
-     * the started MCP invocations recorded as the model's request without their family, and usage without the
-     * canonical tranches (its vendor-dependent input_tokens).
-     */
-    @Test
-    void aPackageWrittenWithExtension050StillReadsAndShowsOnlyTheRevisedMeanings(@TempDir Path work) {
-        Path historical = copyHistorical("extension-0.5.0-prototype", OcsfFixtures.LIVE_CODEX_MCP, work);
-        OcsfPackage p = open(historical);
-        assertThat(p.refused()).isFalse();
-        assertThat(p.manifest.extensionVersion()).isEqualTo("0.5.0-prototype");
-        assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
-        OracleReport report = OcsfFixtures.verify(historical);
-        // population.mcp, population.tool_errors and tool_error.values: it predates the MCP observations and layered errors of 0.11.0
-        assertThat(report.defects()).extracting(Check::property).containsOnly("population.responses", "request.values", "result.values", "usage.values",
-                "population.mcp", "population.tool_errors", "tool_error.values");
-        assertThat(report.check("request.values", "main/stream.jsonl").detail()).contains("activity_id 1 != 4");
-        assertThat(report.check("usage.values", "main/stream.jsonl").detail()).contains("measurement_status_id 1 != 4").contains("components[] has no entry for uncached_input_tokens");
-        assertThat(report.missingRequired()).isEmpty();
-    }
-
-    /**
-     * A package written before compatibility selection preceded normalization (extension 0.8.0-prototype): its
-     * version_unknown declaration says that pending records were interpreted provisionally, and record 1 (the init record
-     * that reported a version no entry covers) is a normalized session_context. The reader still reads it from its own
-     * declarations, with the no-match warning; the independent oracle judges it by the current policy and reports the
-     * provisional interpretation as a defect of the compatibility selection, not as accepted history.
-     */
-    @Test
-    void aPackageWrittenWithProvisionalPendingInterpretationStillReadsAndIsJudgedByTheCurrentPolicy(@TempDir Path work) {
-        Path historical = copyHistorical("extension-0.8.0-prototype", "syn-claude-untested-version", work);
-        OcsfPackage p = open(historical);
-        assertThat(p.refused()).isFalse();
-        assertThat(p.manifest.extensionVersion()).isEqualTo("0.8.0-prototype");
-        assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
-        assertThat(p.diagnosticsWithCode("COMPATIBILITY_NO_MATCH")).hasSize(1);
-        List<Json> history = p.declarations.compatibility("stream.jsonl");
-        assertThat(history.get(0).member("normalizes").text()).startsWith("provisionally");
-        assertThat(p.events).anyMatch(e -> Integer.valueOf(1).equals(e.recordIndex()) && "session_context".equals(e.className));
-        OracleReport report = OcsfFixtures.verify(historical);
-        assertThat(report.outcome("source.compatibility", "main/stream.jsonl")).isEqualTo(Check.Outcome.DEFECTIVE);
-        assertThat(report.check("source.compatibility", "main/stream.jsonl").detail()).contains("1 record(s)").contains("were normalized");
+        assertThat(fromEvents.manifest.extensionVersion()).isEqualTo("1.0.0");
+        assertThat(fromEvents.manifest.contracts()).containsKey("codex-cli/rollout/0.160.1/1.0.0");
     }
 
     @Test
@@ -224,7 +110,7 @@ class PackageReaderTest {
         Path fixture = copy(CODEX, work);
         editDeclarations(pkg(fixture), decls -> {
             obj(declaration(decls, "definition:type/long_t").path("definition", "body")).members().put("caption", str("Synthetic"));
-            obj(declaration(decls, "contract:codex-cli/rollout/0.160.1/0.5.0-prototype").path("contract", "embedded")).members().put("tampered", str("yes"));
+            obj(declaration(decls, "contract:codex-cli/rollout/0.160.1/1.0.0").path("contract", "embedded")).members().put("tampered", str("yes"));
         });
         editManifest(pkg(fixture), run -> obj(run.path("semantic_contract", "declarations").elements().get(0)).members().put("tampered", str("yes")));
         OcsfPackage p = open(fixture);
@@ -359,17 +245,6 @@ class PackageReaderTest {
         assertThat(full.path("journal", "contract_sha256")).isNotNull();
         assertThat(full.path("source_ref", "artifact_sha256").text()).hasSize(64);
         assertThat(e.get("cli_agent")).as("the saved event is not modified").isNull();
-    }
-    @Test
-    void historical015CombinedOutputAliasIsReadableButNotSemanticallyQualified(@TempDir Path work) {
-        Path historical = copyHistorical("extension-0.15.0-prototype", OcsfFixtures.CODEX_STREAM, work);
-        OcsfPackage old = open(historical);
-        assertThat(old.refused()).isFalse();
-        assertThat(old.manifest.extensionVersion()).isEqualTo("0.15.0-prototype");
-        assertThat(old.events.stream().filter(e -> e.get("tool_operation") != null)).isNotEmpty();
-        OracleReport report = OcsfFixtures.verify(historical);
-        assertThat(report.defects()).anyMatch(c -> c.evidence() != null && c.evidence().fact().contains("combined_output"));
-        assertThat(report.checks()).anyMatch(c -> c.property().equals("whole_record.coverage") && c.outcome() == Check.Outcome.VERIFIED);
     }
 
 }

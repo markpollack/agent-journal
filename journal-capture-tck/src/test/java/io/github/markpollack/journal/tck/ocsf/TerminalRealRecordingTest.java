@@ -56,15 +56,13 @@ class TerminalRealRecordingTest {
 
     /**
      * Claude Code 2.1.319 (the retained TX Bench capture): the CLI version is recorded, not gated (Owner, 2026-11-08). It is
-     * delivered under the version-neutral terminal profile and states its own version; the 2.1.316 cases above stay
-     * sealed under the versioned profile they were delivered under, and stay readable.
+     * delivered under the version-neutral terminal profile and states its own version.
      */
     @Test void aClaude2_1_319RunUnderTheVersionNeutralProfileIsAccepted() throws IOException {
         OcsfReaderTool.Acceptance a = acceptance("claude-txbench-2.1.319");
         assertThat(a.verdict()).as(a.toString()).isEqualTo("ACCEPTED");
         String events = java.nio.file.Files.readString(root("claude-txbench-2.1.319"));
         assertThat(events).contains("\\\"profile\\\":\\\"client-terminal-claude-sdk/1\\\"").contains("\"product\":{\"name\":\"Claude Code\",\"version\":\"2.1.319\"");
-        assertThat(java.nio.file.Files.readString(root("claude-heartbeat"))).contains("\\\"profile\\\":\\\"client-terminal-claude-2.1.316/1\\\"");
     }
 
     /** A real Client Codex 0.166.0 one-read run, delivered under the version-neutral client-terminal-codex-exec/1 with its own version recorded. */
@@ -75,24 +73,9 @@ class TerminalRealRecordingTest {
                 .contains("\"product\":{\"name\":\"Codex CLI\",\"version\":\"0.166.0\"");
     }
 
-    @Test void theWriterBeforeTheProgressOwnerFixMadeAHeartbeatAChildCore() throws IOException {
-        OcsfReaderTool.Acceptance a = acceptance("claude-heartbeat-bd04735");
-        assertThat(a.verdict()).isEqualTo("DEFECTIVE");
-        assertThat(a.reasons()).anyMatch(r -> r.contains("is not an expected split core"))
-                .anyMatch(r -> r.contains("is not owned by this core but retained here"))
-                .noneMatch(r -> r.contains("TERMINAL_BINDING_INVALID"));
-    }
-
     @Test void aRunOfMcpCallsSeenByTheStreamAndTheSessionFileIsAccepted() throws IOException {
         OcsfReaderTool.Acceptance a = acceptance("claude-mcp");
         assertThat(a.verdict()).as(a.toString()).isEqualTo("ACCEPTED");
-    }
-
-    @Test void theWriterBeforeTheProvenanceFixCalledMcpResultsRicherForTheirBasis() throws IOException {
-        OcsfReaderTool.Acceptance a = acceptance("claude-mcp-aa75c02");
-        assertThat(a.verdict()).isEqualTo("DEFECTIVE");
-        assertThat(a.reasons()).isNotEmpty().allMatch(r -> r.matches(
-                "NORMALIZATION assembly\\.evidence\\.value \\[main/stdout\\.jsonl\\] DEFECTIVE: (\\d+)/assembly/relation_class(_id)? at main/stdout\\.jsonl:line=\\1#/assembly/relation_class(_id)?: .*"));
     }
 
     @Test void aSubAgentAndItsOwnSessionFileAreReadIntoItsChildCoreAndTheArchiveIsAccepted() throws IOException {
@@ -101,12 +84,6 @@ class TerminalRealRecordingTest {
         assertThat(PackageReader.open(root("claude-sub-agent")).events).noneMatch(e -> SESSION_FILE.equals(e.artifact()));
         OcsfReaderTool.Acceptance a = acceptance("claude-sub-agent");
         assertThat(a.verdict()).as(a.toString()).isEqualTo("ACCEPTED");
-    }
-
-    @Test void theWriterBeforeTheSessionFileFixLeftTheSubAgentsSessionFileUnread() throws IOException {
-        OcsfReaderTool.Acceptance a = acceptance("claude-sub-agent-397ec12");
-        assertThat(a.verdict()).isEqualTo("DEFECTIVE");
-        assertThat(a.reasons()).hasSize(2).allMatch(r -> r.startsWith("COMPLETENESS acquisition.additional_native [native/1e60ebc7-85e6-4b7c-bd39-897d99229066/subagents/agent-a1ca6a454512b0b01."));
     }
 
     /**

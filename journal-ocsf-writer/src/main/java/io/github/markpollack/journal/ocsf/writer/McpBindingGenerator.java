@@ -31,8 +31,8 @@ public final class McpBindingGenerator {
     static final String BINDING_KIND = "agent-journal/mcp-binding";
     static final String BINDING_VERSION = "0.1.0";
     static final String PINS = "schema/protocol/mcp/PINS.json";
-    static final String OBJECT_DIR = "prototype/ocsf-acp/extension/agentic_cli/objects/mcp";
-    static final String DICTIONARY = "prototype/ocsf-acp/extension/agentic_cli/dictionary.json";
+    static final String OBJECT_DIR = "schema/ocsf/extension/agentic_cli/objects/mcp";
+    static final String DICTIONARY = "schema/ocsf/extension/agentic_cli/dictionary.json";
     static final String BINDING = "journal-ocsf-writer/src/main/resources/ocsf/mcp/binding.json";
     static final String COVERAGE = "schema/protocol/mcp/COVERAGE.md";
     static final String SLOT_OBJECT = "mcp_protocol_object";

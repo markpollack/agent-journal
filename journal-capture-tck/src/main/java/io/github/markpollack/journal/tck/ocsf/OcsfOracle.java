@@ -21,7 +21,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- * The independent Java oracle for a self-describing OCSF prototype package. It reads the native artifacts as bytes
+ * The independent Java oracle for a self-describing OCSF package. It reads the native artifacts as bytes
  * ({@link NativeArtifact}), lets the declared {@link SourceProfile} state what each artifact reports, and judges the
  * saved core against that: expected populations per family (a missing normalized row is a defect, an empty
  * population is never a pass), ownership by the id at the record's own declared path (never by equal content or a
@@ -29,7 +29,7 @@ import java.util.TreeSet;
  * operations), whole-record retention with structure/value, representation and bytes reported separately, framing,
  * time basis, and scoped reconstruction.
  *
- * <p>The checking path is this package plus {@code Json}/{@code NeutralJson}; it never calls the Python prototype,
+ * <p>The checking path is this package plus {@code Json}/{@code NeutralJson}; it never calls
  * a production parser or a generated model. Each core (the root and every linked child) is judged on its own.
  */
 public final class OcsfOracle {
@@ -193,19 +193,13 @@ public final class OcsfOracle {
                 // a candidate-declared admission never narrows a frozen denominator (and is a defect on the complete layout, below)
                 Map<String, Json> stripped = new LinkedHashMap<>(((Json.JObject) source).members());
                 stripped.remove("admit_response_uid");
-                if (!"0.1.0-prototype".equals(core.manifest.packageVersion())) {
-                    report.add(Category.COMPLETENESS, "source.admission", owner, Outcome.DEFECTIVE,
-                            "the candidate declares admit_response_uid " + SchemaCatalog.text(source, "admit_response_uid")
-                                    + " on a " + core.manifest.packageVersion() + " package; declared admission is ignored and every record is expected");
-                }
-                else {
-                    report.add(Category.COMPLETENESS, "source.admission", owner, Outcome.DEFECTIVE,
-                            "the candidate declares a bounded admission (admit_response_uid) but the frozen expected-source manifest requires the whole artifact");
-                }
+                report.add(Category.COMPLETENESS, "source.admission", owner, Outcome.DEFECTIVE,
+                        "the candidate declares admit_response_uid " + SchemaCatalog.text(source, "admit_response_uid")
+                                + " on a " + core.manifest.packageVersion() + " package; declared admission is ignored and every record is expected");
                 source = new Json.JObject(stripped);
             }
-            if (source.member("admit_response_uid") != null && !"0.1.0-prototype".equals(core.manifest.packageVersion())) {
-                // a candidate cannot shrink its own denominator: declared admission is honoured only on the historical 0.1.0 layout
+            if (source.member("admit_response_uid") != null) {
+                // a candidate cannot shrink its own denominator: declared admission is never honoured
                 report.add(Category.COMPLETENESS, "source.admission", owner, Outcome.DEFECTIVE,
                         "the candidate declares admit_response_uid " + SchemaCatalog.text(source, "admit_response_uid")
                                 + " on a " + core.manifest.packageVersion() + " package; declared admission is ignored and every record is expected");
@@ -256,11 +250,9 @@ public final class OcsfOracle {
                 continue;
             }
             ExpectedFacts facts = profile.expected(art, source, scope);
-            if (List.of("0.14.0-prototype", "0.15.0-prototype", "0.16.0-prototype").contains(core.manifest.extensionVersion())) {
-                ExecutionStateReading.read(facts, art, profileName);
-                ExecutionMetricReading.read(facts, art, profileName);
-                ReportedQuantityReading.read(facts, art, profileName);
-            }
+            ExecutionStateReading.read(facts, art, profileName);
+            ExecutionMetricReading.read(facts, art, profileName);
+            ReportedQuantityReading.read(facts, art, profileName);
             boolean declared = core.manifest.source(artifact) != null;
             CompatibilityHistory history = CompatibilityHistory.of(declared ? source : null);
             binding(artifact, source, history, owner);
@@ -299,7 +291,7 @@ public final class OcsfOracle {
                 sourceExtent(exp, declared ? source : null, owner);
             }
             // RULE-9, RULE-10, RULE-33: a record that arrived while no entry was selected is retained whole and owes no fact
-            retention(art, facts, events, owner, core, unselected);
+            retention(art, facts, events, owner, unselected);
             CompatibilityHistory.Step inForce = history.inForce();
             if (facts.classUnjudged) {
                 OriginComparisons.preservation(report, facts, art, events, owner);
@@ -322,37 +314,28 @@ public final class OcsfOracle {
             }
             else {
                 ExpectedFacts owed = unselected.isEmpty() ? facts : facts.without(unselected);
-                boolean attributed = List.of("0.13.0-prototype", "0.14.0-prototype", "0.15.0-prototype", "0.16.0-prototype").contains(core.manifest.extensionVersion());
-                if (attributed) {
-                    owed.unresolvedMeanings.forEach((record, reason) -> report.add(Category.NORMALIZATION, "source.meaning", owner, Outcome.UNRESOLVED,
-                            artifact + ":record=" + record + "# " + reason));
-                    if (!owed.directFacts) {
-                        FamilyFacts.expand(owed);
-                        UsageComparisons.register(report, owed, owner);
-                    }
-                    NativeDetails.expand(owed, art, profileName);
-                    NativeRedundancy.check(report, art, owed, owner, profileName);
-                    FamilyFacts.fallbacks(owed, art, profileName, unselected);
-                    FamilyFacts.protocolFacts(owed);
-                    ProtocolComparisons.register(report, owed, owner);
-                    AttributedFacts.register(report, owed, owner);
-                    AttributedFacts.check(report, owed, events, owner);
-                    new OriginComparisons(report, core, owed, art, owner, profileName).check(events);
-                    ProtocolComparisons.check(report, owed, events, owner, McpProtocol.fromDeclarations(core.declarations));
+                owed.unresolvedMeanings.forEach((record, reason) -> report.add(Category.NORMALIZATION, "source.meaning", owner, Outcome.UNRESOLVED,
+                        artifact + ":record=" + record + "# " + reason));
+                if (!owed.directFacts) {
+                    FamilyFacts.expand(owed);
+                    UsageComparisons.register(report, owed, owner);
                 }
-                else {
-                    report.add(Category.NORMALIZATION, "accounting.binding", owner, Outcome.UNSUPPORTED,
-                            "attributed accounting is bound to extension 0.13.0-prototype; historical family checks still execute under their original regression expectations");
-                }
+                NativeDetails.expand(owed, art, profileName);
+                NativeRedundancy.check(report, art, owed, owner, profileName);
+                FamilyFacts.fallbacks(owed, art, profileName, unselected);
+                FamilyFacts.protocolFacts(owed);
+                ProtocolComparisons.register(report, owed, owner);
+                AttributedFacts.register(report, owed, owner);
+                AttributedFacts.check(report, owed, events, owner);
+                new OriginComparisons(report, core, owed, art, owner, profileName).check(events);
+                ProtocolComparisons.check(report, owed, events, owner, McpProtocol.fromDeclarations(core.declarations));
                 if (!owed.directFacts) {
                     requests(owed, events, owner, core);
                     results(owed, events, owner);
                     responses(owed, events, owner);
                     prompts(owed, events, owner);
                     usage(owed, events, owner);
-                    if (attributed) {
-                        UsageComparisons.check(report, owed, events, owner);
-                    }
+                    UsageComparisons.check(report, owed, events, owner);
                     cost(owed, events, owner);
                     decisions(owed, events, owner);
                     operations(owed, events, owner);
@@ -943,7 +926,7 @@ public final class OcsfOracle {
     // ------------------------------------------------------------------------------------------ retention
 
     /** @param unselected records that arrived under a non-normalizing compatibility selection: expected as whole-record fallback, never normalized */
-    private void retention(NativeArtifact art, ExpectedFacts facts, List<Event> events, String owner, OcsfPackage core, Set<Integer> unselected) {
+    private void retention(NativeArtifact art, ExpectedFacts facts, List<Event> events, String owner, Set<Integer> unselected) {
         Map<Integer, List<Event>> whole = new TreeMap<>();
         for (Event e : events) {
             if (e.wholeRecord() && e.recordIndex() != null) {
@@ -958,22 +941,8 @@ public final class OcsfOracle {
         List<String> framing = new ArrayList<>();
         int opaqueVerified = 0;
         int parsedCompared = 0;
-        int excludedDeclared = 0;
-        List<String> undeclared = new ArrayList<>();
         for (NativeArtifact.Record r : art.records()) {
             List<Event> evs = whole.getOrDefault(r.index(), List.of());
-            if (facts.excluded.containsKey(r.index())) {
-                if (!evs.isEmpty()) {
-                    coverage.add("record " + r.index() + " excluded by admission but retained " + evs.size() + " time(s)");
-                }
-                else if (declared(core, facts.artifact, facts.excluded.get(r.index()))) {
-                    excludedDeclared++;
-                }
-                else {
-                    undeclared.add(r.index() + ":" + facts.excluded.get(r.index()));
-                }
-                continue;
-            }
             if (!facts.owned.contains(r.index())) {
                 if (!evs.isEmpty()) {
                     coverage.add("record " + r.index() + " is not owned by this core but retained here");
@@ -1048,12 +1017,8 @@ public final class OcsfOracle {
             }
         }
         String denominator = facts.owned.size() + " owned record(s)";
-        report.add(Category.COMPLETENESS, "whole_record.coverage", owner, coverage.isEmpty() && undeclared.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
-                coverage.isEmpty() && undeclared.isEmpty() ? denominator + " each retained exactly once" + (excludedDeclared > 0 ? "; " + excludedDeclared + " excluded by declared admission (not preserved, not missing)" : "")
-                        : String.join("; ", coverage) + (undeclared.isEmpty() ? "" : "; excluded without a declared disposition: " + undeclared));
-        if (excludedDeclared > 0) {
-            report.add(Category.COMPLETENESS, "whole_record.excluded", owner, Outcome.NOT_APPLICABLE, excludedDeclared + " record(s) excluded by the declared admission");
-        }
+        report.add(Category.COMPLETENESS, "whole_record.coverage", owner, coverage.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
+                coverage.isEmpty() ? denominator + " each retained exactly once" : String.join("; ", coverage));
         if (facts.classUnjudged) {
             report.add(Category.COMPLETENESS, "whole_record.class", owner, Outcome.UNSUPPORTED,
                     "no oracle profile for this source: which records a rule normalizes is not judged (every record's retention is)");
@@ -1077,14 +1042,6 @@ public final class OcsfOracle {
                         : bytesProblems.isEmpty() ? opaqueVerified + " opaque record(s) byte-equal" : String.join("; ", bytesProblems), opaqueOwned == 0 ? 0 : opaqueVerified);
         report.add(Category.PRESERVATION, "whole_record.framing", owner, framing.isEmpty() ? Outcome.VERIFIED : Outcome.DEFECTIVE,
                 framing.isEmpty() ? "record_bytes and line_ending match the artifact for every retained record" : String.join("; ", framing));
-    }
-
-    private static boolean declared(OcsfPackage core, String artifact, String family) {
-        Json source = core.manifest.source(artifact);
-        Json inv = source == null ? null : source.member("family_inventory");
-        Json fam = inv == null ? null : inv.member(family);
-        String disposition = fam == null ? null : SchemaCatalog.text(fam, "disposition");
-        return disposition != null && (disposition.contains("excluded") || disposition.contains("partially admitted"));
     }
 
     // ------------------------------------------------------------------------------------------ populations
@@ -2101,9 +2058,7 @@ public final class OcsfOracle {
             }
             byte[] line = r.lines().get(rec.index());
             if (line == null) {
-                if (!facts.excluded.containsKey(rec.index())) {
-                    gaps.add(Integer.toString(rec.index()));
-                }
+                gaps.add(Integer.toString(rec.index()));
                 continue;
             }
             compared++;

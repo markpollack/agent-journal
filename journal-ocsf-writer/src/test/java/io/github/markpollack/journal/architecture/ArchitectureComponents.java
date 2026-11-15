@@ -99,7 +99,7 @@ final class ArchitectureComponents {
                     named("Jv")),
             tck("reader", "Package reader",
                     "Opens a run package from events.jsonl alone (or its directory), verifies pins and hashes, and exposes declarations, events, children and explicit diagnostics; it never fetches a registry or loads production classes.",
-                    named("ocsf.PackageReader", "ocsf.DeclaredFile", "ocsf.OcsfPackage", "ocsf.RunManifest", "ocsf.Event", "ocsf.Diagnostic", "ocsf.SchemaCatalog", "ocsf.CompatibilityHistory",
+                    named("ocsf.PackageReader", "ocsf.Formats", "ocsf.DeclaredFile", "ocsf.OcsfPackage", "ocsf.RunManifest", "ocsf.Event", "ocsf.Diagnostic", "ocsf.SchemaCatalog", "ocsf.CompatibilityHistory",
                             "ocsf.TerminalBindingReader", "ocsf.TerminalReading", "ocsf.TerminalDecisionReading", "ocsf.TerminalAssociationReading", "ocsf.TerminalSourceReading", "ocsf.TerminalNativeReading", "ocsf.ClaudeSdkFamily", "ocsf.CodexExecFamily", "ocsf.CliVersions", "ocsf.TerminalProfiles", "ocsf.TerminalRetainedReading", "ocsf.TerminalCodexReading", "ocsf.CodexAcquisitionReading", "ocsf.CodexNativeCapture", "ocsf.RetainedAcquisition", "ocsf.RetainedGeneration", "ocsf.FreshRetainedGeneration", "ocsf.CodexRetainedGeneration", "ocsf.CodexRetainedRegion", "ocsf.CodexRetainedReading", "ocsf.RetainedSource", "ocsf.RetainedTurn", "ocsf.NativeRetainedTurn", "ocsf.CanonicalExport", "ocsf.OwnedContents", "ocsf.SemanticContract", "ocsf.SemanticOperation", "ocsf.McpProtocol", "schema.McpValidation")),
             tck("oracle", "Independent oracle",
                     "Registers independent expected facts and extracts actual assertions; executes attributed value, identity, preservation, origin and final-selection comparisons, retaining missing, ambiguous and unsupported outcomes.",
@@ -120,10 +120,7 @@ final class ArchitectureComponents {
             tck("inventory", "Native inventory tools",
                     "Empirical variant/path inventories of native artifacts and their comparison with the accepted source specifications (findings are proposals, never applied); "
                             + "source joins and the independent assembly oracle, which judges a finally assembled file from native identities alone.",
-                    inPackage(TCK + ".ocsf.inventory"), "package " + TCK + ".ocsf.inventory"),
-            tck("prototype", "Prototype candidate support",
-                    "NON-PRODUCTION support that produces candidate packages from the earlier Python prototype's layout; it is producer-side code and the oracle never uses it.",
-                    inPackage(TCK + ".ocsf.prototype"), "package " + TCK + ".ocsf.prototype"));
+                    inPackage(TCK + ".ocsf.inventory"), "package " + TCK + ".ocsf.inventory"));
 
     static final List<Artifact> ARTIFACTS = List.of(
             new Artifact("native", "native artifact\\n(the CLI's bytes, and an\\nindependent byte copy)"),
@@ -142,7 +139,7 @@ final class ArchitectureComponents {
     static final Set<String> SHARED = Set.of("json-writer", "neutral");
 
     /** Components left out of the drawn view (not on the writer-to-oracle path); their classes and edges stay in the facts. */
-    static final Set<String> NOT_DRAWN = Set.of("inventory", "prototype");
+    static final Set<String> NOT_DRAWN = Set.of("inventory");
 
     private ArchitectureComponents() {
     }

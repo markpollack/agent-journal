@@ -1,0 +1,7 @@
+{
+  "uid": 901,
+  "caption": "Agentic CLI",
+  "name": "agentic_cli",
+  "version": "1.0.0",
+  "description": "Agent Journal's Agentic CLI extension. Uses ACP's session, prompt turn, content block, tool call and permission vocabulary within OCSF. The uid 901 is provisional and unregistered: it is not reserved in the OCSF extensions registry. Packages written against it pin this uid, this version and the compiled schema hash in run.json; readers resolve class names through that pin and refuse a mismatched assignment."
+}

@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <li>The TCK uses only the JDK, Jackson as a neutral parser, and itself: no writer, capture or SDK class
  * (the structural part of RULE-29; the semantic part, independently grounded expectations, is the reviewed examples' job).</li>
  * <li>The oracle core (the {@code tck.ocsf} package apart from its command-line tool) reads JSON with the neutral tokenizer
- * only and never uses the prototype candidate-production support, which lives in the same module.</li>
+ * only.</li>
  * <li>The writer uses only the JDK, Jackson's tokenizer and itself: no TCK, vendor type or data binding.</li>
  * <li>The TCK's packages are free of cycles, so the neutral JSON and check ledger stay below the oracle.</li>
  * </ul>
@@ -59,8 +59,8 @@ class ArchitectureBoundaryTest {
     }
 
     static ArchRule oracleCoreReadsNeutrally(DescribedPredicate<? super JavaClass> oracleCore) {
-        return noClasses().that(oracleCore).should().dependOnClassesThat(resideInAnyPackage("com.fasterxml.jackson.databind..", TCK + ".ocsf.prototype.."))
-                .because("expected values come from the native bytes through the neutral tokenizer, never from data binding or from the support that produces candidate packages");
+        return noClasses().that(oracleCore).should().dependOnClassesThat(resideInAnyPackage("com.fasterxml.jackson.databind.."))
+                .because("expected values come from the native bytes through the neutral tokenizer, never from data binding");
     }
 
     static ArchRule writerUsesOnlyItselfAndTheTokenizer(DescribedPredicate<? super JavaClass> writer) {

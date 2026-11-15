@@ -1,0 +1,92 @@
+{
+  "purpose": "Pinned, checksummed toolchain for Journal's OCSF extension: compile it with scripts/compile.sh and validate fixtures with scripts/validate-fixtures.sh.",
+  "ocsf_schema": {
+    "repository": "https://github.com/ocsf/ocsf-schema",
+    "release": "1.9.0",
+    "commit": "856d462bd20dc46cc1ffed2dfffe3b91ef0fbeba",
+    "licence": "Apache-2.0"
+  },
+  "ocsf_schema_compiler": {
+    "repository": "https://github.com/ocsf/ocsf-schema-compiler",
+    "commit": "865887a9ee88580c471062f93da115e7599fa31d",
+    "runtime": "CPython 3.14.2 via uv 0.9.17 (uv python install 3.14); run from source with PYTHONPATH=src",
+    "self_reported_version": "0.0.0-dev (source checkout)",
+    "licence": "Apache-2.0"
+  },
+  "ocsf_toolkit": {
+    "repository": "https://github.com/ocsf/ocsf-toolkit",
+    "release": "v0.9.0",
+    "commit": "a99619fcd148791a6a9fe5f82c1e0d839f658591",
+    "binary": "ocsf-toolkit_v0.9.0_linux_amd64.tar.gz",
+    "sha256": "641fec9f8c457896c06ead9136fe8f4e50753cd95f8a68c24b25c2bcc9cfd5a5",
+    "sha256_source": "release SHA256SUMS; equals the archive checksum recorded in the steward's 2026-10-20 investigation",
+    "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
+    "binary_sha256_source": "sha256 of the ocsf-toolkit executable extracted from the pinned archive; every committed validation summary records it, and the requirements accounting compares it",
+    "built_with": "go1.27.1 (per the binary's own summary metadata)",
+    "licence": "Apache-2.0",
+    "limits": [
+      "validates one JSON object per file (--event or --events-dir); JSONL input is not supported at v0.9.0, so adapt.py writes events/NNNN.json beside events.jsonl",
+      "enum sibling values that differ from the schema caption are warnings",
+      "integral floats satisfy integer_t; explicit null equals absence (not probed here)"
+    ]
+  },
+  "acp_vocabulary": {
+    "repository": "agentclientprotocol/agent-client-protocol",
+    "commit": "b4f0b13d76b24c936862d35adfa2ca54d80b0897",
+    "scope": "v1 documentation only; no ACP runtime or transport dependency"
+  },
+  "extension": {
+    "name": "agentic_cli",
+    "uid": 901,
+    "uid_status": "PROVISIONAL, UNREGISTERED; alternate assignment 902 is compiled only to demonstrate reader refusal",
+    "version": "1.0.0",
+    "compiled_sha256_uid_901": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2",
+    "category": "agent_execution (uid 11 -> scoped 90111)",
+    "bundled_excerpt": "journal-ocsf-writer/src/main/resources/ocsf/compiled-excerpt-agentic_cli-1.0.0.json (derived by SchemaExcerpt from the whole compiled.json; carries source_compiled_schema.sha256)"
+  },
+  "mcp_protocol_schemas": {
+    "pins": "schema/protocol/mcp/PINS.json",
+    "repository": "https://github.com/modelcontextprotocol/modelcontextprotocol",
+    "commit": "dae694f61a31f7a3ec2af3aff709e11f70f61e48",
+    "revisions": {
+      "2025-11-25": {
+        "schema_json_git_blob": "c722dd45ba83610bec2b3f576a7658d5d6dc1553",
+        "schema_json_sha256": "268a5f82ba70fd7e4b6dc4aa1e64f116f74b4d0edcb69dc046829c79dd4e97e7",
+        "schema_ts_git_blob": "850a083fa228bf40af6feca42e23fd26342d3c59"
+      },
+      "2026-07-28": {
+        "schema_json_git_blob": "213c58f6d9a1c2ce6ad055afe90bbdb095a29ee8",
+        "schema_json_sha256": "ef70b61f99b6d2e5e3b46863822eab08dff6a45bedc7a08914e0e5b133f40203",
+        "schema_ts_git_blob": "9b55feeb412bc3ae877f2eac10b5c01ba29a2eed"
+      }
+    },
+    "dialect": "https://json-schema.org/draft/2020-12/schema",
+    "binding": "journal-ocsf-writer/src/main/resources/ocsf/mcp/binding.json (McpBindingGenerator binding 0.1.0; regenerated and compared by McpProtocolContainmentTest)",
+    "validator": "com.networknt:json-schema-validator 1.5.7 (draft 2020-12) in journal-capture-tck McpValidation; reading and checks only, never the writer's path"
+  },
+  "java_reader": {
+    "module": "journal-capture-tck",
+    "package": "io.github.markpollack.journal.tck.ocsf",
+    "reader_contract": "agent-journal/ocsf-reader 0.3 and 0.4 (0.4 reads a terminal binding)",
+    "semantic_operations": "0.3",
+    "package_layout": "1.0.0 (standalone events.jsonl with declaration records; run.json ancillary) and 1.1.0 (the same with a terminal binding); earlier layouts are accepted on input (LegacyFormats)"
+  },
+  "not_adopted": [
+    "ocsf-server (Elixir) and JSON Schema export",
+    "ocsf-models-java (core-only, 1.8.0-SNAPSHOT, not on Maven Central)",
+    "LinkML / SHACL",
+    "development-head schema a7e16ed3 (ai_status, ai_capability): crosswalk only"
+  ],
+  "host_used": {
+    "os": "Linux x86_64",
+    "python_system": "3.12.3 (not used for the compiler)",
+    "go": "not installed (release binary used)"
+  },
+  "java_writer": {
+    "module": "journal-ocsf-writer",
+    "package": "io.github.markpollack.journal.ocsf.writer",
+    "package_layout": "1.0.0 and 1.1.0",
+    "reader_contract": "agent-journal/ocsf-reader 0.3 and 0.4 (0.4 reads a terminal binding)",
+    "semantic_operations": "0.3"
+  }
+}

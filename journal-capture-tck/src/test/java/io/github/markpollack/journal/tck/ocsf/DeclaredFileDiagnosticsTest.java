@@ -43,12 +43,12 @@ class DeclaredFileDiagnosticsTest {
         assertThat(pa.manifest.text("package", "derived_from")).isNotNull();
 
         Path b = copy(CODEX, work.resolve("version"));
-        editManifest(pkg(b), run -> obj(run.get("package")).members().put("version", str("0.2.0-prototype")));
-        assertThat(open(b).diagnosticsWithCode("MANIFEST_DISAGREES").get(0).detail()).contains("package version 0.2.0-prototype vs declared 0.3.0-prototype");
+        editManifest(pkg(b), run -> obj(run.get("package")).members().put("version", str("9.9.9")));
+        assertThat(open(b).diagnosticsWithCode("MANIFEST_DISAGREES").get(0).detail()).contains("package version 9.9.9 vs declared 1.0.0");
 
         Path c = copy(CODEX, work.resolve("extension"));
-        editManifest(pkg(c), run -> obj(run.get("extension")).members().put("version", str("0.17.0-prototype")));
-        assertThat(open(c).diagnosticsWithCode("MANIFEST_DISAGREES").get(0).detail()).contains("extension 901 0.17.0-prototype vs declared 901 0.16.0-prototype");
+        editManifest(pkg(c), run -> obj(run.get("extension")).members().put("version", str("9.9.9")));
+        assertThat(open(c).diagnosticsWithCode("MANIFEST_DISAGREES").get(0).detail()).contains("extension 901 9.9.9 vs declared 901 1.0.0");
 
         Path d = copy(CODEX, work.resolve("classes"));
         editManifest(pkg(d), run -> obj(run.path("extension", "classes")).members().remove("tool_call"));
@@ -195,7 +195,7 @@ class DeclaredFileDiagnosticsTest {
     @Test
     void aContractDeclarationAlteredUnderItsHashAndAnAttributeUsedBeforeItsAmendmentAreDefects(@TempDir Path work) {
         Path contract = copy(CODEX, work.resolve("contract"));
-        editDeclarations(pkg(contract), decls -> obj(declaration(decls, "contract:codex-cli/rollout/0.160.1/0.5.0-prototype").path("contract", "embedded")).members().put("tampered", str("yes")));
+        editDeclarations(pkg(contract), decls -> obj(declaration(decls, "contract:codex-cli/rollout/0.160.1/1.0.0").path("contract", "embedded")).members().put("tampered", str("yes")));
         List<Diagnostic> d = open(contract).diagnosticsWithCode("CONTRACT_HASH_MISMATCH");
         assertThat(d).as("reported once, by the declaration pass").hasSize(1);
         assertThat(d.get(0).detail()).contains("line ").contains("differs from its pin");

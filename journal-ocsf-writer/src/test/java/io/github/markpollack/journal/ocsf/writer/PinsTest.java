@@ -25,7 +25,7 @@ class PinsTest {
 
     @Test
     void toolchainPinsEqualTheLockFile() throws Exception {
-        Jv lock = Jv.parse(Files.readString(PROJECT.resolve("prototype/ocsf-acp/toolchain.lock.json"), StandardCharsets.UTF_8));
+        Jv lock = Jv.parse(Files.readString(PROJECT.resolve("schema/ocsf/toolchain.lock.json"), StandardCharsets.UTF_8));
         assertThat(lock.path("ocsf_schema", "commit").text()).isEqualTo(Pins.OCSF_SCHEMA_COMMIT);
         assertThat(lock.path("ocsf_schema_compiler", "commit").text()).isEqualTo(Pins.OCSF_COMPILER_COMMIT);
         assertThat(lock.path("ocsf_toolkit", "commit").text()).isEqualTo(Pins.TOOLKIT_COMMIT);
@@ -43,7 +43,7 @@ class PinsTest {
     @Test
     void semanticContractBytesAreIdenticalInWriterAndReader() throws Exception {
         byte[] writer = resource(Pins.SEMANTIC_CONTRACT_RESOURCE);
-        byte[] reader = Files.readAllBytes(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-0.10.0-prototype.json"));
+        byte[] reader = Files.readAllBytes(PROJECT.resolve("journal-capture-tck/src/main/resources/ocsf/semantic-contract-1.0.0.json"));
         assertThat(writer).isEqualTo(reader);
         assertThat(io.github.markpollack.journal.tck.ocsf.SemanticOperation.VERSION).isEqualTo(Pins.SEMANTIC_OPERATIONS_VERSION);
         assertThat(io.github.markpollack.journal.tck.ocsf.PackageReader.READER_CONTRACT_VERSION).isEqualTo(Pins.READER_CONTRACT_VERSION);
@@ -52,7 +52,7 @@ class PinsTest {
 
     @Test
     void bundledExtensionSourceListsEveryFileOfTheExtensionDirectory() throws Exception {
-        Path ext = PROJECT.resolve("prototype/ocsf-acp/extension/agentic_cli");
+        Path ext = PROJECT.resolve("schema/ocsf/extension/agentic_cli");
         List<String> onDisk;
         try (Stream<Path> s = Files.walk(ext)) {
             onDisk = s.filter(Files::isRegularFile).map(p -> ext.relativize(p).toString().replace('\\', '/')).sorted().toList();
@@ -70,16 +70,8 @@ class PinsTest {
         MappingContracts c = new MappingContracts();
         for (String name : List.of(ClaudeStreamMapper.CONTRACT, ClaudeTranscriptMapper.CONTRACT, CodexRolloutMapper.CONTRACT, CodexStreamMapper.CONTRACT, AntigravityStreamMapper.CONTRACT,
                 OpaqueTextMapper.CONTRACT)) {
-            // the stream contracts gain MCP observations (0.11.0): Codex exec stream 0.8.0, Claude stream 0.4.0, Antigravity 0.3.0; the rollout contract
-            // stays 0.4.0 (conditional uncached value), the Claude transcript 0.3.0 (SEM-CLOSE tranches; no MCP registration evidence), opaque text 0.2.0
-            assertThat(c.uid(name)).endsWith(switch (name) {
-                case CodexStreamMapper.CONTRACT -> "/0.9.0-prototype";
-                case CodexRolloutMapper.CONTRACT -> "/0.5.0-prototype";
-                case AntigravityStreamMapper.CONTRACT -> "/0.4.0-prototype";
-                case OpaqueTextMapper.CONTRACT -> "/0.2.0-prototype";
-                case ClaudeStreamMapper.CONTRACT -> "/0.8.0-prototype";
-                default -> "/0.4.0-prototype";
-            });
+            // every contract the writer executes is at 1.0.0
+            assertThat(c.uid(name)).endsWith("/1.0.0");
             c.rule(name, "common.opaque->source_record");
             c.rule(name, "common.mapper_exception->source_record");
         }

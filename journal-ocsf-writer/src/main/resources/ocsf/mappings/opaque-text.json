@@ -1,5 +1,5 @@
 {
-  "contract_uid": "common/opaque-text/0.2.0-prototype",
+  "contract_uid": "common/opaque-text/1.0.0",
   "applies_to": {
     "source_kind": "any text artifact acquired beside a run (for example a captured stderr)"
   },

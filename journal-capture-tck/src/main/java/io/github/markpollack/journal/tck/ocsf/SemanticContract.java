@@ -21,8 +21,8 @@ import java.util.regex.Pattern;
  */
 public final class SemanticContract {
 
-    /** The declarations this prototype embeds in every package (one source of truth, also used by the tests). */
-    public static final String RESOURCE = "/ocsf/semantic-contract-0.10.0-prototype.json";
+    /** The declarations embedded in every package (one source of truth, also used by the tests). */
+    public static final String RESOURCE = "/ocsf/semantic-contract-1.0.0.json";
 
     private static final Pattern PATH = Pattern.compile("^(\\*|[a-z_]+)\\.[a-z_]+(\\[\\])?(\\.[a-z_]+(\\[\\])?)*$");
 

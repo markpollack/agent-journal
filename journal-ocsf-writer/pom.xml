@@ -110,9 +110,9 @@
                 <directory>src/main/resources</directory>
             </resource>
             <!-- The extension source is embedded by value in every run.json; it is read from the single authoritative
-                 copy under prototype/ocsf-acp/extension so the writer cannot drift from the compiled definitions. -->
+                 copy under schema/ocsf/extension so the writer cannot drift from the compiled definitions. -->
             <resource>
-                <directory>${project.basedir}/../prototype/ocsf-acp/extension</directory>
+                <directory>${project.basedir}/../schema/ocsf/extension</directory>
                 <targetPath>ocsf/extension</targetPath>
             </resource>
             <!-- The pinned official MCP JSON Schemas (unmodified copies, see schema/protocol/mcp/PINS.json): the writer

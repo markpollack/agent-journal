@@ -254,9 +254,6 @@ public final class OcsfReaderTool {
             else if (c.outcome() == Check.Outcome.UNSUPPORTED && !OPTIONAL_PROPERTIES.contains(c.property())) {
                 return c.toString();
             }
-            else if (c.outcome() == Check.Outcome.NOT_APPLICABLE && "whole_record.excluded".equals(c.property())) {
-                return "declared exclusion waives acquired records: " + c;
-            }
                 return null;
     }
 

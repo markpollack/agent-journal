@@ -6,7 +6,7 @@ import java.util.Map;
 import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
 
 /**
- * How the Codex exec-stream contract (0.4.0-prototype) reads one item: which rule applies, the tool name and
+ * How the Codex exec-stream contract reads one item: which rule applies, the tool name and
  * arguments an item reports, its result content and outcome, the usage measurement status and the one repeated-member
  * form it interprets. Read from the pinned interface (codex-rs/exec at rust-v0.160.1); {@link CodexStreamMapper}
  * emits the events.

@@ -20,7 +20,7 @@ import java.util.Map;
 final class Assembler {
 
     static final String ENGINE = "journal-ocsf-writer Assembler";
-    static final String ENGINE_VERSION = "0.1.0-prototype";
+    static final String ENGINE_VERSION = "1.0.0";
     static final String CONTRACT = "final-assembly";
     static final String RULE = "assembly.consolidate->canonical";
     static final Map<Integer, String> ROLE = Map.of(1, "Canonical single observation", 2, "Supporting observation", 3, "Consolidated canonical");

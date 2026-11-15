@@ -18,7 +18,7 @@ import java.util.TreeMap;
 /**
  * Opens a run package from {@code events.jsonl} or its directory.
  *
- * <p>A standalone event file (layout {@code 0.3.0-prototype}, first line a {@code format} declaration) is read from
+ * <p>A standalone event file (layout {@code 1.0.0}, first line a {@code format} declaration) is read from
  * its own declarations ({@link DeclaredFile}): format and reader compatibility, the schema pin and class table, the
  * run context, every contract, source and definition, the session, child links, source ends and finalization. The
  * ancillary {@code run.json} beside it, when present, is cross-checked on identity and adds the final whole-file
@@ -27,7 +27,7 @@ import java.util.TreeMap;
  * definitions, every reference (class, attribute, contract, source) must have been declared on an earlier line, and
  * linked children are opened from their own files.
  *
- * <p>The historical two-file layouts ({@code 0.1.0-prototype}, {@code 0.2.0-prototype}) are read as before: the
+ * <p>The historical two-file layouts are read as before: the
  * manifest is the sibling {@code run.json}, which carries the definition closure and contracts; a detached file of
  * those layouts is refused because nothing in it describes itself.
  *
@@ -39,7 +39,7 @@ public final class PackageReader {
 
     public static final String READER_CONTRACT = "agent-journal/ocsf-reader";
     public static final String READER_CONTRACT_VERSION = "0.3";
-    public static final List<String> SUPPORTED_PACKAGE_VERSIONS = List.of("0.1.0-prototype", "0.2.0-prototype", "0.3.0-prototype", "0.4.0-prototype");
+    public static final List<String> SUPPORTED_PACKAGE_VERSIONS = List.of(Formats.LAYOUT, Formats.TERMINAL_LAYOUT);
 
     private PackageReader() {
     }
@@ -58,34 +58,11 @@ public final class PackageReader {
         if (DeclaredFile.isDeclared(rawLines)) {
             return openDeclared(dir, parent, rawLines, eventsFile, manifestFile, diags);
         }
-        if (!Files.isRegularFile(manifestFile)) {
-            diags.add(new Diagnostic(Diagnostic.Severity.REFUSED, "NO_MANIFEST",
-                    "events.jsonl in " + dir + " declares no format on its first line and has no adjacent run.json; a two-file layout's detached events file is not self-describing"));
-            return new OcsfPackage(dir, null, List.of(), rawLines, null, List.of(), diags, null);
-        }
-        RunManifest manifest;
-        try {
-            manifest = new RunManifest(NeutralJson.readDocument(manifestFile));
-        }
-        catch (IllegalArgumentException e) {
-            diags.add(new Diagnostic(Diagnostic.Severity.REFUSED, "MANIFEST_UNREADABLE", e.getMessage()));
-            return new OcsfPackage(dir, null, List.of(), rawLines, null, List.of(), diags, null);
-        }
-        compatibility(manifest, diags);
-        stateWarnings(manifest.packageState(), diags);
-        wholeFileHash(manifest, eventsFile, diags);
-        SchemaCatalog catalog = legacyDefinitions(manifest, diags);
-        List<Event> events = events(rawLines, manifest, catalog, diags, null);
-        if (!"RECORDING".equals(manifest.packageState()) && !"FAILED".equals(manifest.packageState())) {
-            countCheck(manifest, events.size(), false, diags);
-        }
-        else if ("RECORDING".equals(manifest.packageState())) {
-            countCheck(manifest, events.size(), true, diags);
-        }
-        sharedReferences(manifest, events, diags, true);
-        semanticContract(manifest, catalog, diags, List.of());
-        parentLink(manifest, parent, diags);
-        return new OcsfPackage(dir, manifest, events, rawLines, catalog, children(dir, manifest, diags, true), diags, null);
+        // 2.0.0 reads only the 1.0.0 formats, whose event file declares its format on its first line
+        diags.add(new Diagnostic(Diagnostic.Severity.REFUSED, "UNSUPPORTED_FORMAT",
+                "unsupported format: events.jsonl in " + dir + " declares no format on its first line; this reader reads only the standalone event file of layouts "
+                        + SUPPORTED_PACKAGE_VERSIONS));
+        return new OcsfPackage(dir, null, List.of(), rawLines, null, List.of(), diags, null);
     }
 
     // ------------------------------------------------------------------------------------------ standalone layout
@@ -172,10 +149,10 @@ public final class PackageReader {
             catalog = null;
         }
         else {
-            pinAndReferenceChecks(manifest, catalog, diags, false);
+            pinAndReferenceChecks(manifest, catalog, diags);
         }
         List<Event> events = events(rawLines, manifest, catalog, diags, declared);
-        sharedReferences(manifest, events, diags, false);
+        sharedReferences(manifest, events, diags);
         List<String> absent = new ArrayList<>();
         for (String name : manifest.classTable().keySet()) {
             if (catalog == null || catalog.classNamed(name) == null) {
@@ -289,13 +266,18 @@ public final class PackageReader {
     // ------------------------------------------------------------------------------------------ shared steps
 
     private static void compatibility(RunManifest m, List<Diagnostic> diags) {
-        if (!RunManifest.PACKAGE_KIND.equals(m.packageKind())) {
+        // 2.0.0 reads only the 1.0.0 formats: a package written before it names other identifiers and is refused
+        if (!Formats.PACKAGE_KIND.equals(m.packageKind())) {
             diags.add(new Diagnostic(Diagnostic.Severity.REFUSED, "UNSUPPORTED_PACKAGE_KIND",
-                    "package kind " + m.packageKind() + "; this reader implements " + RunManifest.PACKAGE_KIND));
+                    "unsupported format: package kind " + m.packageKind() + "; this reader reads only " + Formats.PACKAGE_KIND));
         }
         if (!SUPPORTED_PACKAGE_VERSIONS.contains(m.packageVersion())) {
             diags.add(new Diagnostic(Diagnostic.Severity.REFUSED, "UNSUPPORTED_PACKAGE_VERSION",
-                    "package version " + m.packageVersion() + "; this reader implements " + SUPPORTED_PACKAGE_VERSIONS));
+                    "unsupported format: package layout " + m.packageVersion() + "; this reader reads only " + SUPPORTED_PACKAGE_VERSIONS));
+        }
+        if (m.extensionVersion() != null && !Formats.EXTENSION.equals(m.extensionVersion())) {
+            diags.add(new Diagnostic(Diagnostic.Severity.REFUSED, "UNSUPPORTED_EXTENSION_VERSION",
+                    "unsupported format: extension version " + m.extensionVersion() + "; this reader reads only " + Formats.EXTENSION));
         }
         String contract = m.readerContract();
         String version = m.readerContractVersion();
@@ -393,44 +375,15 @@ public final class PackageReader {
         return dot < 0 ? version : version.substring(0, dot);
     }
 
-    /** Two-file layouts: the closure lives in run.json, pinned by its hash. */
-    private static SchemaCatalog legacyDefinitions(RunManifest m, List<Diagnostic> diags) {
-        Json closure = m.closure();
-        if (closure == null) {
-            diags.add(new Diagnostic(Diagnostic.Severity.REFUSED, "MISSING_DEFINITIONS",
-                    "run.json carries no definitions.closure; the saved model cannot be enumerated or validated offline"));
-            return null;
-        }
-        String pinned = m.text("definitions", "sha256");
-        String actual = NativeArtifact.sha256(NeutralJson.write(closure).getBytes(StandardCharsets.UTF_8));
-        if (pinned == null) {
-            diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "DEFINITIONS_HASH_ABSENT", "definitions carry no sha256"));
-        }
-        else if (!pinned.equals(actual)) {
-            diags.add(new Diagnostic(Diagnostic.Severity.DEFECT, "DEFINITIONS_HASH_MISMATCH",
-                    "embedded closure sha256 " + actual + " differs from its pin " + pinned));
-        }
-        SchemaCatalog catalog = SchemaCatalog.fromClosure(closure);
-        pinAndReferenceChecks(m, catalog, diags, true);
-        return catalog;
-    }
-
     /**
      * The pin table must resolve in the catalog without remapping, and every object a kept attribute refers to must be
-     * present. A two-file layout embeds every pinned class; a standalone file declares a class before its first use,
-     * so a pinned class no event used is absent by design and only a uid that disagrees is a refusal (an event of an
-     * undeclared class is reported by the event pass).
+     * present. A standalone file declares a class before its first use, so a pinned class no event used is absent by
+     * design and only a uid that disagrees is a refusal (an event of an undeclared class is reported by the event pass).
      */
-    private static void pinAndReferenceChecks(RunManifest m, SchemaCatalog catalog, List<Diagnostic> diags, boolean everyPinnedClassEmbedded) {
+    private static void pinAndReferenceChecks(RunManifest m, SchemaCatalog catalog, List<Diagnostic> diags) {
         for (Map.Entry<String, Integer> e : m.classTable().entrySet()) {
             SchemaCatalog.Definition def = catalog.classNamed(e.getKey());
-            if (def == null) {
-                if (everyPinnedClassEmbedded) {
-                    diags.add(new Diagnostic(Diagnostic.Severity.REFUSED, "PIN_MISMATCH",
-                            "pinned class " + e.getKey() + " (uid " + e.getValue() + ") has no definition in the embedded closure"));
-                }
-            }
-            else if (def.uid() == null || !def.uid().equals(e.getValue())) {
+            if (def != null && (def.uid() == null || !def.uid().equals(e.getValue()))) {
                 diags.add(new Diagnostic(Diagnostic.Severity.REFUSED, "PIN_MISMATCH",
                         "pinned class " + e.getKey() + " uid " + e.getValue() + " != definition uid " + def.uid() + "; numeric ids are never remapped"));
             }
@@ -608,8 +561,8 @@ public final class PackageReader {
         }
     }
 
-    /** @param checkContractHashes false for a standalone file, whose declarations were already checked against their own hashes */
-    private static void sharedReferences(RunManifest m, List<Event> events, List<Diagnostic> diags, boolean checkContractHashes) {
+    /** A standalone file's declarations were already checked against their own hashes. */
+    private static void sharedReferences(RunManifest m, List<Event> events, List<Diagnostic> diags) {
         Map<String, Integer> unresolvedContracts = new TreeMap<>();
         Map<String, Integer> unresolvedArtifacts = new TreeMap<>();
         for (Event e : events) {
@@ -640,15 +593,9 @@ public final class PackageReader {
         }
         for (Map.Entry<String, Json> c : m.contracts().entrySet()) {
             Json embedded = c.getValue().member("embedded");
-            String pinned = SchemaCatalog.text(c.getValue(), "sha256");
             if (embedded == null) {
                 diags.add(new Diagnostic(Diagnostic.Severity.DEFECT, "CONTRACT_NOT_EMBEDDED", c.getKey() + " is referenced by hash only"));
                 continue;
-            }
-            String actual = NativeArtifact.sha256(NeutralJson.write(embedded).getBytes(StandardCharsets.UTF_8));
-            if (checkContractHashes && pinned != null && !pinned.equals(actual)) {
-                diags.add(new Diagnostic(Diagnostic.Severity.DEFECT, "CONTRACT_HASH_MISMATCH",
-                        c.getKey() + " embedded sha256 " + actual + " differs from its pin " + pinned));
             }
             String appliesVersion = SchemaCatalog.text(embedded.member("applies_to"), "version");
             if (appliesVersion != null && m.cliVersion() != null && !appliesVersion.equals(m.cliVersion()) && !selectedByCompatibility(m, c.getKey())) {
@@ -687,7 +634,7 @@ public final class PackageReader {
             String artifact = SchemaCatalog.text(s, "artifact");
             Json c = s.member("compatibility");
             if (c == null) {
-                if ("0.3.0-prototype".equals(m.packageVersion())) {
+                if (Formats.LAYOUT.equals(m.packageVersion())) {
                     diags.add(new Diagnostic(Diagnostic.Severity.WARNING, "COMPATIBILITY_UNDECLARED",
                             artifact + ": no compatibility declaration; the file predates the registry or the writer omitted the selection, so no tested range is claimed"));
                 }

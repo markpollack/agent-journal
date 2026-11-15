@@ -57,8 +57,6 @@ final class OcsfFixtures {
     static final String LIVE_AGY_MCP_DENIED = "antigravity-live-1.4.6-mcp-denied";
     static final String LIVE_AGY_MCP = "antigravity-live-1.4.6-mcp";
     static final String LIVE_MCP = "claude-live-2.1.304-mcp";
-    /** The historical two-file layout, kept unchanged under {@code fixtures-historical/0.2.0-prototype/<name>/package}. */
-    static final String HISTORICAL_0_2_0 = "0.2.0-prototype";
 
     private OcsfFixtures() {
     }
@@ -86,43 +84,6 @@ final class OcsfFixtures {
         }
     }
 
-    /**
-     * A working copy of a fixture whose package is the historical two-file layout: the native artifacts of
-     * {@code fixtures/<name>/native/} beside the package kept under {@code fixtures-historical/<layout>/<name>/package}.
-     */
-    static Path copyHistorical(String layout, String name, Path work) {
-        Path target = copy(name, work);
-        try {
-            Path historical = Path.of(OcsfFixtures.class.getResource("/ocsf/fixtures-historical/" + layout + "/" + name + "/spec.json").toURI()).getParent().resolve("package");
-            Path current = pkg(target);
-            try (Stream<Path> s = Files.walk(current)) {
-                s.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
-                    try {
-                        Files.delete(p);
-                    }
-                    catch (IOException e) {
-                        throw new UncheckedIOException(e);
-                    }
-                });
-            }
-            try (Stream<Path> s = Files.walk(historical)) {
-                for (Path p : s.toList()) {
-                    Path t = current.resolve(historical.relativize(p).toString());
-                    if (Files.isDirectory(p)) {
-                        Files.createDirectories(t);
-                    }
-                    else {
-                        Files.createDirectories(t.getParent());
-                        Files.copy(p, t);
-                    }
-                }
-            }
-            return target;
-        }
-        catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-    }
 
     static Path pkg(Path fixture) {
         return fixture.resolve("package");

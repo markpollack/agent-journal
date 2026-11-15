@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * The incremental Java writer of the OCSF-based run package (layout {@code 0.3.0-prototype}). One
+ * The incremental Java writer of the OCSF-based run package (layout {@code 1.0.0}). One
  * writer records one run: it opens the root core, accepts declared sources through {@link SourceInput} (the same
  * entry point for a replay driver and for a live capture), maps each native record as it arrives into OCSF
  * events or conservative fallback, routes a record's events to the root core or a linked child core by the owner
@@ -134,7 +134,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         return new OcsfRunWriter(dir, run, pin, options, null, binding);
     }
 
-    private String packageVersion() { return terminalBinding == null ? Pins.PACKAGE_VERSION : "0.4.0-prototype"; }
+    private String packageVersion() { return terminalBinding == null ? Pins.PACKAGE_VERSION : Pins.TERMINAL_PACKAGE_VERSION; }
     private String readerVersion() { return terminalBinding == null ? Pins.READER_CONTRACT_VERSION : "0.4"; }
 
     /**
@@ -918,7 +918,7 @@ public final class OcsfRunWriter implements AutoCloseable, CoreWriter.Context {
         boolean isFinal = core.finalized();
         Jv.Obj m = new Jv.Obj();
         Jv.Obj pkg = new Jv.Obj();
-        pkg.put("kind", Pins.PACKAGE_KIND).put("version", packageVersion()).put("non_production", true);
+        pkg.put("kind", Pins.PACKAGE_KIND).put("version", packageVersion());
         pkg.put("layout", new Jv.Obj().put("events", "events.jsonl").put("manifest", "run.json (ancillary)")
                 .put("children", "children/<name>/ (each an independently portable events.jsonl with its own ancillary run.json)")
                 .put("discovery", "events.jsonl is self-describing: its declaration records carry the format, schema, run context, contracts, sources, definitions, children, source ends and finalization; "

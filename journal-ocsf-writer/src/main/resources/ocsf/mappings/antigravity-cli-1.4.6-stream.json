@@ -1,5 +1,5 @@
 {
-  "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+  "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
   "applies_to": {
     "product": "Antigravity CLI",
     "version": "1.4.6",
@@ -201,7 +201,7 @@
     }
   },
   "candidate": {
-    "status": "Antigravity contract 0.2.0-prototype (2026-10-23 close-out), candidate for the managing reviewer: tested candidate behaviour, not approved support. Changed from 0.1.0-prototype: a step's own usage is stated at scope 99 Other \"Conversation step\" instead of 2 Model response, and every text_delta block states text_update_id 1 Increment (extension 0.10.0-prototype). Retained meanings: a conversation step index as identity (identity basis 99 Other with the caption \"Conversation step index\"; no dedicated enum value), scoped to its artifact and conversation"
+    "status": "Antigravity contract (2026-10-23 close-out), candidate for the managing reviewer: tested candidate behaviour, not approved support. Changed from the first contract: a step's own usage is stated at scope 99 Other \"Conversation step\" instead of 2 Model response, and every text_delta block states text_update_id 1 Increment (an earlier extension). Retained meanings: a conversation step index as identity (identity basis 99 Other with the caption \"Conversation step index\"; no dedicated enum value), scoped to its artifact and conversation"
   },
   "observed_behavior": {
     "reviewed": "2026-10-23, 1.4.6 live captures",

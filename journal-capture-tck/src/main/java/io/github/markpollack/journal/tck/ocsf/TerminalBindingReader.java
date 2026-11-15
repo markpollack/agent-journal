@@ -27,7 +27,7 @@ public final class TerminalBindingReader {
     public static Binding read(DeclaredFile file) {
         Json binding = file.run().member("terminal_binding");
         if (binding == null) return null;
-        if (!"0.4.0-prototype".equals(file.format().member("package_version").text())) throw new IllegalArgumentException("terminal binding requires file version 0.4");
+        if (!Formats.TERMINAL_LAYOUT.equals(file.format().member("package_version").text())) throw new IllegalArgumentException("terminal binding requires a terminal-bound layout");
         fields(binding, "terminalEnvelope association originalBindingId");
         Decoded decoded = decodeEnvelope(string(binding, "terminalEnvelope"));
         Json p = decoded.envelope(), d = decoded.decision(), initial = decoded.initial();

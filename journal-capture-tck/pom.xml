@@ -84,7 +84,7 @@
         <!--
             Mutation testing (PIT) over the independent OCSF oracle and reader: a measurement, not a gate on every
             change. Run: ./mvnw -Ppit -pl journal-capture-tck test   (-Dpit.mutators=STRONGER for the larger set)
-            Scope: the checking path only. The prototype-layout repackager, the CLI entry point and the data records
+            Scope: the checking path only. The CLI entry point and the data records
             are excluded; the threshold applies within the profile only.
         -->
         <profile>

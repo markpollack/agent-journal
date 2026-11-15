@@ -9,8 +9,8 @@ The [documentation site](https://lab.pollack.ai/projects/agent-journal) covers t
 its Agent Journal 2.0 group; its "Agent Journal 1.x (released)" group
 describes the 1.x line (last release `1.11.0`), which is a different format and does not apply here.
 In this repository: generated architecture views under
-[`docs/architecture`](docs/architecture/README.md) and per-CLI support statements under
-[`docs/cli-support`](docs/cli-support).
+[`docs/architecture`](docs/architecture/README.md) and what Journal records for each CLI under
+[`docs/cli-records`](docs/cli-records).
 
 ## Build
 
@@ -31,6 +31,10 @@ Two artifacts, group `io.github.markpollack`, version `2.0.0-SNAPSHOT`:
   judges a package against its native input with the independent oracle; `OcsfReaderTool
   inspect|views|measure|reconstruct|self-contained|verify` is its command line. Consumers that only
   read packages need this artifact alone.
+
+Formats: 2.0.0 writes and reads only the 1.0.0 formats: package kind `agent-journal/ocsf-package`, layout `1.0.0`
+(`1.1.0` with a terminal binding), extension `agentic_cli` 1.0.0 (uid 901, provisional and unregistered). A package
+written before 2.0.0 is refused as an unsupported format; read it with the Journal version it was written with.
 
 ```xml
 <dependency>

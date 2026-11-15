@@ -1,4 +1,4 @@
-# OCSF self-describing package fixtures (non-production prototype)
+# OCSF self-describing package fixtures
 
 Each directory is one labelled case for the Java OCSF reader, oracle and analysis views in
 `io.github.markpollack.journal.tck.ocsf`: the native artifacts (`native/`), the independently frozen expected-source
@@ -34,12 +34,12 @@ Live-derived fixtures were sanitized by the steward's recorded script (paths, ho
 user configuration names, memory and socket paths, account rate-limit numbers replaced; no key added or removed, no record dropped) and
 re-frozen; `provenance.json` beside each states origin, capture command, CLI version, scenario, original and sanitized hashes and the
 sanitization steps. Each core's execution records validate under the pinned toolkit; the committed summaries under `../validation/`
-are tied to the event file hashes (`prototype/ocsf-acp/scripts/validate-fixtures.sh`).
+are tied to the event file hashes (`schema/ocsf/scripts/validate-fixtures.sh`).
 
 Packages were produced by `journal-ocsf-writer` (`PublicFixtureRegenerationTest` with `-Docsf.regenerate=true`: byte
 replay in 1 KiB chunks, fixed clock; the assembled fixtures through `FinalAssembly` from the inputs and profile their
 `spec.json` names; the cancelled live recordings replayed to their end and interrupted with the live reason) against OCSF 1.9.0 `856d462b…` with extension `agentic_cli` 0.13.0-prototype (uid
-901, provisional; the current compiled-schema pin is in `prototype/ocsf-acp/toolchain.lock.json`). Every core validated with ocsf-toolkit v0.9.0 (0 errors;
+901, provisional; the current compiled-schema pin is in `schema/ocsf/toolchain.lock.json`). Every core validated with ocsf-toolkit v0.9.0 (0 errors;
 `suspicious_other` enum-sibling warnings on `tool_kind` "other", a toolkit heuristic). The oracle and the reader never
 call the writer.
 

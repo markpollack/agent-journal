@@ -49,23 +49,6 @@ class OcsfReaderToolTest {
     }
 
     @Test
-    void everyCommandRefusesADetachedHistoricalEventsFileWithExitTwo(@TempDir Path work) throws Exception {
-        Path fixture = OcsfFixtures.copyHistorical(OcsfFixtures.HISTORICAL_0_2_0, CODEX, work);
-        Path detached = work.resolve("detached");
-        Files.createDirectories(detached);
-        Files.copy(pkg(fixture).resolve("events.jsonl"), detached.resolve("events.jsonl"));
-        String file = detached.resolve("events.jsonl").toString();
-        assertThat(run("inspect", file).exit()).isEqualTo(OcsfReaderTool.EXIT_REFUSED);
-        assertThat(run("views", file).exit()).isEqualTo(OcsfReaderTool.EXIT_REFUSED);
-        assertThat(run("measure", file).exit()).isEqualTo(OcsfReaderTool.EXIT_REFUSED);
-        assertThat(run("self-contained", file, work.resolve("sc.jsonl").toString()).exit()).isEqualTo(OcsfReaderTool.EXIT_REFUSED);
-        assertThat(Files.exists(work.resolve("sc.jsonl"))).as("nothing is exported from a refused package").isFalse();
-        Result verify = run("verify", file, natives(fixture).toString());
-        assertThat(verify.exit()).isEqualTo(OcsfReaderTool.EXIT_REFUSED);
-        assertThat(verify.err()).contains("NO_MANIFEST");
-    }
-
-    @Test
     void verifyExitsZeroOnlyWhenAccepted(@TempDir Path work) throws Exception {
         Path fixture = copy(OcsfFixtures.LIVE_CODEX, work);
         Result ok = run("verify", pkg(fixture).toString(), natives(fixture).toString(), work.resolve("report.json").toString());

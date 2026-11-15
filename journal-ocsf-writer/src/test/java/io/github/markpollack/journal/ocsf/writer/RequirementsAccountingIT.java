@@ -135,8 +135,7 @@ class RequirementsAccountingIT {
                 junit("CompatibilityTest#theVersionBootstrapReadsOnlyTheVersionAndItsLocation", "the bootstrap reads only the version and its location"),
                 junit("UntestedCompatibilityTest#aSupportedInitRecordSelectsFirstAndIsThenNormalizedUnderTheSelection", "the init record selects, then is normalized under the selection"),
                 junit("UntestedCompatibilityTest#aRecordBeforeTheInitRecordStaysRetainedOnlyAndIsNotCredited", pending + ": earlier records retained unnormalized, owed no fact, two forged declarations refused"),
-                junit("UntestedCompatibilityTest#aVersionNeverLearnedRetainsEveryRecordUnnormalizedAndUnresolved", "a version never learned retains every record, compatibility unresolved"),
-                junit("PackageReaderTest#aPackageWrittenWithProvisionalPendingInterpretationStillReadsAndIsJudgedByTheCurrentPolicy", "a 0.8.0 package still reads; its provisional interpretation is not accepted")));
+                junit("UntestedCompatibilityTest#aVersionNeverLearnedRetainsEveryRecordUnnormalizedAndUnresolved", "a version never learned retains every record, compatibility unresolved")));
         CRITERIA.put("UC2-AC4", List.of(oracle("UC2-AC4", BOTH), junit("CompatibilityTest#exactTestedVersionsAndInclusiveBoundariesSelectTheOneEntry", "registry selection"),
                 junit("UntestedCompatibilityTest#aTestedVersionOnItsRouteIsSelectedAndVerified", "declaration in parent and child files")));
         CRITERIA.put("UC2-AC5", List.of(oracle("UC2-AC5", "labelled synthetic 2.1.999 Claude stream"), junit("UntestedCompatibilityTest#aVersionNoEntryCoversIsRetainedFlaggedAndNotNormalized", "retained, flagged, reader warns"),
@@ -264,7 +263,6 @@ class RequirementsAccountingIT {
                 junit("UsageUncertaintyControlTest#aConditionalValueWrittenAsTheCanonicalTrancheIsADefect", "an unestablished tranche written as canonical, independent oracle")));
         CRITERIA.put("UC5-AC24", List.of(junit("SemanticExampleTest#everyReviewedExampleDescribesTheWritersOutputAndNoCounterexampleDoes", examples + " (started stages, completed-only, MCP built-in names, families)"),
                 junit("SemanticExampleProfileTest#theOracleProfileStatesWhatEachReviewedExampleExpects", profiled),
-                junit("PackageReaderTest#aPackageWrittenWithExtension050StillReadsAndShowsOnlyTheRevisedMeanings", "a 0.5.0 package's Requested stage is a defect under the revised reading"),
                 junit("ToolClassificationTest#onlyAReviewedExactNamespaceAndNameBindingGivesAnMcpToolAKind", "bundled contract (no binding) and a test contract with one reviewed binding, writer"),
                 junit("ToolClassificationTest#claudesExactNameTableDoesNotGiveAnMcpToolTheKindOfABuiltInWithTheSameShortName", "Claude exact-name table, writer"),
                 junit("IdentityClassificationControlTest#aBuiltInKindGivenToAnMcpToolWithoutAReviewedBindingIsADefect", "live Codex MCP recording, independent oracle"),
@@ -612,7 +610,7 @@ class RequirementsAccountingIT {
                 List<String> problems = new ArrayList<>();
                 int cores = 0;
                 // the pinned toolkit and compiled schema: a summary of another tool or schema does not establish this build's files
-                var lock = new ObjectMapper().readTree(WRITER.resolve("..").resolve("prototype/ocsf-acp/toolchain.lock.json").normalize().toFile());
+                var lock = new ObjectMapper().readTree(WRITER.resolve("..").resolve("schema/ocsf/toolchain.lock.json").normalize().toFile());
                 String release = lock.path("ocsf_toolkit").path("release").asText();
                 String binary = lock.path("ocsf_toolkit").path("binary_sha256").asText();
                 String schema = lock.path("extension").path("compiled_sha256_uid_901").asText();

@@ -1,6 +1,6 @@
 {
   "profile_id": "github-copilot-cli/1.0.100/session-file+stdout+otel+usage-report",
-  "version": "0.1.0-prototype",
+  "version": "1.0.0",
   "status": "experimental",
   "status_meaning": "tested on one sanitized live 1.0.100 run (copilot-otel-1); every route is experimental (no field-disposition catalog or oracle profile yet)",
   "cli": {

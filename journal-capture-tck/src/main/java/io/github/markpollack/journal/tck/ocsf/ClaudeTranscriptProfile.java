@@ -7,9 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Claude Code saved session file, read whole by the oracle. Every record is owned. When the package declares a
- * bounded admission ({@code admit_response_uid}, the 0.1.0 prototype), records outside it are expected to be
- * declared excluded, not preserved; otherwise (complete admission) every record is expected: assistant records are
+ * Claude Code saved session file, read whole by the oracle. Every record is owned and expected: assistant records are
  * responses (terminal when they report a stop reason; the transcript repeats the message's usage on every block
  * record, so each record yields a usage observation) with their tool_use requests; user records without a
  * tool_result block are prompt submissions (turn id {@code promptId}); user records with tool_result blocks are
@@ -23,9 +21,6 @@ final class ClaudeTranscriptProfile implements SourceProfile {
     @Override
     public ExpectedFacts expected(NativeArtifact artifact, Json source, Json scope) {
         ExpectedFacts f = new ExpectedFacts(SourceProfile.text(source, "artifact"));
-        String admit = SourceProfile.text(source, "admit_response_uid");
-        java.util.Set<String> admittedTools = new java.util.LinkedHashSet<>();
-        boolean promptSeen = false;
         for (NativeArtifact.Record r : artifact.records()) {
             f.owned.add(r.index());
             if (!r.parsed()) {
@@ -45,16 +40,10 @@ final class ClaudeTranscriptProfile implements SourceProfile {
             Json message = o.member("message") instanceof Json.JObject m ? m : null;
             String ts = SourceProfile.text(o, "timestamp");
             if ("assistant".equals(type) && message != null) {
-                if (admit != null && !admit.equals(SourceProfile.text(message, "id"))) {
-                    f.owned.remove(r.index());
-                    f.excluded.put(r.index(), type);
-                    continue;
-                }
                 f.normalized.add(r.index());
                 time(f, r, ts);
                 for (Json b : SourceProfile.anthropicMessage(f, r.index(), message)) {
                     if ("tool_use".equals(SourceProfile.text(b, "type"))) {
-                        admittedTools.add(SourceProfile.text(b, "id"));
                         f.requests.add(new ExpectedFacts.Request(r.index(), SourceProfile.text(b, "id"), SourceProfile.text(b, "name"),
                                 b.member("input"), SourceProfile.text(message, "id"), null));
                     }
@@ -70,21 +59,10 @@ final class ClaudeTranscriptProfile implements SourceProfile {
                     }
                 }
                 if (resultBlocks == 0) {
-                    if (admit != null && (promptSeen || !(content instanceof Json.JString))) {
-                        f.owned.remove(r.index());
-                        f.excluded.put(r.index(), type);
-                        continue;
-                    }
-                    promptSeen = true;
                     f.normalized.add(r.index());
                     time(f, r, ts);
                     List<String> texts = content instanceof Json.JString s ? List.of(s.value()) : CodexRolloutProfile.texts(content == null ? List.of() : content.elements());
                     f.prompts.add(new ExpectedFacts.Prompt(r.index(), SourceProfile.text(o, "promptId"), texts));
-                    continue;
-                }
-                if (admit != null && !admittedResult(content, admittedTools)) {
-                    f.owned.remove(r.index());
-                    f.excluded.put(r.index(), type);
                     continue;
                 }
                 f.normalized.add(r.index());
@@ -104,11 +82,6 @@ final class ClaudeTranscriptProfile implements SourceProfile {
                     }
                     f.results.add(new ExpectedFacts.Result(r.index(), id, b.member("content"), b.member("is_error"), o.member("toolUseResult"), decision, null));
                 }
-                continue;
-            }
-            if (admit != null) {
-                f.owned.remove(r.index());
-                f.excluded.put(r.index(), type == null ? "unknown" : type);
                 continue;
             }
             if ("attachment".equals(type) && o.member("attachment") instanceof Json.JObject att) {
@@ -154,15 +127,6 @@ final class ClaudeTranscriptProfile implements SourceProfile {
         if (ts != null) {
             f.nativeTime.put(r.index(), ts);
         }
-    }
-
-    private static boolean admittedResult(Json content, java.util.Set<String> toolIds) {
-        for (Json b : content.elements()) {
-            if ("tool_result".equals(SourceProfile.text(b, "type")) && toolIds.contains(SourceProfile.text(b, "tool_use_id"))) {
-                return true;
-            }
-        }
-        return false;
     }
 
     static Map<String, Json> settings(Json o, String... pairs) {

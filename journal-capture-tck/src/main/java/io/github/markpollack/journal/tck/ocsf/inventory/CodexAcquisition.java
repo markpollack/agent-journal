@@ -1,6 +1,7 @@
 package io.github.markpollack.journal.tck.ocsf.inventory;
 
 import io.github.markpollack.journal.tck.ocsf.CodexExecFamily;
+import io.github.markpollack.journal.tck.ocsf.Formats;
 
 import io.github.markpollack.journal.tck.ocsf.NativeArtifact;
 import io.github.markpollack.journal.tck.ocsf.CodexAcquisitionReading;
@@ -72,13 +73,10 @@ public final class CodexAcquisition {
      * because codex-cli 0.166.0 turn.completed carries the thread's cumulative usage on a resumed turn (native probe 2026-11-04). */
     static Json retainedExpectation() throws IOException { return resource("/ocsf/qualification/codex-cli-0.166.0-retained.json"); }
 
-    /** Exact historical text and current singleton/retained profiles remain separate verification contracts; {@code ordinaryRetained}
-     * selects the retained expectation of the /2 profile, while the one-shot and the frozen retained /1 profile keep the original. */
+    /** The verification expectation of the current profile and extension; {@code ordinaryRetained} selects the retained
+     * expectation of the /2 profile, while the one-shot and the frozen retained /1 profile keep the original. */
     static Json expectation(String profileVersion, String extensionVersion, boolean ordinaryRetained) throws IOException {
-        if ("0.2.0-prototype".equals(profileVersion) && "0.16.0-prototype".equals(extensionVersion)) return ordinaryRetained ? retainedExpectation() : expectation();
-        if (!ordinaryRetained && "0.1.0-prototype".equals(profileVersion) && "0.15.0-prototype".equals(extensionVersion)) {
-            return resource("/ocsf/qualification/codex-cli-0.166.0-profile-0.1.json");
-        }
+        if (Formats.CODEX_PROFILE.equals(profileVersion) && Formats.EXTENSION.equals(extensionVersion)) return ordinaryRetained ? retainedExpectation() : expectation();
         throw new IllegalArgumentException("unsupported Codex profile/schema combination");
     }
 

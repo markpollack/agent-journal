@@ -20,7 +20,7 @@ public interface SourceProfile {
 
     /**
      * @param artifact the native artifact
-     * @param source the package's declaration of this artifact (admission inputs such as {@code admit_response_uid})
+     * @param source the package's declaration of this artifact
      * @param scope the core's owner-scoped source selector, or {@code null} when the core owns every record
      */
     ExpectedFacts expected(NativeArtifact artifact, Json source, Json scope);

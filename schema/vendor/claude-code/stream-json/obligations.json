@@ -71,14 +71,14 @@
       ],
       "review": {
         "status": "approved",
-        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
-        "note": "the claim claude.stream.usage-tranches r2 is not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
+        "decision": "OWNER-2026-11-15-JOURNAL-RENAME-REBIND",
+        "note": "the claim claude.stream.usage-tranches r2 is not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests; Owner decision OWNER-2026-11-15-JOURNAL-RENAME-REBIND (2026-11-15) re-approves this revision at its restated relevant digest after the 2.0 identifier rename removed version-history wording only (meaning digest unchanged)"
       },
       "rules": [
         "claude.stream.assistant->model_response"
       ],
       "meaning_digest": "sha256:53e758952b66e16280d5804822e08b6e60d849a0a696f4e235a32b007a5067d0",
-      "relevant_digest": "sha256:7e12115c9f71697598905531cf99b8464db3cd2450faae673f3a5b6d6c9e4995",
+      "relevant_digest": "sha256:d4132aa0b1b0216804b41695a238e32bbe77f9b0f5b9bceb1bd7b723c39c1351",
       "writer": {
         "basis_prefixes": [
           "claude.stream.usage_status.v1"
@@ -126,14 +126,14 @@
       ],
       "review": {
         "status": "approved",
-        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
-        "note": "the claim claude.stream.usage-tranches r2 is not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
+        "decision": "OWNER-2026-11-15-JOURNAL-RENAME-REBIND",
+        "note": "the claim claude.stream.usage-tranches r2 is not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests; Owner decision OWNER-2026-11-15-JOURNAL-RENAME-REBIND (2026-11-15) re-approves this revision at its restated relevant digest after the 2.0 identifier rename removed version-history wording only (meaning digest unchanged)"
       },
       "rules": [
         "claude.stream.result->prompt_turn.completed"
       ],
       "meaning_digest": "sha256:3577e092bf9291483ef0e91850882aa0a134bd13a3c5ec3f0c022525975d13fb",
-      "relevant_digest": "sha256:30b4c5c8f61acc5fada6e88383d001e30be89290799c0a7a15a9c26b8887f009",
+      "relevant_digest": "sha256:62f1041ef9c01bfe59c0a627e1bced26e87d43e9be49a63bb580342a7a019660",
       "writer": {
         "basis_prefixes": [
           "claude.stream.result_usage.v1"
@@ -179,15 +179,15 @@
       ],
       "review": {
         "status": "approved",
-        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
-        "note": "closeout candidate (2026-10-25): replaces the R1 vendor_specific residual of result:usage.iterations[], whose missing response identity did not justify owing nothing; returned for semantic review, not approved; ACCT-1 (2026-10-26): rules now also name the event rule the observation rides on (claude.stream.result->prompt_turn.completed), so the relevant digest is restated; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
+        "decision": "OWNER-2026-11-15-JOURNAL-RENAME-REBIND",
+        "note": "closeout candidate (2026-10-25): replaces the R1 vendor_specific residual of result:usage.iterations[], whose missing response identity did not justify owing nothing; returned for semantic review, not approved; ACCT-1 (2026-10-26): rules now also name the event rule the observation rides on (claude.stream.result->prompt_turn.completed), so the relevant digest is restated; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests; Owner decision OWNER-2026-11-15-JOURNAL-RENAME-REBIND (2026-11-15) re-approves this revision at its restated relevant digest after the 2.0 identifier rename removed version-history wording only (meaning digest unchanged)"
       },
       "rules": [
         "claude.stream.result->prompt_turn.completed",
         "claude.stream.result.last_response_usage->prompt_turn.usage"
       ],
       "meaning_digest": "sha256:f2d10fd3f4ffa2e13ea113fc20d333b88f3bc9ca70824d57313000222d75fd2f",
-      "relevant_digest": "sha256:4bfcab20418ddfac207f0334c9a7f7fe0fe3f58117a6d6a2503e726df141679b",
+      "relevant_digest": "sha256:59663f28fa9174c24daffc3be442b38f94f94efed0abfb9ffcc80a8f327534d2",
       "writer": {
         "basis_prefixes": [
           "claude.stream.last_response_usage.v1"
@@ -234,14 +234,14 @@
       ],
       "review": {
         "status": "approved",
-        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
-        "note": "no approved claim covers ModelUsage on this route; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
+        "decision": "OWNER-2026-11-15-JOURNAL-RENAME-REBIND",
+        "note": "no approved claim covers ModelUsage on this route; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests; Owner decision OWNER-2026-11-15-JOURNAL-RENAME-REBIND (2026-11-15) re-approves this revision at its restated relevant digest after the 2.0 identifier rename removed version-history wording only (meaning digest unchanged)"
       },
       "rules": [
         "claude.stream.result->prompt_turn.completed"
       ],
       "meaning_digest": "sha256:fceec05bd0a9faeb86b9a48f23bdd730ab0f4d1cd16d14a27a0219524c1d6123",
-      "relevant_digest": "sha256:30b4c5c8f61acc5fada6e88383d001e30be89290799c0a7a15a9c26b8887f009",
+      "relevant_digest": "sha256:62f1041ef9c01bfe59c0a627e1bced26e87d43e9be49a63bb580342a7a019660",
       "writer": {
         "basis_prefixes": [
           "claude.stream.result_usage.v1"
@@ -305,14 +305,14 @@
       ],
       "review": {
         "status": "approved",
-        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
-        "note": "closeout candidate revision (2026-10-25): the zero-default object is Possibly default, not an evidenced response (r2: aggregation 3 Single response with emitter grounds, R1); returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
+        "decision": "OWNER-2026-11-15-JOURNAL-RENAME-REBIND",
+        "note": "closeout candidate revision (2026-10-25): the zero-default object is Possibly default, not an evidenced response (r2: aggregation 3 Single response with emitter grounds, R1); returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests; Owner decision OWNER-2026-11-15-JOURNAL-RENAME-REBIND (2026-11-15) re-approves this revision at its restated relevant digest after the 2.0 identifier rename removed version-history wording only (meaning digest unchanged)"
       },
       "rules": [
         "claude.stream.user.tool_result.agent_usage->session_context.accounting"
       ],
       "meaning_digest": "sha256:def36909c43c702241f70a2ce607aa08a72d4b4d5b4aba33274f1a9570cef290",
-      "relevant_digest": "sha256:b6c0b302bd52eb8525d0d616aec28ecc1112de883a9c85fbbae198b7f93a0394",
+      "relevant_digest": "sha256:77b1abc581411c05a2a91021c8859fb9ecf6130bb7d85586860cd0ed1ce0b9a9",
       "writer": {
         "basis_prefixes": [
           "claude.stream.agent_result_usage.v2"
@@ -358,14 +358,14 @@
       ],
       "review": {
         "status": "approved",
-        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
-        "note": "R1 candidate revision (2026-10-24): semantics restated with emitter grounds; trigger, destination and observation unchanged from r1; returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
+        "decision": "OWNER-2026-11-15-JOURNAL-RENAME-REBIND",
+        "note": "R1 candidate revision (2026-10-24): semantics restated with emitter grounds; trigger, destination and observation unchanged from r1; returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests; Owner decision OWNER-2026-11-15-JOURNAL-RENAME-REBIND (2026-11-15) re-approves this revision at its restated relevant digest after the 2.0 identifier rename removed version-history wording only (meaning digest unchanged)"
       },
       "rules": [
         "claude.stream.system.task_usage->session_context.accounting"
       ],
       "meaning_digest": "sha256:adacb96c2034dfb0168f609d04323ef2670383096189fde960a81285330cb4f0",
-      "relevant_digest": "sha256:6b9b4f9d806479c17b8c1f128ecbb851ee2ac65a487615c037fdddeacd5b2779",
+      "relevant_digest": "sha256:69a1ab5abda5e37d7d0f8b86acebe6257e977319d4d2f1de09d103abb6f97494",
       "writer": {
         "basis_prefixes": [
           "claude.stream.task_usage.v2"
@@ -411,14 +411,14 @@
       ],
       "review": {
         "status": "approved",
-        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
-        "note": "R1 candidate revision (2026-10-24): semantics restated with emitter grounds; trigger, destination and observation unchanged from r1; returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
+        "decision": "OWNER-2026-11-15-JOURNAL-RENAME-REBIND",
+        "note": "R1 candidate revision (2026-10-24): semantics restated with emitter grounds; trigger, destination and observation unchanged from r1; returned for semantic review, not approved; ACCT-1 (2026-10-26): writer.basis_prefixes added to the meaning (digest restated, no approval existed); Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests; Owner decision OWNER-2026-11-15-JOURNAL-RENAME-REBIND (2026-11-15) re-approves this revision at its restated relevant digest after the 2.0 identifier rename removed version-history wording only (meaning digest unchanged)"
       },
       "rules": [
         "claude.stream.system.task_usage->session_context.accounting"
       ],
       "meaning_digest": "sha256:6d3d85e2f615aafd554d094ab3b27b362e03ae357ee6dff88fd0a09413ae15ac",
-      "relevant_digest": "sha256:6b9b4f9d806479c17b8c1f128ecbb851ee2ac65a487615c037fdddeacd5b2779",
+      "relevant_digest": "sha256:69a1ab5abda5e37d7d0f8b86acebe6257e977319d4d2f1de09d103abb6f97494",
       "writer": {
         "basis_prefixes": [
           "claude.stream.task_usage.v2"
@@ -548,8 +548,8 @@
       ],
       "review": {
         "status": "approved",
-        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
-        "note": "ACCT-1 candidate (2026-10-26): a CLI-defined child status with reported_state capacity; returned for semantic review, not approved; Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
+        "decision": "OWNER-2026-11-15-JOURNAL-RENAME-REBIND",
+        "note": "ACCT-1 candidate (2026-10-26): a CLI-defined child status with reported_state capacity; returned for semantic review, not approved; Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests; Owner decision OWNER-2026-11-15-JOURNAL-RENAME-REBIND (2026-11-15) re-approves this revision at its restated relevant digest after the 2.0 identifier rename removed version-history wording only (meaning digest unchanged)"
       },
       "rules": [
         "claude.stream.user.tool_result.agent_usage->session_context.accounting",
@@ -561,7 +561,7 @@
         ]
       },
       "meaning_digest": "sha256:f28919519d6d0c4f212758cf9199d49771d7957f95409d9f826a1a3d8255d152",
-      "relevant_digest": "sha256:b85a51334c4fe247b36658d3f5996e0aadb386ccf1b595321a3ef085d8fc8666"
+      "relevant_digest": "sha256:2125e3423366b5d16698fb71bffa1805fe45a101df235ca1e08a2da7f88dd9e3"
     },
     {
       "id": "claude.stream.child-run.agent-result.duration",
@@ -597,8 +597,8 @@
       ],
       "review": {
         "status": "approved",
-        "decision": "OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT",
-        "note": "ACCT-1 candidate (2026-10-26): a known child-run duration with base-attribute capacity; returned for semantic review, not approved; Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests"
+        "decision": "OWNER-2026-11-15-JOURNAL-RENAME-REBIND",
+        "note": "ACCT-1 candidate (2026-10-26): a known child-run duration with base-attribute capacity; returned for semantic review, not approved; Owner decision OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT (2026-10-31) approves this revision at its current meaning and relevant digests; Owner decision OWNER-2026-11-15-JOURNAL-RENAME-REBIND (2026-11-15) re-approves this revision at its restated relevant digest after the 2.0 identifier rename removed version-history wording only (meaning digest unchanged)"
       },
       "rules": [
         "claude.stream.user.tool_result.agent_usage->session_context.accounting",
@@ -610,7 +610,7 @@
         ]
       },
       "meaning_digest": "sha256:58931b1bec14e147be814dd5709b23ecd394618b5fe7db6d0285d124f3a5c1ba",
-      "relevant_digest": "sha256:2de5fbc33a328bf26ff3c94c3d66795961e8bccd7a3010818634b4046f40004f"
+      "relevant_digest": "sha256:94b742ba6add0dc8ae6964ef8cb577cf178f17d0d78991c76e626d0675439d24"
     },
     {
       "id": "claude.stream.capacity.contextWindow",

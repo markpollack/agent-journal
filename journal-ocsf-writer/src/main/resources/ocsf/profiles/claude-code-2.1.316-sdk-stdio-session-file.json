@@ -1,6 +1,6 @@
 {
   "profile_id": "claude-code/2.1.316/sdk-stdio+session-file",
-  "version": "0.1.0-prototype",
+  "version": "1.0.0",
   "status": "experimental",
   "status_meaning": "Exact SDK original-byte route with same-run session file; uniquely native-linked plain-text persisted tool results have explicit preservation and ownership checks. Other child/sidecar formats remain unqualified.",
   "cli": {

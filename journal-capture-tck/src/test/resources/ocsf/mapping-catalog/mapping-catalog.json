@@ -258,27 +258,27 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.system.init->session_context.settings",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.user.prompt->prompt_turn.submitted",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.session_meta->session_context.settings",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.fallback->source_record",
           "implementation": "CodexStreamMapper#map"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.init->session_context.settings",
           "implementation": "AntigravityStreamMapper#init"
         }
@@ -630,37 +630,37 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.user.prompt->prompt_turn.submitted",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.result->prompt_turn.completed",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.task_started->prompt_turn.started",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.turn_context->session_context.settings",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.task_complete->prompt_turn.completed",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
           "implementation": "CodexStreamMapper#map"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.result->prompt_turn.completed",
           "implementation": "AntigravityStreamMapper#result"
         }
@@ -1003,12 +1003,12 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant->model_response",
           "implementation": "SourceContext#event"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.assistant_message->model_response",
           "implementation": "OcsfRunWriter#open"
         }
@@ -1294,27 +1294,27 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.user.prompt->prompt_turn.submitted",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.fallback->source_record",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.user_message->prompt_turn.submitted",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.item_completed.UserMessage->prompt_turn.submitted",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.user_input->prompt_turn.submitted",
           "implementation": "AntigravityStreamMapper#step"
         }
@@ -1423,9 +1423,9 @@
               "claude-code/stream-json/2.1.304-stdout"
             ],
             "contracts": [
-              "claude-code/stream-json/2.1.303/0.8.0-prototype"
+              "claude-code/stream-json/2.1.303/1.0.0"
             ],
-            "extension": "agentic_cli 0.16.0-prototype"
+            "extension": "agentic_cli 1.0.0"
           },
           "semantics": {
             "owner_scope": "the child core whose spawn the record's parent_tool_use_id names",
@@ -1455,7 +1455,7 @@
               "table:owner_routing"
             ],
             "relevant_digest": "sha256:7ce9548d1baeb1fd6a6e6dcf7ed3576360accb1ad71becf387545fea0c5c2354",
-            "digest": "sha256:35d7e636c1fd206f369a47c9f053496b1aa5eb7a9011406ea8c6f6f7db00e270"
+            "digest": "sha256:b107f317642856faf6dda41c534de6b1588dc633f81185e4cf7f20447d055d6f"
           },
           "approval": {
             "status": "proposed",
@@ -1678,32 +1678,32 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant->model_response",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.assistant->model_response",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.assistant_message->model_response",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.item_completed.AgentMessage->model_response",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.agent_message->model_response",
           "implementation": "CodexStreamMapper#map"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.agent_response.done->model_response.item",
           "implementation": "AntigravityStreamMapper#response"
         }
@@ -2047,37 +2047,37 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant->model_response",
           "implementation": "MapperSupport#blocks"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.assistant->model_response",
           "implementation": "MapperSupport#blocks"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.assistant_message->model_response",
           "implementation": "MapperSupport#blocks"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.developer_message->session_context.context",
           "implementation": "MapperSupport#blocks"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.agent_message->model_response",
           "implementation": "CodexStreamMapper#map"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.agent_response.active->model_response.partial",
           "implementation": "AntigravityStreamMapper#response"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.agent_response.done->model_response.item",
           "implementation": "AntigravityStreamMapper#response"
         }
@@ -2450,17 +2450,17 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant->model_response",
           "implementation": "MapperSupport#blocks"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.assistant->model_response",
           "implementation": "MapperSupport#blocks"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.reasoning->model_response",
           "implementation": "CodexStreamMapper#response"
         }
@@ -2611,9 +2611,9 @@
               "codex-cli/exec-json-stream/0.160.1"
             ],
             "contracts": [
-              "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype"
+              "codex-cli/exec-json-stream/0.160.1/1.0.0"
             ],
-            "extension": "agentic_cli 0.16.0-prototype"
+            "extension": "agentic_cli 1.0.0"
           },
           "semantics": {
             "identity": "stream-local content-item id; the owning model response is not reported",
@@ -2646,7 +2646,7 @@
               "table:block_kind_table"
             ],
             "relevant_digest": "sha256:4284555480c228a538976d097b2faccaada1679881ee379ee94f6980de66e63f",
-            "digest": "sha256:626565675ec5098519b7722a90c049c63ae8fbb1671540ed5b05cd03e23cff55"
+            "digest": "sha256:001aba537c3747fbffc94bab1fbf8efb67e023d002a71001fe599d2c6e0fe967"
           },
           "replaces": "r1 (proposed): each reasoning item was a model_response Completed whose response_uid was the stream-local item id",
           "approval": {
@@ -2813,12 +2813,12 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant->model_response",
           "implementation": "MapperSupport#blocks"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.fallback->source_record",
           "implementation": "CodexRolloutMapper#map"
         }
@@ -3055,12 +3055,12 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant->model_response",
           "implementation": "MapperSupport#blocks"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.user_message->prompt_turn.submitted",
           "implementation": "MapperSupport#blocks"
         }
@@ -3286,12 +3286,12 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant->model_response",
           "implementation": "MapperSupport#blocks"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.assistant_message->model_response",
           "implementation": "MapperSupport#blocks"
         }
@@ -3545,32 +3545,32 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant->model_response",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.result->prompt_turn.completed",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.assistant->model_response",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.assistant_message->model_response",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.task_complete->prompt_turn.completed",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.agent_response.done->model_response.item",
           "implementation": "AntigravityStreamMapper#response"
         }
@@ -3873,27 +3873,27 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant->model_response",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.assistant->model_response",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.item_completed.AgentMessage->model_response",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.agent_message->model_response",
           "implementation": "CodexStreamMapper#map"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.agent_response.active->model_response.partial",
           "implementation": "AntigravityStreamMapper#response"
         }
@@ -4228,42 +4228,42 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant.tool_use->tool_call.requested",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.assistant.tool_use->tool_call.requested",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.custom_tool_call->tool_call.requested",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.mcp_tool_call->tool_call.requested",
           "implementation": "CodexStreamMapper#toolCall"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.web_search->tool_call.requested",
           "implementation": "CodexStreamMapper#toolCall"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.collab_tool_call->tool_call.requested",
           "implementation": "CodexStreamMapper#toolCall"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.file_change->tool_call.requested",
           "implementation": "CodexStreamMapper#toolCall"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.tool.active->tool_call.started",
           "implementation": "AntigravityStreamMapper#tool"
         }
@@ -4459,9 +4459,9 @@
               "codex-cli/exec-json-stream/0.160.1"
             ],
             "contracts": [
-              "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype"
+              "codex-cli/exec-json-stream/0.160.1/1.0.0"
             ],
-            "extension": "agentic_cli 0.16.0-prototype"
+            "extension": "agentic_cli 1.0.0"
           },
           "semantics": {
             "identity": "stream-local item id, unique within (run, invocation, artifact); the started and completed records of one item share it"
@@ -4503,7 +4503,7 @@
               "table:identity"
             ],
             "relevant_digest": "sha256:1f6a71191e78e18c90b98ec29fc55eee629a1993a76dff122c69cb607612a5c0",
-            "digest": "sha256:430f796d4603aab20ccd37fe76653d77cb38eae4dc7c9f785cae7e17f6ccc301"
+            "digest": "sha256:1431197c538dacde524451c2adc3ca9cd7399f80ab641cf4a49d153192557148"
           },
           "replaces": "r1 (proposed): the same ids, but agent messages and reasoning items took the stream-local id as response_uid",
           "approval": {
@@ -4521,9 +4521,9 @@
               "codex-cli/exec-json-stream/0.160.1"
             ],
             "contracts": [
-              "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype"
+              "codex-cli/exec-json-stream/0.160.1/1.0.0"
             ],
-            "extension": "agentic_cli 0.16.0-prototype"
+            "extension": "agentic_cli 1.0.0"
           },
           "semantics": {
             "identity": "stream-local item id shared by the start and its result",
@@ -4568,7 +4568,7 @@
               "table:namespace_kind_bindings"
             ],
             "relevant_digest": "sha256:344fd108a23200241ee2efb475a02c9f7c885c6351f2b31030c2178f885bb0ef",
-            "digest": "sha256:8eb59ad38dd075f90423fe9ead27eb3f34c2f5d3abd3c3ca68adc4c6f15c3070"
+            "digest": "sha256:7ed91bb9d85637e0f84d5b7e8359cb5e3ded6aead1c3263e423a1d93377662f8"
           },
           "replaces": "r1 (proposed): item.started read as the model request (activity 1) and the kind taken from a table over bare tool names",
           "approval": {
@@ -4586,9 +4586,9 @@
               "codex-cli/exec-json-stream/0.160.1"
             ],
             "contracts": [
-              "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype"
+              "codex-cli/exec-json-stream/0.160.1/1.0.0"
             ],
-            "extension": "agentic_cli 0.16.0-prototype"
+            "extension": "agentic_cli 1.0.0"
           },
           "semantics": {
             "identity": "stream-local item id shared by start and completion"
@@ -4624,7 +4624,7 @@
               "table:family_kind_table"
             ],
             "relevant_digest": "sha256:bcbb0734d9835b294580ff3cec3b16ce2f7362d79f65e256fb8a6a28eb392073",
-            "digest": "sha256:8ef74364255fbf61c15df4a1aa8318224fc17f96c691fffe40f1e86530d517f3"
+            "digest": "sha256:5b856d8b777ab2b40d92731865a33af8af54a6f4b70da77b4ab0d5cade6eef31"
           },
           "replaces": "r1 (proposed): the file-change item type written as tool_name and the start read as the model request",
           "approval": {
@@ -4799,42 +4799,42 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant.tool_use->tool_call.requested",
           "implementation": "MappingContracts#toolKind"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.assistant.tool_use->tool_call.requested",
           "implementation": "MappingContracts#toolKind"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.custom_tool_call->tool_call.requested",
           "implementation": "MappingContracts#toolKind"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.mcp_tool_call->tool_call.requested",
           "implementation": "MappingContracts#toolKind"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.web_search->tool_call.requested",
           "implementation": "MappingContracts#toolKind"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.collab_tool_call->tool_call.requested",
           "implementation": "MappingContracts#toolKind"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.file_change->tool_call.requested",
           "implementation": "MappingContracts#toolKind"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.tool.active->tool_call.started",
           "implementation": "MappingContracts#toolKind"
         }
@@ -4897,9 +4897,9 @@
               "claude-code/stream-json/2.1.304-stdout"
             ],
             "contracts": [
-              "claude-code/stream-json/2.1.303/0.8.0-prototype"
+              "claude-code/stream-json/2.1.303/1.0.0"
             ],
-            "extension": "agentic_cli 0.16.0-prototype"
+            "extension": "agentic_cli 1.0.0"
           },
           "semantics": {
             "identity": "the tool_use id shared by the request and its result",
@@ -4932,7 +4932,7 @@
               "table:tool_kind_table"
             ],
             "relevant_digest": "sha256:e9424ca4937a637bccafcec2ee3349055cfa4bb2798fc385f821cff50da2ac4c",
-            "digest": "sha256:65dbd09652084659b0ebc24bb3483f1f2ed536a2c17dc162ba87327c55f5c2e5"
+            "digest": "sha256:8b51ae7a6ffa8e25777c9949867d66389584dd8e5927ea50f57e5bf49b30fcd9"
           },
           "approval": {
             "status": "proposed"
@@ -5119,47 +5119,47 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.user.tool_result->tool_call.result",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.user.tool_result->tool_call.result",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.custom_tool_call_output->tool_call.result",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.mcp_tool_call->tool_call.result",
           "implementation": "CodexStreamMapper#toolCall"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.web_search->tool_call.result",
           "implementation": "CodexStreamMapper#toolCall"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.collab_tool_call->tool_call.result",
           "implementation": "CodexStreamMapper#toolCall"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.file_change->tool_call.result",
           "implementation": "CodexStreamMapper#toolCall"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.tool.done->tool_call.result",
           "implementation": "AntigravityStreamMapper#tool"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.subagent.done->tool_call.result",
           "implementation": "AntigravityStreamMapper#toolResult"
         }
@@ -5506,37 +5506,37 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.user.tool_result->tool_call.result",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.user.tool_result->tool_call.result",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.custom_tool_call_output->tool_call.result",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.mcp_tool_call->tool_call.result",
           "implementation": "CodexStreamMapper#toolCall"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.web_search->tool_call.result",
           "implementation": "CodexStreamMapper#toolCall"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.collab_tool_call->tool_call.result",
           "implementation": "CodexStreamMapper#toolCall"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.file_change->tool_call.result",
           "implementation": "CodexStreamMapper#toolCall"
         }
@@ -5823,42 +5823,42 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.user.tool_result->tool_call.result",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.user.tool_result->tool_call.result",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.custom_tool_call_output->tool_call.result",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.mcp_tool_call->tool_call.result",
           "implementation": "CodexStreamMapper#toolCall"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.web_search->tool_call.result",
           "implementation": "CodexStreamMapper#toolCall"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.collab_tool_call->tool_call.result",
           "implementation": "CodexStreamMapper#toolCall"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.file_change->tool_call.result",
           "implementation": "CodexStreamMapper#toolCall"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.tool.done->tool_call.result",
           "implementation": "AntigravityStreamMapper#outcome"
         }
@@ -6184,12 +6184,12 @@
       ],
       "mapping": [
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.CommandExecution->tool_call.operation",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.command_execution->tool_call.operation",
           "implementation": "CodexStreamMapper#map"
         }
@@ -6248,9 +6248,9 @@
               "codex-cli/exec-json-stream/0.160.1"
             ],
             "contracts": [
-              "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype"
+              "codex-cli/exec-json-stream/0.160.1/1.0.0"
             ],
-            "extension": "agentic_cli 0.16.0-prototype"
+            "extension": "agentic_cli 1.0.0"
           },
           "semantics": {
             "owner_scope": "no owning tool call: the operation is retained at its reported scope"
@@ -6284,7 +6284,7 @@
               "codex.stream.command_execution->tool_call.operation"
             ],
             "relevant_digest": "sha256:bd7146b9ca0f662ca7806f78d958bcb7bd952544d9b2f8eb429b120cce8e4a50",
-            "digest": "sha256:8f2aea2be8f031948fda4cc7387b827aeb5ab93e0258cbb1197db57ae1be5f70"
+            "digest": "sha256:dd8cf366af347488d0316f2f5ef177ee60ea177d1878502cd01b4fe2a9e8db66"
           },
           "replaces": "contract 0.2.0-prototype kept the command string only inside the retained record; r4 proposed stdout alias was incorrect: r5 uses combined_output, without carrying forward historical approval.",
           "approval": {
@@ -6477,12 +6477,12 @@
       ],
       "mapping": [
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.CommandExecution->tool_call.operation",
           "implementation": "MapperSupport#attribution"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.command_execution->tool_call.operation",
           "implementation": "MapperSupport#attribution"
         }
@@ -6705,27 +6705,27 @@
       ],
       "mapping": [
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.custom_tool_call->tool_call.requested",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.CommandExecution->tool_call.operation",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.command_execution->tool_call.operation",
           "implementation": "CodexStreamMapper#map"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.tool.active->tool_call.started",
           "implementation": "AntigravityStreamMapper#tool"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.tool.done->tool_call.result",
           "implementation": "AntigravityStreamMapper#tool"
         }
@@ -6788,9 +6788,9 @@
               "codex-cli/exec-json-stream/0.160.1"
             ],
             "contracts": [
-              "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype"
+              "codex-cli/exec-json-stream/0.160.1/1.0.0"
             ],
-            "extension": "agentic_cli 0.16.0-prototype"
+            "extension": "agentic_cli 1.0.0"
           },
           "semantics": {
             "absence_default": "no exit code is reported for a declined command and none is recorded"
@@ -6817,7 +6817,7 @@
               "codex.stream.command_execution->tool_call.operation"
             ],
             "relevant_digest": "sha256:b08fc3ade5e2bf34f81469635e7eb001cea6b555669b723e9aa56c5f24d90640",
-            "digest": "sha256:e151bcfe12a98271f6fee62f371eff4a490a069879fc2a8c4677d06267fc9a3b"
+            "digest": "sha256:ea47ce324a2101946695062f696cd0c280bca4ec40d55b20d643292034324ab1"
           },
           "replaces": "contract 0.2.0-prototype gave a declined command status 0 Unknown",
           "approval": {
@@ -7006,12 +7006,12 @@
       ],
       "mapping": [
         {
-          "contract_uid": "common/opaque-text/0.2.0-prototype",
+          "contract_uid": "common/opaque-text/1.0.0",
           "rule_id": "common.opaque->source_record",
           "implementation": "LineFramer#end"
         },
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "common.opaque->source_record",
           "implementation": "OcsfRunWriter#interrupt"
         }
@@ -7425,47 +7425,47 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant->model_response",
           "implementation": "UsageTranches#anthropic"
         },
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.result->prompt_turn.completed",
           "implementation": "UsageTranches#anthropic"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.assistant->model_response",
           "implementation": "UsageTranches#anthropic"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.cost_state->session_context.accounting",
           "implementation": "UsageTranches#claudeModelUsage"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.token_usage_record->session_context.accounting",
           "implementation": "UsageTranches#codex"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.task_complete->prompt_turn.completed",
           "implementation": "UsageTranches#codex"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
           "implementation": "UsageTranches#codex"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.agent_response.done->model_response.item",
           "implementation": "UsageTranches#antigravity"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.result->prompt_turn.completed",
           "implementation": "UsageTranches#antigravity"
         }
@@ -7660,9 +7660,9 @@
               "codex-cli/exec-json-stream/0.160.1"
             ],
             "contracts": [
-              "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype"
+              "codex-cli/exec-json-stream/0.160.1/1.0.0"
             ],
-            "extension": "agentic_cli 0.16.0-prototype"
+            "extension": "agentic_cli 1.0.0"
           },
           "semantics": {
             "grouping": "components of one observation; no derived total",
@@ -7706,8 +7706,8 @@
             "rules": [
               "codex.stream.turn_completed->prompt_turn.completed"
             ],
-            "relevant_digest": "sha256:8f1657149da545f4e396449e573e74ddb73424d7a1a81f5a8654661c0b52d3c0",
-            "digest": "sha256:1dde1ddcc55ada77f800201338039ab3e81e0294c4eff07fcf9eb32c774e8547"
+            "relevant_digest": "sha256:ee569131acf53629b43bbcd94da13aad981dc09517771e072569e9079b7336ad",
+            "digest": "sha256:a426bc24ee963972656809caca87a97781f2f95a11e3f119685b6a36ef5b5ae5"
           },
           "replaces": "r4 (proposed, never bound): named the running-total members Lower bounds without stating that the thread's quantity is at least them, and said nothing of prices; r1 (proposed, not approved; the delegated decision required its revision): copied each vendor's components under their native meanings, Codex input_tokens inclusive",
           "approval": {
@@ -7725,9 +7725,9 @@
               "claude-code/stream-json/2.1.304-stdout"
             ],
             "contracts": [
-              "claude-code/stream-json/2.1.303/0.8.0-prototype"
+              "claude-code/stream-json/2.1.303/1.0.0"
             ],
-            "extension": "agentic_cli 0.16.0-prototype"
+            "extension": "agentic_cli 1.0.0"
           },
           "semantics": {
             "grouping": "one observation per usage object at its reported scope; never summed",
@@ -7765,8 +7765,8 @@
               "claude.stream.assistant->model_response",
               "claude.stream.result->prompt_turn.completed"
             ],
-            "relevant_digest": "sha256:aed99945be5e7803defc25299836727660c6d39a52ea55be0d67fcf2793d9577",
-            "digest": "sha256:2253bbd757cc38b4f83f84a8287a65deb563a7dc2898d99209142163c92c1157"
+            "relevant_digest": "sha256:59dcec5586b4615dad820347e82d905ed98610983a036cf62b88a610f06615fe",
+            "digest": "sha256:ea5232bf59113fdc85e4e0cf4d5e30957ca7443ccb1bb55cf4ecf356e29e2c43"
           },
           "approval": {
             "status": "proposed"
@@ -7959,27 +7959,27 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.result->prompt_turn.completed",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.assistant->model_response",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.token_usage_record->session_context.accounting",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
           "implementation": "CodexStreamMapper#map"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.agent_response.done->model_response.item",
           "implementation": "UsageTranches#antigravity"
         }
@@ -8289,42 +8289,42 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant->model_response",
           "implementation": "MapperSupport#usage"
         },
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.result->prompt_turn.completed",
           "implementation": "MapperSupport#usage"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.assistant->model_response",
           "implementation": "MapperSupport#usage"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.cost_state->session_context.accounting",
           "implementation": "MapperSupport#usage"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.token_usage_record->session_context.accounting",
           "implementation": "MapperSupport#usage"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.task_complete->prompt_turn.completed",
           "implementation": "MapperSupport#usage"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.turn_completed->prompt_turn.completed",
           "implementation": "MapperSupport#usage"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.result->prompt_turn.completed",
           "implementation": "MapperSupport#usage"
         }
@@ -8441,9 +8441,9 @@
               "codex-cli/exec-json-stream/0.160.1"
             ],
             "contracts": [
-              "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype"
+              "codex-cli/exec-json-stream/0.160.1/1.0.0"
             ],
-            "extension": "agentic_cli 0.16.0-prototype"
+            "extension": "agentic_cli 1.0.0"
           },
           "semantics": {
             "owner_scope": "the session (Codex thread) that thread.started names; the observation sits on the prompt_turn Turn completed event of the record",
@@ -8486,8 +8486,8 @@
             "rules": [
               "codex.stream.turn_completed->prompt_turn.completed"
             ],
-            "relevant_digest": "sha256:4d9cde6f57b43ec4858f0ff5efdafcfed12430ea6574c37bfaa6e7379232edab",
-            "digest": "sha256:805f60f17965f05fa639d7c7eb1b29fb7d6f3028abb4d595f7ab5d68b0fd33eb"
+            "relevant_digest": "sha256:f81a2b045ecb8ad0c81e29432b6f479bb1e16068018d8c3d8cee77435f107fe7",
+            "digest": "sha256:76e0da5c2fedcaeb6683938071704e24a66505b5bfa4a7a91805e5c8513d17e0"
           },
           "replaces": "r1 (approved, contract 0.3.0-prototype): the same reading with vendor-dependent input_tokens and no aggregation facet; contract 0.2.0-prototype read turn.completed usage as scope 3 Prompt turn, never approved, refuted by the pinned emitter",
           "approval": {
@@ -8511,9 +8511,9 @@
               "codex-cli/exec-json-stream/0.160.1"
             ],
             "contracts": [
-              "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype"
+              "codex-cli/exec-json-stream/0.160.1/1.0.0"
             ],
-            "extension": "agentic_cli 0.16.0-prototype"
+            "extension": "agentic_cli 1.0.0"
           },
           "semantics": {
             "absence_default": "all-zero components are kept and marked Possibly default; a missing component stays absent, never zero; a positive running-total component is a Lower bound, not a measurement"
@@ -8549,7 +8549,7 @@
               "codex.stream.turn_completed->prompt_turn.completed"
             ],
             "relevant_digest": "sha256:d300f1eb908290aa558d49759beabdb106c37914ea658527086ef81c32d0d678",
-            "digest": "sha256:0bf20c8de6872af4885389f76a63c28d9fdf7483881d1495ce44151059329263"
+            "digest": "sha256:47a1ae92b78808fcbead21b5e9958786e6cb088f0ec7ec532e1752b61f021a8a"
           },
           "approval": {
             "status": "proposed",
@@ -8772,12 +8772,12 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.result->prompt_turn.completed",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.cost_state->session_context.accounting",
           "implementation": "ClaudeTranscriptMapper#map"
         }
@@ -9115,32 +9115,32 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant->model_response",
           "implementation": "MapperSupport#modelRef"
         },
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.result->prompt_turn.completed",
           "implementation": "MapperSupport#modelRef"
         },
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.system.init->session_context.settings",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.session_meta->session_context.settings",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.turn_context->session_context.settings",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.world_state->session_context.settings",
           "implementation": "CodexRolloutMapper#map"
         }
@@ -9508,27 +9508,27 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.user.tool_result->tool_call.result",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.result->prompt_turn.completed",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.user.tool_result->tool_call.result",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.turn_context->session_context.settings",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.result->prompt_turn.completed",
           "implementation": "AntigravityStreamMapper#denials"
         }
@@ -9689,9 +9689,9 @@
               "claude-code/stream-json/2.1.304-stdout"
             ],
             "contracts": [
-              "claude-code/stream-json/2.1.303/0.8.0-prototype"
+              "claude-code/stream-json/2.1.303/1.0.0"
             ],
-            "extension": "agentic_cli 0.16.0-prototype"
+            "extension": "agentic_cli 1.0.0"
           },
           "semantics": {
             "owner_scope": "Run scope as reported; the attribution names the call",
@@ -9721,7 +9721,7 @@
               "claude.stream.result->prompt_turn.completed"
             ],
             "relevant_digest": "sha256:d531a68dd91fb5750d1b02102941bd4ba6decc3f4c09cbfafbf0afb691cda565",
-            "digest": "sha256:367b34bf6f76a1e51a56210fa7947003d83bc0a46d74e9cb9e568978fbded79f"
+            "digest": "sha256:622117226c6787a0481de0d201eb0d62dabbc823854fe6f01e8eaf42bd950c37"
           },
           "approval": {
             "status": "proposed",
@@ -9972,32 +9972,32 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.system.init->session_context.settings",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.session_meta->session_context.settings",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.turn_context->session_context.settings",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.world_state->session_context.settings",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.fallback->source_record",
           "implementation": "CodexStreamMapper#map"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.init->session_context.settings",
           "implementation": "AntigravityStreamMapper#init"
         }
@@ -10269,17 +10269,17 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.attachment->session_context.context",
           "implementation": "MapperSupport#renderedBlocks"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.developer_message->session_context.context",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.user_message->prompt_turn.submitted",
           "implementation": "CodexRolloutMapper#map"
         }
@@ -10540,17 +10540,17 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.cost_state->session_context.accounting",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.token_usage_record->session_context.accounting",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.fallback->source_record",
           "implementation": "CodexRolloutMapper#map"
         }
@@ -10841,17 +10841,17 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant->model_response",
           "implementation": "OcsfRunWriter#childFor"
         },
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.user.tool_result->tool_call.result",
           "implementation": "OcsfRunWriter#childLinks"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.subagent.done->tool_call.result",
           "implementation": "AntigravityStreamMapper#toolResult"
         }
@@ -11202,32 +11202,32 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant->model_response",
           "implementation": "SourceContext#sourceRef"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.assistant->model_response",
           "implementation": "SourceContext#sourceRef"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.custom_tool_call->tool_call.requested",
           "implementation": "SourceContext#sourceRef"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.command_execution->tool_call.operation",
           "implementation": "SourceContext#sourceRef"
         },
         {
-          "contract_uid": "common/opaque-text/0.2.0-prototype",
+          "contract_uid": "common/opaque-text/1.0.0",
           "rule_id": "text.parsed->source_record",
           "implementation": "OpaqueTextMapper#map"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.tool.active->tool_call.started",
           "implementation": "SourceContext#sourceRef"
         }
@@ -11366,12 +11366,12 @@
               "codex-cli/rollout/0.160.1"
             ],
             "contracts": [
-              "claude-code/stream-json/2.1.303/0.8.0-prototype",
-              "claude-code/session-transcript/2.1.303/0.4.0-prototype",
-              "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
-              "codex-cli/rollout/0.160.1/0.5.0-prototype"
+              "claude-code/stream-json/2.1.303/1.0.0",
+              "claude-code/session-transcript/2.1.303/1.0.0",
+              "codex-cli/exec-json-stream/0.160.1/1.0.0",
+              "codex-cli/rollout/0.160.1/1.0.0"
             ],
-            "extension": "agentic_cli 0.16.0-prototype",
+            "extension": "agentic_cli 1.0.0",
             "condition": "every event of every contract"
           },
           "destinations": [
@@ -11392,8 +11392,8 @@
           ],
           "binding": {
             "rules": [],
-            "relevant_digest": "sha256:ccaaa2f53fb3d54c68a28d9b7704073f5504b338ec7cd4621d7299bb91f9483e",
-            "digest": "sha256:19fb9e4a79f561bae917b35ecc02f6199bec6c73f16b5acd6e6c187bf8e11e1b"
+            "relevant_digest": "sha256:a74f3f7db5f97b3b2291efc600e6bdb762590095b5ca417720192979e8b22330",
+            "digest": "sha256:01eb2bac56edfc07a3b8d958e6e9371d80a77c2e62256e9ffc735810c7a22ac4"
           },
           "replaces": "extension 0.4.0-prototype and earlier stored the rule as OCSF unmapped.rule_id; r4 updates the normative example contract UID for the new mapping resource; remains proposed.",
           "approval": {
@@ -11608,37 +11608,37 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.assistant->model_response",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "common.mapper_exception->source_record",
           "implementation": "OcsfRunWriter#record"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.fallback->source_record",
           "implementation": "SourceContext#fallback"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.fallback->source_record",
           "implementation": "SourceContext#fallback"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.fallback->source_record",
           "implementation": "SourceContext#fallback"
         },
         {
-          "contract_uid": "common/opaque-text/0.2.0-prototype",
+          "contract_uid": "common/opaque-text/1.0.0",
           "rule_id": "common.opaque->source_record",
           "implementation": "SourceContext#opaque"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.fallback->source_record",
           "implementation": "SourceContext#fallback"
         }
@@ -11978,32 +11978,32 @@
       ],
       "mapping": [
         {
-          "contract_uid": "common/opaque-text/0.2.0-prototype",
+          "contract_uid": "common/opaque-text/1.0.0",
           "rule_id": "common.opaque->source_record",
           "implementation": "OpaqueTextMapper#map"
         },
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "common.opaque->source_record",
           "implementation": "SourceContext#opaque"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "common.opaque->source_record",
           "implementation": "SourceContext#opaque"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "common.opaque->source_record",
           "implementation": "SourceContext#opaque"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "common.opaque->source_record",
           "implementation": "LineFramer#end"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "common.opaque->source_record",
           "implementation": "LineFramer#end"
         }
@@ -12068,9 +12068,9 @@
               "codex-cli/exec-json-stream/0.160.1"
             ],
             "contracts": [
-              "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype"
+              "codex-cli/exec-json-stream/0.160.1/1.0.0"
             ],
-            "extension": "agentic_cli 0.16.0-prototype"
+            "extension": "agentic_cli 1.0.0"
           },
           "semantics": {
             "identity": "the first id member (exec item id); the second (the search item's id) is preserved verbatim, not normalized",
@@ -12110,7 +12110,7 @@
               "codex.stream.web_search->tool_call.result"
             ],
             "relevant_digest": "sha256:b98ae933882188ee4295c1dd9be071c252d95cd384b3e8305f6f1ac5666aed76",
-            "digest": "sha256:5810cff2cb6472f691e20d2a3ab85b62b3a0622e33eb5fc4f5c5c837a6ad7ae4"
+            "digest": "sha256:0f09bd4dafdc702b078d4902a3a16fc4d9f40c5381687415b7a7ced44cbf64eb"
           },
           "replaces": "contract 0.2.0-prototype kept web_search lines only as opaque records",
           "approval": {
@@ -12320,22 +12320,22 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.fallback->source_record",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.fallback->source_record",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.fallback->source_record",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.fallback->source_record",
           "implementation": "CodexStreamMapper#map"
         }
@@ -12608,22 +12608,22 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.fallback->source_record",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.fallback->source_record",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "common/opaque-text/0.2.0-prototype",
+          "contract_uid": "common/opaque-text/1.0.0",
           "rule_id": "common.opaque->source_record",
           "implementation": "OpaqueTextMapper#map"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.fallback->source_record",
           "implementation": "AntigravityStreamMapper#step"
         }
@@ -12879,27 +12879,27 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.fallback->source_record",
           "implementation": "SourceContext#timeFor"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.fallback->source_record",
           "implementation": "SourceContext#timeFor"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.assistant_message->model_response",
           "implementation": "SourceContext#timeFor"
         },
         {
-          "contract_uid": "codex-cli/exec-json-stream/0.160.1/0.9.0-prototype",
+          "contract_uid": "codex-cli/exec-json-stream/0.160.1/1.0.0",
           "rule_id": "codex.stream.agent_message->model_response",
           "implementation": "SourceContext#timeFor"
         },
         {
-          "contract_uid": "antigravity-cli/stream-json/1.4.6/0.4.0-prototype",
+          "contract_uid": "antigravity-cli/stream-json/1.4.6/1.0.0",
           "rule_id": "agy.stream.agent_response.done->model_response.item",
           "implementation": "SourceContext#timeFor"
         }
@@ -13177,22 +13177,22 @@
       ],
       "mapping": [
         {
-          "contract_uid": "claude-code/stream-json/2.1.303/0.8.0-prototype",
+          "contract_uid": "claude-code/stream-json/2.1.303/1.0.0",
           "rule_id": "claude.stream.result->prompt_turn.completed",
           "implementation": "ClaudeStreamMapper#map"
         },
         {
-          "contract_uid": "claude-code/session-transcript/2.1.303/0.4.0-prototype",
+          "contract_uid": "claude-code/session-transcript/2.1.303/1.0.0",
           "rule_id": "claude.transcript.cost_state->session_context.accounting",
           "implementation": "ClaudeTranscriptMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.CommandExecution->tool_call.operation",
           "implementation": "CodexRolloutMapper#map"
         },
         {
-          "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+          "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
           "rule_id": "codex.rollout.task_complete->prompt_turn.completed",
           "implementation": "CodexRolloutMapper#map"
         }

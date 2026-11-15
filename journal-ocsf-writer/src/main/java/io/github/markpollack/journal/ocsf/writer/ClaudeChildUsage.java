@@ -8,7 +8,7 @@ import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
 
 /**
  * Child-run usage that Claude Code reports in the parent's records (contract {@code claude-code-2.1.303-stream}
- * 0.5.0-prototype): the Agent tool's result ({@code tool_use_result.usage} of a record whose one tool_result block
+ * since D1): the Agent tool's result ({@code tool_use_result.usage} of a record whose one tool_result block
  * answers an Agent request) and the {@code system/task_progress} and {@code system/task_notification} records
  * ({@code usage.total_tokens} of the task their {@code tool_use_id} spawned). Each becomes a session_context Accounting
  * reported event in the record's own core, whose {@code tool_call_uid} names the spawning call and whose one usage

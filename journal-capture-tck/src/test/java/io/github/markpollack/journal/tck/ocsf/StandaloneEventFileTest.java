@@ -14,10 +14,8 @@ import java.util.stream.Stream;
 
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CHILD;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CODEX;
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.HISTORICAL_0_2_0;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.SPAWN;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copy;
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copyHistorical;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.declaration;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.declarationLines;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editDeclarations;
@@ -57,7 +55,7 @@ class StandaloneEventFileTest {
         assertThat(p.diagnosticsWithCode("CHILD_EXTERNAL")).as("the child is identified, not contained").hasSize(1);
         assertThat(p.children).isEmpty();
         assertThat(p.manifest.text("package", "derived_from")).contains("declarations");
-        assertThat(p.manifest.packageVersion()).isEqualTo("0.3.0-prototype");
+        assertThat(p.manifest.packageVersion()).isEqualTo("1.0.0");
         assertThat(p.manifest.packageState()).as("the recording declaration finalizes the file").isEqualTo("COMPLETED");
         assertThat(p.manifest.runUid()).isEqualTo("claude-child-2.1.299");
         assertThat(p.manifest.sessionUid()).isEqualTo("00000000-0000-4000-8000-000000000000");
@@ -76,8 +74,8 @@ class StandaloneEventFileTest {
         assertThat(p.declarations.lineOf("definition:agentic_cli/tool_call#2")).as("a later core attribute was added by an amendment, not a rewrite").isNotNull();
 
         // essential references resolve inside the file
-        assertThat(p.manifest.contracts()).containsKey("claude-code/stream-json/2.1.303/0.8.0-prototype");
-        assertThat(p.manifest.contract("claude-code/stream-json/2.1.303/0.8.0-prototype").path("embedded", "rules")).isNotNull();
+        assertThat(p.manifest.contracts()).containsKey("claude-code/stream-json/2.1.303/1.0.0");
+        assertThat(p.manifest.contract("claude-code/stream-json/2.1.303/1.0.0").path("embedded", "rules")).isNotNull();
         Json source = p.manifest.source("stream.jsonl");
         assertThat(source.member("profile").text()).isEqualTo("claude_stream");
         assertThat(source.member("sha256").text()).as("the source end declares the final extent").hasSize(64);
@@ -130,7 +128,7 @@ class StandaloneEventFileTest {
         assertThat(c.events).hasSize(4);
         assertThat(c.catalog.classes()).containsKeys("agentic_cli/tool_call", "agentic_cli/model_response");
         assertThat(c.catalog.classes()).as("a class no event of this file uses is not declared here").doesNotContainKey("agentic_cli/session_context");
-        assertThat(c.manifest.contracts()).containsKey("claude-code/stream-json/2.1.303/0.8.0-prototype");
+        assertThat(c.manifest.contracts()).containsKey("claude-code/stream-json/2.1.303/1.0.0");
         assertThat(c.manifest.source("stream.jsonl").member("sha256").text()).hasSize(64);
 
         // judged on its own against the frozen native artifact (the parent's obligations are the parent's)
@@ -182,7 +180,7 @@ class StandaloneEventFileTest {
         Path c = copy(CODEX, work.resolve("c"));
         editDeclarations(pkg(c), decls -> decls.removeIf(d -> SchemaCatalog.text(d.member("declaration"), "kind").equals("contract")));
         OcsfPackage pc = open(alone(pkg(c), work.resolve("c-alone")));
-        assertThat(pc.diagnosticsWithCode("CONTRACT_REF_UNRESOLVED").get(0).detail()).contains("codex-cli/rollout/0.160.1/0.5.0-prototype");
+        assertThat(pc.diagnosticsWithCode("CONTRACT_REF_UNRESOLVED").get(0).detail()).contains("codex-cli/rollout/0.160.1/1.0.0");
         assertThat(pc.diagnosticsWithCode("REFERENCE_BEFORE_DECLARATION")).isNotEmpty();
 
         // (d) the source declaration removed: every event's artifact reference is unresolved
@@ -219,12 +217,12 @@ class StandaloneEventFileTest {
         assertThat(pg.refused()).isTrue();
         assertThat(pg.diagnosticsWithCode("SCHEMA_UNDECLARED")).hasSize(1);
 
-        // (h) the format line removed: without run.json the file is a detached file of no layout; refused
+        // (h) the format line removed: the file declares no format, so it is refused as an unsupported format
         Path h = copy(CODEX, work.resolve("h"));
         editDeclarations(pkg(h), decls -> decls.remove(declaration(decls, "format")));
         OcsfPackage ph = open(alone(pkg(h), work.resolve("h-alone")));
         assertThat(ph.refused()).isTrue();
-        assertThat(ph.diagnosticsWithCode("NO_MANIFEST")).hasSize(1);
+        assertThat(ph.diagnosticsWithCode("UNSUPPORTED_FORMAT")).singleElement().satisfies(diag -> assertThat(diag.detail()).startsWith("unsupported format:"));
         assertThat(ph.rawLines).isNotEmpty();
 
         // (i) an amendment whose base is not declared earlier (the Claude fixture amends metadata and tool_call later in the file)
@@ -234,31 +232,6 @@ class StandaloneEventFileTest {
         OcsfPackage pi = open(alone(pkg(i), work.resolve("i-alone")));
         assertThat(pi.diagnosticsWithCode("AMENDMENT_BEFORE_DEFINITION").get(0).detail()).contains("definition:metadata#2 amends definition:metadata");
         assertThat(pi.diagnosticsWithCode("MISSING_DEFINITION")).as("metadata is required on every event and now undefined").isNotEmpty();
-    }
-
-    @Test
-    void theHistoricalTwoFileLayoutStaysReadableUnderItsOwnVersionAndItsDetachedFileIsStillRefused(@TempDir Path work) throws IOException {
-        Path fixture = copyHistorical(HISTORICAL_0_2_0, CODEX, work.resolve("hist"));
-        OcsfPackage p = PackageReader.open(pkg(fixture).resolve("events.jsonl"));
-        assertThat(p.standalone()).isFalse();
-        assertThat(p.refused()).isFalse();
-        assertThat(p.manifest.packageVersion()).isEqualTo("0.2.0-prototype");
-        assertThat(p.diagnosticsWithCode("READER_CONTRACT_MINOR_DIFFERS")).hasSize(1);
-        assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
-        assertThat(p.events).hasSize(39);
-        // The old fixture predates exact compatibility bindings; exercise its historical contract.
-        OcsfFixtures.editExpected(fixture, manifest -> manifest.member("sources").elements()
-                .forEach(source -> obj(source).members().remove("binding")));
-        OracleReport report = OcsfOracle.verify(p, natives(fixture));
-        // The layout reads; its older projection lacks last-usage observations, tranche bases and newly read settings.
-        assertThat(report.defects()).as(report.toString()).extracting(Check::property).containsOnly("population.usage", "usage.values", "context.values");
-        assertThat(report.check("usage.values", "main/rollout.jsonl").detail()).contains("components[] has no entry for uncached_input_tokens");
-
-        Path alone = alone(pkg(fixture), work.resolve("hist-alone"));
-        OcsfPackage detached = PackageReader.open(alone.resolve("events.jsonl"));
-        assertThat(detached.refused()).isTrue();
-        assertThat(detached.diagnosticsWithCode("NO_MANIFEST")).hasSize(1);
-        assertThat(detached.rawLines).hasSize(39);
     }
 
     /** Copies only {@code events.jsonl} of a core into a fresh, otherwise empty directory. */

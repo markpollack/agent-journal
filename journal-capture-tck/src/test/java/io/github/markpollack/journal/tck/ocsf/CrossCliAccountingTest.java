@@ -115,7 +115,7 @@ class CrossCliAccountingTest {
         for (String path : List.of("journal-capture-tck/src/main", "journal-capture-tck/src/test/java",
                 "journal-capture-tck/src/test/resources/ocsf/fixtures", "journal-capture-tck/src/test/resources/ocsf/mapping-catalog",
                 "journal-capture-tck/src/test/resources/ocsf/conformance", "journal-ocsf-writer/src/main",
-                "schema/vendor", "prototype/ocsf-acp/extension", "prototype/ocsf-acp/toolchain.lock.json")) {
+                "schema/vendor", "schema/ocsf/extension", "schema/ocsf/toolchain.lock.json")) {
             result.add("dependency " + path + " sha256:" + dependencyDigest(project.resolve(path)));
         }
         return result;

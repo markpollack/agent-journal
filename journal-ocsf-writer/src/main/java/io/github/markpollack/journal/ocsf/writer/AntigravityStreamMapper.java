@@ -7,7 +7,7 @@ import static io.github.markpollack.journal.ocsf.writer.MapperSupport.text;
 
 /**
  * Antigravity CLI headless {@code --output-format stream-json} live output (contract {@code antigravity-cli-1.4.6-stream},
- * 0.2.0-prototype, a candidate for the managing reviewer), read from the documented interface (one {@code init} event,
+ * a candidate for the managing reviewer), read from the documented interface (one {@code init} event,
  * {@code step_update} events, one {@code result} event per turn) and the 1.4.6 recordings. Every record reports its
  * conversation id, the session identity. A step is identified by its {@code step_index}, the conversation's own step
  * numbering (identity basis 99 Other: neither a model-facing call id nor a stream-local item id). The init event is the

@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The oracle's own reading of a vendor's native usage object into the canonical tranches of extension
- * 0.6.0-prototype, from the pinned definitions and never from the writer:
+ * The oracle's own reading of a vendor's native usage object into the canonical tranches,
+ * from the pinned definitions and never from the writer:
  *
  * <ul>
  * <li>Anthropic usage (prompt-caching definitions, Anthropic SDK Usage): {@code input_tokens} are the tokens neither read

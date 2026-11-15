@@ -1,6 +1,6 @@
 {
   "profile_id": "junie/3813.7/session-summary+session-events+stdout+stderr",
-  "version": "0.1.0-prototype",
+  "version": "1.0.0",
   "status": "experimental",
   "status_meaning": "tested on two sanitized live 3813.7 runs (junie-1, junie-2); every route is experimental (no field-disposition catalog or oracle profile yet)",
   "cli": {

@@ -1,5 +1,5 @@
 {
-  "contract_uid": "codex-cli/rollout/0.160.1/0.5.0-prototype",
+  "contract_uid": "codex-cli/rollout/0.160.1/1.0.0",
   "applies_to": {
     "product": "Codex CLI",
     "version": "0.160.1",

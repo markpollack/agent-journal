@@ -7,14 +7,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Typed access to {@code run.json} of a self-describing prototype package (layout {@code 0.1.0-prototype}): package
+ * Typed access to {@code run.json} of a self-describing package (the first layout): package
  * and reader-compatibility pins, run identity and children, OCSF/extension pins, the embedded definition closure,
  * the shared per-run facts (CLI agent, producer, capture time, mapping contracts), the source inventory and the
  * semantic contract. Nothing here interprets event content.
  */
 public final class RunManifest {
-
-    public static final String PACKAGE_KIND = "agent-journal/ocsf-prototype-package";
 
     private final Json json;
 

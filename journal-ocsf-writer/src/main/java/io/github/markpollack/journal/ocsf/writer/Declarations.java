@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * The declaration records of the standalone event file (layout {@code 0.3.0-prototype}): the lines that make
+ * The declaration records of the standalone event file (layout {@code 1.0.0}): the lines that make
  * {@code events.jsonl} independently interpretable. Every declaration is one JSON object whose top-level member
  * {@code declaration} is an object {@code {kind, uid, index}}; the payload sits under a member named after the kind.
  * Execution events never carry a top-level {@code declaration} member, which is the one rule a reader needs to tell
@@ -68,7 +68,7 @@ final class Declarations {
         objects.put("declaration/header", new Jv.Obj().put("attributes", new Jv.Obj()
                 .put("kind", scalar("string_t", "required")).put("uid", scalar("string_t", "required")).put("index", scalar("integer_t", "required"))));
         declare(objects, "format", new Jv.Obj()
-                .put("name", scalar("string_t", "required")).put("version", scalar("string_t", "required")).put("non_production", scalar("boolean_t", "required"))
+                .put("name", scalar("string_t", "required")).put("version", scalar("string_t", "required"))
                 .put("package_kind", scalar("string_t", "required")).put("package_version", scalar("string_t", "required"))
                 .put("reader_contract", scalar("string_t", "required")).put("reader_contract_version", scalar("string_t", "required"))
                 .put("semantic_operations_version", scalar("string_t", "optional")).put("record_rule", scalar("string_t", "required"))
@@ -152,7 +152,7 @@ final class Declarations {
     }
 
     static Jv.Obj format() {
-        Jv.Obj f = new Jv.Obj().put("name", FORMAT_NAME).put("version", Pins.PACKAGE_VERSION).put("non_production", true)
+        Jv.Obj f = new Jv.Obj().put("name", FORMAT_NAME).put("version", Pins.PACKAGE_VERSION)
                 .put("package_kind", Pins.PACKAGE_KIND).put("package_version", Pins.PACKAGE_VERSION)
                 .put("reader_contract", Pins.READER_CONTRACT).put("reader_contract_version", Pins.READER_CONTRACT_VERSION)
                 .put("semantic_operations_version", Pins.SEMANTIC_OPERATIONS_VERSION)
@@ -165,7 +165,7 @@ final class Declarations {
     }
 
     static Jv.Obj terminalFormat() {
-        Jv.Obj format = format().put("version", "0.4.0-prototype").put("package_version", "0.4.0-prototype")
+        Jv.Obj format = format().put("version", Pins.TERMINAL_PACKAGE_VERSION).put("package_version", Pins.TERMINAL_PACKAGE_VERSION)
                 .put("reader_contract_version", "0.4");
         ((Jv.Obj) format.path("declaration_definitions", "objects", "declaration/run_body", "attributes"))
                 .put("terminal_binding", scalar("json_t", "required"));

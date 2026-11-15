@@ -71,8 +71,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "claude-code-2.1.303-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
@@ -103,8 +103,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "claude-code-2.1.303-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
@@ -134,8 +134,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "claude-code-2.1.303-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
@@ -165,8 +165,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "claude-code-2.1.303-transcript",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
@@ -196,8 +196,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "claude-code-2.1.303-transcript",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
@@ -227,8 +227,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "claude-code-2.1.303-transcript",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
@@ -258,8 +258,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "github-copilot-cli-1.0.100-events",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CopilotEventsMapper",
@@ -289,8 +289,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "github-copilot-cli-1.0.100-events",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CopilotEventsMapper",
@@ -320,8 +320,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "github-copilot-cli-1.0.100-otel",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CopilotOtelMapper",
@@ -351,8 +351,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "github-copilot-cli-1.0.100-usage-report",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CopilotUsageReportMapper",
@@ -382,8 +382,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "junie-3813.7-summary",
       "mapper": "io.github.markpollack.journal.ocsf.writer.JunieSummaryMapper",
@@ -413,8 +413,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "junie-3813.7-session-events",
       "mapper": "io.github.markpollack.journal.ocsf.writer.JunieSessionMapper",
@@ -444,8 +444,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "junie-3813.7-stdout",
       "mapper": "io.github.markpollack.journal.ocsf.writer.JunieStdoutMapper",
@@ -475,8 +475,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "antigravity-cli-1.4.6-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.AntigravityStreamMapper",
@@ -506,8 +506,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "codex-cli-0.160.1-exec-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CodexStreamMapper",
@@ -537,8 +537,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "codex-cli-0.160.1-rollout",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CodexRolloutMapper",
@@ -567,8 +567,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "claude-code-2.1.303-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
@@ -602,8 +602,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "claude-code-2.1.303-transcript",
       "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeTranscriptMapper",
@@ -637,8 +637,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "codex-cli-0.160.1-exec-stream",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CodexStreamMapper",
@@ -668,8 +668,8 @@
       },
       "schema": {
         "extension": "agentic_cli",
-        "version": "0.16.0-prototype",
-        "compiled_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef"
+        "version": "1.0.0",
+        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
       },
       "contract": "codex-cli-0.160.1-rollout",
       "mapper": "io.github.markpollack.journal.ocsf.writer.CodexRolloutMapper",

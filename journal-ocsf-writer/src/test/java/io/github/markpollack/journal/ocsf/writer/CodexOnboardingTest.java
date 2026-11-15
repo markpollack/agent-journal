@@ -49,17 +49,17 @@ class CodexOnboardingTest {
                 .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("original validated acquisition");
         assertThat(work.resolve("bypass")).doesNotExist();
     }
-    @Test void currentArchiveCannotSubstituteHistoricalExpectationOrProfileRevision() throws Exception {
+    @Test void currentArchiveCannotSubstituteAnotherExpectationOrProfileRevision() throws Exception {
         var pkg = PackageReader.open(assemble());
-        Path historical = work.resolve("historical.json");
-        try (var in = getClass().getResourceAsStream("/ocsf/qualification/codex-cli-0.166.0-profile-0.1.json")) {
+        Path historical = work.resolve("retained.json");
+        try (var in = getClass().getResourceAsStream("/ocsf/qualification/codex-cli-0.166.0-retained.json")) {
             Files.copy(in, historical);
         }
         assertThatThrownBy(() -> new AcquisitionVerification().verify(pkg, work.resolve("qualified"),
                 work.resolve("qualified/acquisition.json"), historical)).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("qualified Codex expectation changed");
         var profile = (io.github.markpollack.journal.tck.verify.Json.JObject) pkg.declarations.assembly().member("profile");
-        profile.members().put("version", new io.github.markpollack.journal.tck.verify.Json.JString("0.1.0-prototype"));
+        profile.members().put("version", new io.github.markpollack.journal.tck.verify.Json.JString("9.9.9"));
         assertThatThrownBy(() -> new AcquisitionVerification().verify(pkg, work.resolve("qualified"),
                 work.resolve("qualified/acquisition.json"), historical)).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("profile/schema combination");

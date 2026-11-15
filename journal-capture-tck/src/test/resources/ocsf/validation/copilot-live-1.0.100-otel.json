@@ -4,7 +4,7 @@
  "fixture": "copilot-live-1.0.100-otel",
  "core": "main",
  "events_jsonl": "fixtures/copilot-live-1.0.100-otel/package/events.jsonl",
- "events_jsonl_sha256": "f5dd017dfcf5a100f64609339da2066e025f5498d1ff03a902146738440fd2db",
+ "events_jsonl_sha256": "bb24639d5674f4e5793086bbdc69ad74edd351196f1d30fe0278f4e4c13b99d6",
  "execution_records": 231,
  "declarations_skipped": 80,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",
@@ -14,7 +14,7 @@
   "binary_sha256": "22395d4cc937e184b866938fef4e7fca152c334b7efe8921b35541a728161692",
   "exit_code": 0
  },
- "compiled_schema_sha256": "42a61958680a0a83923b975909b5242453cc35d72e5a9f7a81fa7b97cd9621ef",
+ "compiled_schema_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2",
  "result": {
   "event_files_processed": 231,
   "error_events": 0,

@@ -76,14 +76,9 @@ class CodexAcquisitionTest {
             assertThat(work.resolve("rejected")).doesNotExist();
         }
     }
-    @Test void historicalAndCurrentExpectationsRequireExactProfileSchemaPairings() throws Exception {
-        Json historical = CodexAcquisition.expectation("0.1.0-prototype", "0.15.0-prototype", false);
-        assertThat(historical.member("entities").elements()).isEmpty();
-        assertThat(CodexAcquisition.expectation("0.2.0-prototype", "0.16.0-prototype", false).member("entities").elements()).hasSize(1);
-        Path exact = Path.of(getClass().getResource("/ocsf/qualification/codex-cli-0.166.0-profile-0.1.json").toURI());
-        assertThat(NativeArtifact.sha256(Files.readAllBytes(exact))).isEqualTo("c96631cd56fc5bc31b66af9d0d1a4b5a6bc7036a860f8cc8004d0fe73f5311dc");
-        for (String[] pair : List.of(new String[]{"0.1.0-prototype", "0.16.0-prototype"},
-                new String[]{"0.2.0-prototype", "0.15.0-prototype"}, new String[]{"unknown", "0.16.0-prototype"})) {
+    @Test void onlyTheCurrentProfileAndExtensionPairHasAnExpectation() throws Exception {
+        assertThat(CodexAcquisition.expectation("1.0.0", "1.0.0", false).member("entities").elements()).hasSize(1);
+        for (String[] pair : List.of(new String[]{"1.0.0", "9.9.9"}, new String[]{"9.9.9", "1.0.0"}, new String[]{"unknown", "1.0.0"})) {
             assertThatThrownBy(() -> CodexAcquisition.expectation(pair[0], pair[1], false)).isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("profile/schema combination");
         }

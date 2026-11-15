@@ -232,7 +232,7 @@ class McpProtocolContainmentTest {
     }
 
     static SchemaCatalog ocsfCatalog() {
-        Json excerpt = NeutralJson.parse(read(ROOT.resolve("journal-ocsf-writer/src/main/resources/ocsf/compiled-excerpt-agentic_cli-0.13.0-prototype.json")));
+        Json excerpt = NeutralJson.parse(read(ROOT.resolve("journal-ocsf-writer/src/main/resources" + SchemaPin.BUNDLED_EXCERPT)));
         return SchemaCatalog.fromClosure(excerpt);
     }
 
