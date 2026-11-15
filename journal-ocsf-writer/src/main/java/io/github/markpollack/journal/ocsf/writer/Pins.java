@@ -3,7 +3,7 @@ package io.github.markpollack.journal.ocsf.writer;
 /**
  * The pinned, checksummed toolchain this writer's packages name in {@code run.json}. These must equal
  * {@code prototype/ocsf-acp/toolchain.lock.json}; a test checks that. The extension uid is PROVISIONAL and
- * UNREGISTERED; every package written here is non-production.
+ * UNREGISTERED.
  */
 public final class Pins {
 

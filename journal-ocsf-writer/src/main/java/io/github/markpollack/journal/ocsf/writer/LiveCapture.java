@@ -28,7 +28,7 @@ import java.time.Instant;
  * flag file's content as the reason. The outcome, the run uid, the session uid and the reported CLI version are
  * printed on standard output for the driver.
  *
- * <p>This is bounded, non-production integration evidence: it changes no capture default and uses no SDK.
+ * <p>This is bounded integration evidence: it changes no capture default and uses no SDK.
  */
 public final class LiveCapture {
 

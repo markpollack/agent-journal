@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * The incremental Java writer of the OCSF-based run package (layout {@code 0.3.0-prototype}, NON-PRODUCTION). One
+ * The incremental Java writer of the OCSF-based run package (layout {@code 0.3.0-prototype}). One
  * writer records one run: it opens the root core, accepts declared sources through {@link SourceInput} (the same
  * entry point for a replay driver and for a live capture), maps each native record as it arrives into OCSF
  * events or conservative fallback, routes a record's events to the root core or a linked child core by the owner

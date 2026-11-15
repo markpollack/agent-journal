@@ -14,11 +14,11 @@
     <artifactId>journal-ocsf-writer</artifactId>
     <packaging>jar</packaging>
 
-    <name>Journal OCSF Writer (non-production prototype)</name>
+    <name>Journal OCSF Writer</name>
     <description>Incremental Java writer of the OCSF-based run package: receives native byte/record observations as
         they arrive, appends OCSF-extension events and conservative fallback records, and keeps the persisted package
-        readable before the input ends. NON-PRODUCTION: no production default uses it. The independent oracle in
-        journal-capture-tck reads its output and never calls it.</description>
+        readable before the input ends. The independent oracle in journal-capture-tck reads its output and never
+        calls it.</description>
 
     <properties>
         <!-- java-guardrails PMD ratchet: today's count (2026-10-21), lowered as fixes land; never raised -->

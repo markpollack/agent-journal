@@ -6,7 +6,7 @@ on the [OCSF](https://ocsf.io) schema with Journal's `agentic_cli` extension, an
 the native input by an independent oracle.
 
 The [documentation site](https://lab.pollack.ai/projects/agent-journal) covers this branch under
-its "Agent Journal 2.0 (on main, prototype)" group; its "Agent Journal 1.x (released)" group
+its Agent Journal 2.0 group; its "Agent Journal 1.x (released)" group
 describes the 1.x line (last release `1.11.0`), which is a different format and does not apply here.
 In this repository: generated architecture views under
 [`docs/architecture`](docs/architecture/README.md) and per-CLI support statements under

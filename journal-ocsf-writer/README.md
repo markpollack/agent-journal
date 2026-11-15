@@ -1,9 +1,8 @@
-# journal-ocsf-writer (non-production prototype)
+# journal-ocsf-writer
 
-The incremental Java writer of Agent Journal's OCSF-based run package (layout `0.2.0-prototype`, extension
-`agentic_cli` 0.3.0-prototype, provisional unregistered uid 901). It is the one implementation behind both recorded
-replay and the capture-facing input interface; it is not wired into any production recorder and no production default
-uses it.
+The incremental Java writer of Agent Journal's OCSF-based run package (layout `0.3.0-prototype`, extension
+`agentic_cli` 0.16.0-prototype, provisional unregistered uid 901). It is the one implementation behind both recorded
+replay and the capture-facing input interface.
 
 ## What it does
 

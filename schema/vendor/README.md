@@ -1,4 +1,4 @@
-# Journal-owned native source specifications (non-production prototype)
+# Journal-owned native source specifications
 
 Journal owns the description of each native source it supports, per CLI, version, launch mode and capture route.
 Each specification here is an **accepted, versioned inventory** of the vendor record variants, paths and value kinds
