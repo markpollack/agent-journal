@@ -10,7 +10,9 @@
     <packaging>pom</packaging>
 
     <name>Agent Journal Parent</name>
-    <description>Execution ledger — Experiment/Run tracking for agent workflows</description>
+    <description>Records an agent CLI's execution as durable local data (messages, tool activity, reported usage and
+        cost) in one portable OCSF event file with the agentic_cli extension, and checks it against the native input
+        with an independent oracle.</description>
 
     <licenses>
         <license>
