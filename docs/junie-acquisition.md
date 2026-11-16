@@ -123,6 +123,15 @@ CLI. It refuses, with the reason as the `IllegalArgumentException` message, when
    `observed_resources_terminated`), `complete` is false, `capture_errors` is not empty, a source was `dropped` or
    did not end at `EOF`, or a source's `framing` or `records` differs from its role.
 5. **Changed bytes:** a file's length or SHA-256 differs from its declaration (`bytes`, `observed`, `sha256`).
+6. **Credential-shaped environment:** an `EnvironmentVariablesUpdatedEvent` in the events names a credential-shaped
+   variable. A name is credential-shaped when, upper-cased, it contains `KEY`, `TOKEN`, `SECRET`, `PASSWORD`, `PASSWD`,
+   `CREDENTIAL`, `AUTH`, `COOKIE` or `SESSION_ID`, except `SSH_AUTH_SOCK` and `XAUTHORITY` (the same rule Agent Client
+   applies when it withholds such a source). The refusal names the variables, never their values.
+
+Junie 3813.7 writes its launch environment into `events.jsonl` (`EnvironmentVariablesUpdatedEvent`, `env` as
+`key`/`value` pairs). Each value is AES-256-GCM ciphertext (Base64 of a 12-byte IV, the ciphertext and a 128-bit tag)
+under a key Junie keeps in its own secure storage, so the plaintext length of every value is visible and the value is
+recoverable by anyone holding that key. A producer launches Junie with only the variables the run needs.
 
 The profile, profile id, kind and version must be exact, the CLI version must be the one both profile names carry,
 and a source meaning binding must exist for both sources at that version.
