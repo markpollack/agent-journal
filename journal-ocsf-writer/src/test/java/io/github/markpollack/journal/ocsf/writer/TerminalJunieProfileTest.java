@@ -34,12 +34,29 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class TerminalJunieProfileTest {
     static final Path FIXTURE = Path.of("../journal-capture-tck/src/test/resources/ocsf/junie-acp-3813.7-session-files");
     static final String SESSION = "session-000000-000002-0001";
+    /** Agent Client's own sealed capture of a fresh live Junie 3813.7 ACP session (a local model), sanitized; see its README. */
+    static final Path LIVE = Path.of("../journal-capture-tck/src/test/resources/ocsf/junie-acp-3813.7-live");
     @TempDir Path work;
+
+    /** The execution, decision, Client session, connection and native session a sealed manifest names. */
+    record Ids(String execution, String decision, String clientSession, String connection, String session) {
+        static Ids of(Path manifest) throws IOException {
+            Jv m = Jv.parse(Files.readString(manifest));
+            return new Ids(m.member("acquisition_uid").text(), m.member("turns").elements().get(0).member("decision_uid").text(), m.path("process", "client_session_uid").text(),
+                    m.path("process", "connection_uid").text(), m.path("process", "acp_session_id").text());
+        }
+    }
+
+    /** A temporary copy of a fixture's sealed acquisition. */
+    private Path sealed(Path fixture) throws IOException {
+        Path dir = Files.createDirectories(work.resolve("sealed"));
+        for (String name : List.of("acquisition.json", "summary.json", "events.jsonl")) Files.copy(fixture.resolve(name), dir.resolve(name), StandardCopyOption.REPLACE_EXISTING);
+        return dir.resolve("acquisition.json");
+    }
 
     /** A temporary copy of the fixture; {@code summary} replaces the summary's text when not null and the manifest is restated. */
     private Path sealed(String from, String to) throws IOException {
-        Path dir = Files.createDirectories(work.resolve("sealed"));
-        for (String name : List.of("acquisition.json", "summary.json", "events.jsonl")) Files.copy(FIXTURE.resolve(name), dir.resolve(name), StandardCopyOption.REPLACE_EXISTING);
+        Path dir = sealed(FIXTURE).getParent();
         if (from != null) {
             byte[] before = Files.readAllBytes(dir.resolve("summary.json"));
             String text = new String(before, StandardCharsets.UTF_8);
@@ -54,38 +71,38 @@ class TerminalJunieProfileTest {
         return dir.resolve("acquisition.json");
     }
 
-    private static Jv.Obj decision() {
+    private static Jv.Obj decision(Ids ids) {
         Jv.Obj correlation = new Jv.Obj();
         for (String key : List.of("experimentId", "experimentInvocationId", "experimentRunId", "workflowAttemptId", "workflowInvocationId", "workflowRunId")) correlation.put(key, Jv.Null.INSTANCE);
-        return new Jv.Obj().put("acceptedAt", "2026-10-24T04:58:10.000000000Z").put("codec", "client-decision/1").put("connectionId", "G").put("correlation", correlation)
-                .put("decisionId", "D").put("executionId", "E").put("outcome", new Jv.Obj().put("failure", Jv.Null.INSTANCE).put("kind", "SUCCESS").put("reason", Jv.Null.INSTANCE))
-                .put("provider", provider()).put("sessionId", "L");
+        return new Jv.Obj().put("acceptedAt", "2026-10-24T04:58:10.000000000Z").put("codec", "client-decision/1").put("connectionId", ids.connection()).put("correlation", correlation)
+                .put("decisionId", ids.decision()).put("executionId", ids.execution()).put("outcome", new Jv.Obj().put("failure", Jv.Null.INSTANCE).put("kind", "SUCCESS").put("reason", Jv.Null.INSTANCE))
+                .put("provider", provider()).put("sessionId", ids.clientSession());
     }
 
     private static Jv.Obj provider() {
         return new Jv.Obj().put("kind", "REPORTED_SUCCESS").put("nativeReason", Jv.Null.INSTANCE).put("observedExitCode", Jv.Null.INSTANCE);
     }
 
-    private static Jv.Obj association(AcquisitionQualifier.Qualified q) throws IOException {
+    private static Jv.Obj association(AcquisitionQualifier.Qualified q, Ids ids) throws IOException {
         Path root = q.manifest().getParent();
         Jv.Arr sources = new Jv.Arr();
-        for (Jv s : Jv.parse(Files.readString(q.manifest())).member("sources").elements()) sources.add(occurrence(root, s.member("path").text(), s.member("origin").text()));
-        sources.add(occurrence(root, "acquisition.json", "qualified-junie-manifest"));
-        return new Jv.Obj().put("acquisition", "COMPLETED").put("clientSessionId", "L").put("codec", "journal-association/1").put("connectionIds", new Jv.Arr().add(new Jv.Str("G")))
-                .put("continuation", Jv.Null.INSTANCE).put("decisionId", "D").put("executionId", "E").put("missing", new Jv.Arr()).put("priorRevisionId", Jv.Null.INSTANCE)
+        for (Jv s : Jv.parse(Files.readString(q.manifest())).member("sources").elements()) sources.add(occurrence(root, s.member("path").text(), s.member("origin").text(), ids));
+        sources.add(occurrence(root, "acquisition.json", "qualified-junie-manifest", ids));
+        return new Jv.Obj().put("acquisition", "COMPLETED").put("clientSessionId", ids.clientSession()).put("codec", "journal-association/1").put("connectionIds", new Jv.Arr().add(new Jv.Str(ids.connection())))
+                .put("continuation", Jv.Null.INSTANCE).put("decisionId", ids.decision()).put("executionId", ids.execution()).put("missing", new Jv.Arr()).put("priorRevisionId", Jv.Null.INSTANCE)
                 .put("providerObservation", provider()).put("revisionId", "initial").put("sources", sources);
     }
 
-    private static Jv.Obj occurrence(Path root, String path, String origin) throws IOException {
+    private static Jv.Obj occurrence(Path root, String path, String origin, Ids ids) throws IOException {
         byte[] bytes = Files.readAllBytes(root.resolve(path));
         return new Jv.Obj().put("sourceId", path).put("relativePath", path).put("origin", origin).put("sha256", SchemaPin.sha256(bytes)).put("size", bytes.length)
-                .put("start", 0).put("end", bytes.length).put("stream", Jv.Null.INSTANCE).put("nativeSessionId", SESSION).put("nativeTurnId", Jv.Null.INSTANCE)
-                .put("nativeConnectionId", Jv.Null.INSTANCE).put("clientConnectionId", "G");
+                .put("start", 0).put("end", bytes.length).put("stream", Jv.Null.INSTANCE).put("nativeSessionId", ids.session()).put("nativeTurnId", Jv.Null.INSTANCE)
+                .put("nativeConnectionId", Jv.Null.INSTANCE).put("clientConnectionId", ids.connection());
     }
 
-    private static byte[] envelope(String profile, Jv.Obj association) {
-        Jv.Obj p = new Jv.Obj().put("associationBytes", base64(association)).put("associationCodec", "journal-association/1").put("decisionBytes", base64(decision()))
-                .put("codec", "journal-terminal-envelope/1").put("decisionCodec", "client-decision/1").put("decisionId", "D").put("executionId", "E").put("initialRevisionId", "initial")
+    private static byte[] envelope(String profile, Jv.Obj association, Ids ids) {
+        Jv.Obj p = new Jv.Obj().put("associationBytes", base64(association)).put("associationCodec", "journal-association/1").put("decisionBytes", base64(decision(ids)))
+                .put("codec", "journal-terminal-envelope/1").put("decisionCodec", "client-decision/1").put("decisionId", ids.decision()).put("executionId", ids.execution()).put("initialRevisionId", "initial")
                 .put("producerNamespace", "junie-example").put("profile", profile).put("receiverContract", TerminalReceiver.CONTRACT).put("route", TerminalReceiver.ROUTE);
         return TerminalJson.write(p).getBytes(StandardCharsets.UTF_8);
     }
@@ -99,7 +116,8 @@ class TerminalJunieProfileTest {
         AcquisitionQualifier qualifier = AcquisitionQualifier.forProfile(Jv.parse(Files.readString(sealed)).member("profile").text()).orElseThrow();
         assertThat(qualifier.terminalProfile()).isEqualTo(TerminalReceiver.JUNIE_PROFILE);
         AcquisitionQualifier.Qualified q = qualifier.qualify(sealed, work.resolve("qualified"));
-        String ack = new TerminalReceiver(store, "junie-example", WriterOptions.defaults()).receive(envelope(qualifier.terminalProfile(), association(q)), q.manifest().getParent());
+        Ids ids = Ids.of(sealed);
+        String ack = new TerminalReceiver(store, "junie-example", WriterOptions.defaults()).receive(envelope(qualifier.terminalProfile(), association(q, ids), ids), q.manifest().getParent());
         return Jv.parse(ack).member("artifacts").elements().stream().map(a -> a.member("relativePath").text()).filter(s -> s.matches("prepared/candidate-[^/]+/events[.]jsonl"))
                 .map(store::resolve).findFirst().orElseThrow();
     }
@@ -133,8 +151,29 @@ class TerminalJunieProfileTest {
         OcsfPackage pkg = PackageReader.open(events);
         assertThat(pkg.declarations.assembly().path("profile", "profile_id").text()).isEqualTo("junie/3813.7/acp+summary+session-events");
         assertThat(pkg.declarations.assembly().path("result", "status").text()).isEqualTo("complete");
-        assertThat(TerminalBindingReader.read(pkg.declarations).decision()).isEqualTo(TerminalJson.write(decision()));
+        assertThat(TerminalBindingReader.read(pkg.declarations).decision()).isEqualTo(TerminalJson.write(decision(Ids.of(FIXTURE.resolve("acquisition.json")))));
         String regenerate = System.getProperty("junie.acp.archive.regenerate");
+        if (regenerate != null) copyTree(store, Path.of(regenerate).resolve("store"), expectation, Path.of(regenerate).resolve("assembly-expectation.json"));
+    }
+
+    /**
+     * Agent Client's sealed capture of a fresh live ACP session: its result block is reported twice, while the session is in
+     * progress and again when it completes, so the declared singleton identity repeats within the session file. The writer
+     * keeps both observations apart and flags them ambiguous; the oracle derives the same, and finds no defect.
+     */
+    @Test void theLiveAcpCaptureIsDeliveredAndReadWithNoDefect() throws IOException {
+        Path store = work.resolve("store");
+        Path events = deliver(sealed(LIVE), store);
+        Path expectation = work.resolve("qualified/assembly-expectation.json");
+        accepted(events, expectation);
+        OcsfPackage pkg = PackageReader.open(events);
+        assertThat(pkg.declarations.assembly().path("result", "status").text()).isEqualTo("complete");
+        List<Event> answers = pkg.events("model_response", 3);
+        assertThat(answers).hasSize(2).allSatisfy(e -> {
+            assertThat(e.assemblyRole()).isEqualTo(1);
+            assertThat(e.json.path("assembly", "relation_class_id").scalarText()).isEqualTo("6");
+        });
+        String regenerate = System.getProperty("junie.acp.live.regenerate");
         if (regenerate != null) copyTree(store, Path.of(regenerate).resolve("store"), expectation, Path.of(regenerate).resolve("assembly-expectation.json"));
     }
 
@@ -192,7 +231,8 @@ class TerminalJunieProfileTest {
             assertThat(manifest).contains(change[0]);
             Files.writeString(q.manifest(), manifest.replace(change[0], change[1]));
             var receiver = new TerminalReceiver(work.resolve("store-" + i++), "junie-example", WriterOptions.defaults());
-            assertThatThrownBy(() -> receiver.receive(envelope(TerminalReceiver.JUNIE_PROFILE, association(q)), q.manifest().getParent()))
+            Ids ids = Ids.of(FIXTURE.resolve("acquisition.json"));
+            assertThatThrownBy(() -> receiver.receive(envelope(TerminalReceiver.JUNIE_PROFILE, association(q, ids), ids), q.manifest().getParent()))
                     .isInstanceOf(IllegalArgumentException.class).hasMessageContaining(change[2]);
         }
     }

@@ -295,13 +295,19 @@ final class AssemblyPartition {
             String occurrence = event.artifact() + "#" + event.recordIndex() + "/" + ordinal;
             field(report, cores.get(i), event, "/assembly/occurrence_uid", FactComparison.value(occurrence), support);
             field(report, cores.get(i), event, "/assembly/assembly_role_id", FactComparison.value(group.size() == 1 ? 1 : 2), support);
+            if (ambiguous.contains(i)) {
+                field(report, cores.get(i), event, "/assembly/relation_class_id", FactComparison.value(6), support);
+            }
             String alias = event.text("assembly", "entity_uid");
             if (alias != null) { aliases.add(alias); }
             coordinates.add(new Json.JObject(Map.of("artifact", FactComparison.value(event.artifact()), "record_index", FactComparison.value(event.recordIndex()),
                     "emit_ordinal", FactComparison.value(ordinal), "occurrence_uid", FactComparison.value(occurrence))));
         }
+        // an identity that repeats within one source pairs nothing: its observations stay apart, each flagged, and they keep
+        // the one declared identity they all repeat, which they alone may share
+        boolean flagged = group.size() == 1 && ambiguous.contains(group.get(0));
         boolean unique = aliases.size() <= 1 && partitions.values().stream().filter(g -> !g.equals(group)).flatMap(List::stream)
-                .noneMatch(i -> aliases.contains(observations.get(i).text("assembly", "entity_uid")));
+                .noneMatch(i -> aliases.contains(observations.get(i).text("assembly", "entity_uid")) && !(flagged && ambiguous.contains(i)));
         boolean partition = unique && judge(group, refs).isEmpty();
         for (int i : group) {
             Event event = observations.get(i);

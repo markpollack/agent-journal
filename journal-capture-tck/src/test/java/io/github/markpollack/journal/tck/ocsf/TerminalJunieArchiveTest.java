@@ -4,6 +4,7 @@ import io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionVerification;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -40,6 +41,34 @@ class TerminalJunieArchiveTest {
         assertThat(acceptance.verdict()).isEqualTo("INCOMPLETE");
         assertThat(acceptance.reasons()).isNotEmpty().allSatisfy(reason -> assertThat(reason).contains("source.meaning").contains("/event/agentEvent/modelUsage/*/time"));
         assertThat(Files.readString(events)).contains("\\\"profile\\\":\\\"client-terminal-junie-acp/1\\\"").contains("\"product\":{\"name\":\"Junie\",\"version\":\"3813.7\"");
+    }
+
+    /**
+     * Agent Client's sealed capture of a fresh live Junie 3813.7 ACP session ({@code ocsf/junie-acp-3813.7-live}, sanitized,
+     * delivered the same way): its main agent's result block is reported twice in the session file, in progress and at
+     * completion, so the singleton final answer and final accounting repeat within one source. Both sides keep the repeated
+     * observations apart, each flagged ambiguous under the one identity they repeat, and the oracle finds no defect.
+     */
+    @Test void theLiveAcpCaptureWithARepeatedResultBlockReadsWithNoDefect() throws IOException {
+        Path live = Path.of("src/test/resources/ocsf/junie-acp-3813.7-live/archive");
+        Path events = events(live.resolve("store"));
+        OcsfPackage pkg = PackageReader.open(events);
+        assertThat(pkg.diagnostics).as(pkg.diagnostics.toString()).noneMatch(d -> d.severity() == Diagnostic.Severity.DEFECT || d.severity() == Diagnostic.Severity.REFUSED);
+        OracleReport report = new AcquisitionVerification().verify(pkg, events.getParent().resolve("sources"), events.getParent().resolve("sources/acquisition.json"),
+                live.resolve("assembly-expectation.json"));
+        assertThat(report.defects()).as(report.toString()).isEmpty();
+        assertThat(report.checks()).filteredOn(c -> c.property().equals("assembly.partition.association")).isNotEmpty()
+                .allSatisfy(c -> assertThat(c.outcome()).isEqualTo(io.github.markpollack.journal.tck.verify.Check.Outcome.VERIFIED));
+        OcsfReaderTool.Acceptance acceptance = OcsfReaderTool.acceptance(report);
+        assertThat(acceptance.verdict()).isEqualTo("INCOMPLETE");
+        assertThat(acceptance.reasons()).isNotEmpty().allSatisfy(reason -> assertThat(reason).contains("source.meaning").contains("/event/agentEvent/modelUsage/*/time"));
+        List<Event> answers = pkg.events("model_response", 3);
+        assertThat(answers).hasSize(2).extracting(Event::recordIndex).containsExactly(63, 69);
+        assertThat(answers).allSatisfy(e -> {
+            assertThat(e.assemblyRole()).isEqualTo(1);
+            assertThat(e.integer("assembly", "relation_class_id")).isEqualTo(6);
+            assertThat(e.text("assembly", "entity_uid")).isEqualTo("model_response/3/junie.execution_singleton");
+        });
     }
 
     @Test void anArchivedManifestThatDiffersFromItsDeclarationIsADefect() throws IOException {
