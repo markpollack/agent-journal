@@ -5,8 +5,9 @@ import java.util.regex.Pattern;
 
 /**
  * A CLI version as an agent CLI reports it, and the version a versioned profile name carries, shared by the version-neutral
- * acquisition families ({@link ClaudeSdkFamily}, {@link CodexExecFamily}): dotted numbers with an optional pre-release or
- * build suffix. A well-formed version is recorded, never compared with a pinned one.
+ * acquisition families ({@link ClaudeSdkFamily}, {@link CodexExecFamily}) and the Junie ACP family ({@link JunieAcpFamily}):
+ * dotted numbers with an optional pre-release or build suffix. A well-formed version is recorded; only the Junie family
+ * then requires source meaning bindings at it.
  */
 final class CliVersions {
     private static final String VERSION = "[0-9]+(?:\\.[0-9]+)+(?:[-+][0-9A-Za-z.-]+)?";

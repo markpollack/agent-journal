@@ -3,6 +3,7 @@ package io.github.markpollack.journal.tck.ocsf.inventory;
 import io.github.markpollack.journal.tck.ocsf.CodexExecFamily;
 
 import io.github.markpollack.journal.tck.ocsf.ClaudeSdkFamily;
+import io.github.markpollack.journal.tck.ocsf.JunieAcpFamily;
 
 import io.github.markpollack.journal.tck.ocsf.CodexRetainedGeneration;
 import io.github.markpollack.journal.tck.ocsf.AcquisitionVerifier;
@@ -64,6 +65,7 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
                 if (inputs.manifest.member("retained_generation") != null) CodexRetainedAcquisition.validate(inputs.manifest, inputs.base);
             }
             Json spec = NeutralJson.readDocument(assembly);
+            junie(inputs, spec);
             if (CodexExecFamily.admits(text(inputs.manifest, "profile_id"))) {
                 Json profile = pkg.declarations == null ? null : pkg.declarations.assembly();
                 String revision = RawInventory.text(profile, "profile", "version");
@@ -80,6 +82,14 @@ public final class AcquisitionVerification implements AcquisitionVerifier {
             inputs.sourceBindings(report);
             inputs.additionalNative(pkg, report);
             return report;
+        }
+
+        /** A Junie ACP acquisition: its original-byte checks and exact bindings, and the version's own expectation unchanged. */
+        private static void junie(Inputs inputs, Json spec) throws IOException {
+            String profileId = text(inputs.manifest, "profile_id");
+            if (!JunieAcpFamily.admits(profileId)) { return; }
+            JunieAcquisition.validate(inputs.manifest, inputs.base);
+            require(Json.sameValue(spec, JunieAcquisition.expectation(JunieAcpFamily.versionOfProfileId(profileId))), "qualified Junie expectation changed");
         }
 
         private void additionalNative(OcsfPackage pkg, OracleReport report) throws IOException {

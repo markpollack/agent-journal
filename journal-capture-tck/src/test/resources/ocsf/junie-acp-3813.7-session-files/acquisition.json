@@ -1,0 +1,94 @@
+{
+  "kind": "agent-journal/acquired-execution",
+  "version": "0.1",
+  "profile": "junie-3813.7-acp-session-files",
+  "profile_id": "junie/3813.7/acp+summary+session-events",
+  "acquisition_uid": "E",
+  "complete": true,
+  "capture_errors": [],
+  "run": {
+    "run_uid": "E",
+    "invocation_index": 0,
+    "capture_start": "2026-10-24T04:58:05Z",
+    "cli": {
+      "name": "Junie",
+      "vendor_name": "JetBrains",
+      "version": "3813.7"
+    },
+    "launch_settings": {
+      "route": "acp_stdio",
+      "working_directory": "/work"
+    },
+    "session_uid": "session-000000-000002-0001"
+  },
+  "process": {
+    "argv": [
+      "junie",
+      "--acp",
+      "true",
+      "--project",
+      "/work"
+    ],
+    "cwd": "/work",
+    "client_session_uid": "L",
+    "connection_uid": "G",
+    "acp_session_id": "session-000000-000002-0001",
+    "acp_stop_reason": "end_turn",
+    "fresh_session": true,
+    "native_sessions_directory": "/home/user/.junie/sessions",
+    "native_sessions_new": [
+      "session-000000-000002-0001"
+    ],
+    "observed_resources_terminated": true,
+    "sealed": true
+  },
+  "sources": [
+    {
+      "role": "summary",
+      "artifact": "summary.json",
+      "path": "summary.json",
+      "profile": "junie_summary",
+      "route": "native_session_file",
+      "origin": "/home/user/.junie/sessions/session-000000-000002-0001/summary.json",
+      "owner_session_uid": "session-000000-000002-0001",
+      "acquisition": "E",
+      "required": true,
+      "archive_only": false,
+      "state": "acquired",
+      "bytes": 1094,
+      "observed": 1094,
+      "dropped": 0,
+      "end": "EOF",
+      "framing": "document",
+      "records": 1,
+      "sha256": "f9bbab52ce242dcc8768d3b5689c0cbf511a67b38426cb4fa6e0b29962677b97"
+    },
+    {
+      "role": "session",
+      "artifact": "events.jsonl",
+      "path": "events.jsonl",
+      "profile": "junie_session_events",
+      "route": "native_session_file",
+      "origin": "/home/user/.junie/sessions/session-000000-000002-0001/events.jsonl",
+      "owner_session_uid": "session-000000-000002-0001",
+      "acquisition": "E",
+      "required": true,
+      "archive_only": false,
+      "state": "acquired",
+      "bytes": 19701,
+      "observed": 19701,
+      "dropped": 0,
+      "end": "EOF",
+      "framing": "lines",
+      "records": 65,
+      "sha256": "c749b748545474a4d3c7a62c83846eb3be99748eba82fe760174790059a3ba12"
+    }
+  ],
+  "turns": [
+    {
+      "invocation_uid": "E",
+      "decision_uid": "D",
+      "native_task_uid": "task-000000-000002-0002"
+    }
+  ]
+}

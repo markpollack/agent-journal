@@ -4,6 +4,8 @@ import io.github.markpollack.journal.tck.ocsf.CodexExecFamily;
 
 import io.github.markpollack.journal.tck.ocsf.ClaudeSdkFamily;
 
+import io.github.markpollack.journal.tck.ocsf.JunieAcpFamily;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -25,7 +27,10 @@ import java.util.Optional;
  * <li>{@link ClaudeAcquisition#qualifier(String)}: the acquisition profile of any Claude Code version on the SDK route
  * ({@link ClaudeSdkFamily}; the version is recorded, not gated) to {@value ClaudeSdkFamily#TERMINAL_PROFILE};</li>
  * <li>{@link CodexAcquisition#qualifier(String)}: the acquisition profile of any Codex CLI version on the exec route
- * ({@link CodexExecFamily}; the version is recorded, not gated) to {@value CodexExecFamily#TERMINAL_PROFILE}.</li>
+ * ({@link CodexExecFamily}; the version is recorded, not gated) to {@value CodexExecFamily#TERMINAL_PROFILE};</li>
+ * <li>{@link JunieAcquisition#qualifier(String)}: the acquisition profile of a Junie ACP session ({@link JunieAcpFamily})
+ * to {@value JunieAcpFamily#TERMINAL_PROFILE}. Its version is gated: any well-formed version selects the qualifier, and the
+ * qualifier refuses a version without source meaning bindings for both native sources.</li>
  * </ul>
  * Selection uses the acquisition profile alone. A Codex turn manifest from a retained thread may declare the same
  * acquisition profile as a fresh turn, and the one-shot qualifier refuses its resumed history; select a retained qualifier
@@ -60,6 +65,8 @@ public interface AcquisitionQualifier {
         if (claude != null) { return Optional.of(ClaudeAcquisition.qualifier(claude)); }
         String codex = CodexExecFamily.versionOfProfile(acquisitionProfile);
         if (codex != null) { return Optional.of(CodexAcquisition.qualifier(codex)); }
+        String junie = JunieAcpFamily.versionOfProfile(acquisitionProfile);
+        if (junie != null) { return Optional.of(JunieAcquisition.qualifier(junie)); }
         return java.util.stream.Stream.<AcquisitionQualifier>empty()
                 .filter(qualifier -> qualifier.acquisitionProfile().equals(acquisitionProfile)).findFirst();
     }

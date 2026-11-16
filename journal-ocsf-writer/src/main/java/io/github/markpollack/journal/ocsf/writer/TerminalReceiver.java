@@ -20,7 +20,7 @@ import java.util.UUID;
  * same-filesystem atomic no-replace hard links. There is no power-loss or eventual-retry guarantee.
  *
  * <p>The evidence-only profile preserves declared evidence and checks bytes/associations. The opt-in
- * Claude profile assembles a qualified one-shot native acquisition alongside the immutable decision.
+ * Claude, Codex and Junie ACP profiles assemble a qualified one-shot native acquisition alongside the immutable decision.
  * Neither profile proves Client arbitration or replaces independent complete-archive acceptance.
  * Existing markers and prepared evidence are never repaired, replaced or deleted by this receiver.
  */
@@ -50,6 +50,8 @@ public final class TerminalReceiver {
     public static final String CODEX_RETAINED_ORDINARY_PROFILE = CodexExecFamily.RETAINED_ORDINARY_TERMINAL_PROFILE;
     /** The versioned retained Codex profile earlier 0.166.0 recordings carry; still received, for 0.166.0 only. */
     public static final String LEGACY_CODEX_RETAINED_ORDINARY_PROFILE = TerminalContract.CODEX_RETAINED_ORDINARY_PROFILE;
+    /** The Junie ACP one-shot profile: one fresh Junie ACP session's summary.json and events.jsonl, at a version with its own assembly profile. */
+    public static final String JUNIE_PROFILE = TerminalJunieProfile.PROFILE;
     private final Path root;
     private final String namespace;
     private final WriterOptions options;
@@ -132,6 +134,12 @@ public final class TerminalReceiver {
         if (TerminalCodexProfile.complete(input, association)) {
             Path manifest = candidate.resolve("sources/acquisition.json");
             TerminalCodexProfile.validate(manifest, input, association);
+            AcquiredExecution.assembleTerminal(manifest, candidate, payload, options);
+            return candidate.resolve("events.jsonl");
+        }
+        if (TerminalJunieProfile.complete(input, association)) {
+            Path manifest = candidate.resolve("sources/acquisition.json");
+            TerminalJunieProfile.validate(manifest, input, association);
             AcquiredExecution.assembleTerminal(manifest, candidate, payload, options);
             return candidate.resolve("events.jsonl");
         }

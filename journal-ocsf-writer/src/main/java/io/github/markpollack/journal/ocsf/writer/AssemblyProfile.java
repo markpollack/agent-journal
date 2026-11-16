@@ -49,13 +49,18 @@ public record AssemblyProfile(Jv document) {
     /**
      * The bundled profile named {@code id}. A Claude Code SDK ({@link ClaudeSdkFamily}) or Codex exec ({@link CodexExecFamily})
      * acquisition profile of any version is its family's one assembly profile, stated under that version's profile id
-     * and CLI version.
+     * and CLI version. A Junie ACP acquisition profile ({@link JunieAcpFamily}) is its version's own session-primary
+     * profile stated under the ACP profile id; a version without one has no assembly profile.
      */
     public static AssemblyProfile bundled(String id) {
         String claude = ClaudeSdkFamily.versionOfProfile(id);
         String codex = CodexExecFamily.versionOfProfile(id);
+        String junie = JunieAcpFamily.versionOfProfile(id);
         if (claude != null) {
             return stated(load(ClaudeSdkFamily.ASSEMBLY_RESOURCE), ClaudeSdkFamily.profileId(claude), claude);
+        }
+        if (junie != null) {
+            return stated(load(JunieAcpFamily.assemblyResource(junie)), JunieAcpFamily.profileId(junie), junie);
         }
         return codex != null ? stated(load(CodexExecFamily.ASSEMBLY_RESOURCE), CodexExecFamily.profileId(codex), codex) : load(id);
     }

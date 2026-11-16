@@ -190,9 +190,12 @@ AcquisitionQualifier.Qualified qualified = qualifier.qualify(sealedManifest, new
 |---|---|---|
 | `claude-code-<version>-sdk-stdio-session-file`, any version | `ClaudeAcquisition.qualifier(version)` | `client-terminal-claude-sdk/1` |
 | `codex-cli-<version>-exec-stdio-rollout`, any version | `CodexAcquisition.qualifier(version)` | `client-terminal-codex-exec/1` |
+| `junie-<version>-acp-session-files`, a version with source meaning bindings (`3813.7`) | `JunieAcquisition.qualifier(version)` | `client-terminal-junie-acp/1` |
 
-Both families record the CLI version without gating it (Owner, 2026-11-08): each version's profile selects its qualifier,
-the native witnesses must state the manifest's own version, and the version stays in every record. Recordings delivered
+The Claude and Codex families record the CLI version without gating it (Owner, 2026-11-08): each version's profile selects its qualifier,
+the native witnesses must state the manifest's own version, and the version stays in every record. The Junie ACP family
+(docs/junie-acquisition.md) gates its version: any well-formed version's profile selects its qualifier, which refuses a
+version without source meaning bindings for both native sources. Recordings delivered
 earlier under `client-terminal-claude-2.1.316/1` or `client-terminal-codex-0.166.0/1` stay readable for that version
 only. Any other profile returns empty. A qualifier refuses an acquisition with `IllegalArgumentException`,
 whose message is its verdict, before creating the new directory. `IOException` means an input could

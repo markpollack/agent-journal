@@ -107,6 +107,8 @@ observed closure and matching cumulative terminal usage. The Codex one-shot term
 (`LEGACY_CODEX_PROFILE` = `client-terminal-codex-0.166.0/1`, `LEGACY_CLAUDE_PROFILE` =
 `client-terminal-claude-2.1.316/1`, and the `LEGACY_*` retained names) are also accepted, for
 recordings of that one CLI version.
+The Junie ACP one-shot profile is `TerminalReceiver.JUNIE_PROFILE` (`client-terminal-junie-acp/1`), and its
+qualifier is `JunieAcquisition` for `junie-3813.7-acp-session-files` ([the contract](docs/junie-acquisition.md)).
 An already qualified acquisition records an initially complete one-shot association; a pending initial
 acquisition can instead receive an explicit final revision. Both preserve the original accepted
 Client decision and exact retry ACK. Qualification and recording run on an independent optional lane.
