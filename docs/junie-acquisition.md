@@ -125,7 +125,7 @@ CLI. It refuses, with the reason as the `IllegalArgumentException` message, when
 5. **Changed bytes:** a file's length or SHA-256 differs from its declaration (`bytes`, `observed`, `sha256`).
 6. **Credential-shaped environment:** an `EnvironmentVariablesUpdatedEvent` in the events names a credential-shaped
    variable. A name is credential-shaped when, upper-cased, it contains `KEY`, `TOKEN`, `SECRET`, `PASSWORD`, `PASSWD`,
-   `CREDENTIAL`, `AUTH`, `COOKIE` or `SESSION_ID`, except `SSH_AUTH_SOCK` and `XAUTHORITY` (the same rule Agent Client
+   `CREDENTIAL`, `AUTH`, `COOKIE` or `SESSION_ID`, except the upper-cased names `SSH_AUTH_SOCK` and `XAUTHORITY` (the same rule Agent Client
    applies when it withholds such a source). The refusal names the variables, never their values.
 
 Junie 3813.7 writes its launch environment into `events.jsonl` (`EnvironmentVariablesUpdatedEvent`, `env` as

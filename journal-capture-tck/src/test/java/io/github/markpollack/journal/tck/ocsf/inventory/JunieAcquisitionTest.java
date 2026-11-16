@@ -257,6 +257,15 @@ class JunieAcquisitionTest {
         assertThat(Files.readString(work.resolve("qualified/events.jsonl"))).contains("\"key\":\"SSH_AUTH_SOCK\"").contains("\"key\":\"XAUTHORITY\"");
     }
 
+    /** A mutation of the real recording: the exceptions are matched upper-cased, as Agent Client matches them. */
+    @Test void theExceptionsAreMatchedUpperCased() throws IOException {
+        Path input = sealed();
+        mutateNative(input, "events.jsonl", PATH_ENTRY, "{\"key\":\"ssh_auth_sock\",\"value\":\"" + PLACEHOLDER + "\"},{\"key\":\"XAuthority\",\"value\":\""
+                + PLACEHOLDER + "\"}," + PATH_ENTRY, true);
+        JunieAcquisition.qualify(input, work.resolve("qualified"));
+        assertThat(Files.readString(work.resolve("qualified/events.jsonl"))).contains("\"key\":\"ssh_auth_sock\"").contains("\"key\":\"XAuthority\"");
+    }
+
     /** The unreduced real junie-2 session events (read, never changed) name credential-shaped variables and are refused. */
     @Test void theUnreducedRealEnvironmentIsRefused() throws IOException {
         Path input = sealed();

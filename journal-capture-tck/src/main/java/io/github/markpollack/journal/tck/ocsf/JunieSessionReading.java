@@ -76,12 +76,12 @@ final class JunieSessionReading {
         require(named.isEmpty(), "credential-shaped environment: events.jsonl names the variables " + named + " (values not shown)");
     }
 
-    /** Agent Client's rule: upper-cased, the name contains a credential word; SSH_AUTH_SOCK and XAUTHORITY exactly are not credentials. */
+    /** Agent Client's rule: upper-cased, the name contains a credential word; SSH_AUTH_SOCK and XAUTHORITY (upper-cased) are not credentials. */
     static boolean credentialShaped(String name) {
-        if ("SSH_AUTH_SOCK".equals(name) || "XAUTHORITY".equals(name)) {
+        String upper = name.toUpperCase(Locale.ROOT);
+        if ("SSH_AUTH_SOCK".equals(upper) || "XAUTHORITY".equals(upper)) {
             return false;
         }
-        String upper = name.toUpperCase(Locale.ROOT);
         return CREDENTIAL_WORDS.stream().anyMatch(upper::contains);
     }
 
