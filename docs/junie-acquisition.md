@@ -60,7 +60,8 @@ The producer writes `acquisition.json` beside the two native files it copied, th
       "role": "summary", "artifact": "summary.json", "path": "summary.json", "profile": "junie_summary",
       "route": "native_session_file", "origin": "/home/user/.junie/sessions/session-261116-120000-abcd/summary.json",
       "owner_session_uid": "session-261116-120000-abcd", "acquisition": "E", "required": true, "archive_only": false,
-      "state": "acquired", "bytes": 457, "observed": 457, "dropped": 0, "end": "EOF", "sha256": "<hex>"
+      "state": "acquired", "bytes": 457, "observed": 457, "dropped": 0, "end": "EOF", "framing": "document",
+      "records": 1, "sha256": "<hex>"
     },
     {
       "role": "session", "artifact": "events.jsonl", "path": "events.jsonl", "profile": "junie_session_events",
@@ -83,8 +84,10 @@ Claude one-shot manifests.
 
 Exactly two sources, both required and not archive-only:
 
-- `summary`: the native session directory's `summary.json`, profile `junie_summary`.
-- `session`: the same directory's `events.jsonl`, profile `junie_session_events`, framed as lines.
+- `summary`: the native session directory's `summary.json`, profile `junie_summary`, framed as one document
+  (`framing` `document`, `records` 1).
+- `session`: the same directory's `events.jsonl`, profile `junie_session_events`, framed as lines (`framing`
+  `lines`, `records` the line count).
 
 The ACP stdio exchange itself is not a source of this profile. Client keeps it as its own evidence.
 
@@ -117,8 +120,8 @@ CLI. It refuses, with the reason as the `IllegalArgumentException` message, when
    `records`; there is not exactly one `TaskStartedEvent`, or its `taskId` differs from `native_task_uid`; no main-agent
    `ResultBlockUpdatedEvent` with `cancelled: false` is present; `summary.json` `lifecycle` is not `COMPLETED`;
    `acp_stop_reason` is not `end_turn`; or the process facts are not all true (`fresh_session`, `sealed`,
-   `observed_resources_terminated`), `complete` is false, `capture_errors` is not empty, or a source was `dropped` or
-   did not end at `EOF`.
+   `observed_resources_terminated`), `complete` is false, `capture_errors` is not empty, a source was `dropped` or
+   did not end at `EOF`, or a source's `framing` or `records` differs from its role.
 5. **Changed bytes:** a file's length or SHA-256 differs from its declaration (`bytes`, `observed`, `sha256`).
 
 The profile, profile id, kind and version must be exact, the CLI version must be the one both profile names carry,
