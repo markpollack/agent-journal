@@ -67,8 +67,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RequirementsEvidenceTest {
 
     static final String CODEX_STREAM = "syn-codex-exec-stream";
-    static final String CLAUDE_CHILD = "claude-child-2.1.299";
-    static final String CLAUDE_INTERRUPTED = "claude-child-2.1.299-interrupted";
     static final String CLAUDE_UNTESTED = "syn-claude-untested-version";
     static final String LIVE_FEATURES = "claude-live-2.1.304-features";
     static final String LIVE_DENIAL = "claude-live-2.1.304-denial";
@@ -82,7 +80,7 @@ class RequirementsEvidenceTest {
     static final String LIVE_AGY_MCP_DENIED = "antigravity-live-1.4.6-mcp-denied";
     static final String LIVE_AGY_MCP = "antigravity-live-1.4.6-mcp";
     static final String LIVE_MCP = "claude-live-2.1.304-mcp";
-    static final List<String> FIXTURES = List.of(CODEX_STREAM, CLAUDE_CHILD, CLAUDE_INTERRUPTED, CLAUDE_UNTESTED, LIVE_FEATURES, LIVE_DENIAL, LIVE_CANCELLED, LIVE_CODEX, LIVE_CODEX_CANCELLED,
+    static final List<String> FIXTURES = List.of(CODEX_STREAM, CLAUDE_UNTESTED, LIVE_FEATURES, LIVE_DENIAL, LIVE_CANCELLED, LIVE_CODEX, LIVE_CODEX_CANCELLED,
             LIVE_AGY_FEATURES, LIVE_AGY_DENIAL, LIVE_AGY_INTERRUPT_OPEN, LIVE_AGY_SUBAGENT, LIVE_AGY_MCP_DENIED, LIVE_AGY_MCP, LIVE_MCP);
 
     /** The scenario a criterion's fixtures must exercise, decided from each fixture's frozen manifest, not from the report. */
@@ -190,8 +188,8 @@ class RequirementsEvidenceTest {
                 "UC3-AC11", "UC3-AC15", "UC4-AC6", "UC5-AC3", "UC5-AC4", UNASSESSED_REPORTING_CRITERION, PARTIAL_EVIDENCE_CRITERION)) {
             EXPECTED_STATUS.put(id, JudgmentStatus.PASS);
         }
-        // the replay-interrupted fixture (a sanitized real stream prefix, interrupted by the fixture driver; labelled, not live)
-        // exercises the interruption criteria; on the two complete runs alone they are not assessed (see the reporter controls)
+        // the cancelled live recordings (Claude Code and Codex CLI runs whose capture cancelled the CLI) exercise the interruption
+        // criteria; on the complete runs alone they are not assessed (see the reporter controls)
         EXPECTED_STATUS.put("UC4-AC3", JudgmentStatus.PASS);
         EXPECTED_STATUS.put("UC4-AC5", JudgmentStatus.PASS);
         // the prompt criterion is established on the one scope where the stream reports a prompt: the child core of the live feature
@@ -266,15 +264,15 @@ class RequirementsEvidenceTest {
     void aRenamedExpectedSourceTurnsTheDenominatorCriteriaRedAndTheRollupIsNotPass(@TempDir Path work) throws IOException {
         Document criteriaDoc = RequirementDocuments.load(RequirementDocuments.CRITERIA, work);
         List<EarsRequirement> criteria = EarsRequirement.fromStrict(criteriaDoc.file(), criteriaDoc.revision());
-        Path fixture = copyFixture(CLAUDE_CHILD, work.resolve("fixtures"));
+        Path fixture = copyFixture(LIVE_FEATURES, work.resolve("fixtures"));
         Path manifest = fixture.resolve("native").resolve("expected-sources.json");
         String frozen = Files.readString(manifest);
         String renamed = frozen.replace("\"artifact\": \"stream.jsonl\",\n   \"profile\": \"claude_stream\"",
                 "\"artifact\": \"renamed.jsonl\",\n   \"profile\": \"claude_stream\"");
         assertThat(renamed).as("the mutation applied").isNotEqualTo(frozen);
         Files.writeString(manifest, renamed);
-        Corpus corpus = new Corpus(Map.of(CLAUDE_CHILD, ExpectedSources.read(manifest)), Map.of(CLAUDE_CHILD, verify(fixture)));
-        assertThat(corpus.reports().get(CLAUDE_CHILD).defects()).as("the oracle itself reports the omission").isNotEmpty();
+        Corpus corpus = new Corpus(Map.of(LIVE_FEATURES, ExpectedSources.read(manifest)), Map.of(LIVE_FEATURES, verify(fixture)));
+        assertThat(corpus.reports().get(LIVE_FEATURES).defects()).as("the oracle itself reports the omission").isNotEmpty();
 
         Map<String, Judgment> judgments = judgeCriteria(criteria, corpus);
 
@@ -489,7 +487,7 @@ class RequirementsEvidenceTest {
         control(checks, "prompt evidence omitted: the prompt criterion UC3-AC13 is an error", judge("UC3-AC13", CRITERION_EVIDENCE.get("UC3-AC13"), noPrompts), JudgmentStatus.ERROR);
         control(checks, "a scenario the fixtures in hand do not exercise (interrupted source, on the complete runs only) is not assessed",
                 judge("UC4-AC5", CRITERION_EVIDENCE.get("UC4-AC5"), completeRunsOnly(corpus)), JudgmentStatus.ABSTAIN);
-        control(checks, "the same scenario on the corpus with the replay-interrupted fixture is established, scoped to that fixture",
+        control(checks, "the same scenario on the corpus with the cancelled live fixtures is established, scoped to those fixtures",
                 judge("UC4-AC5", CRITERION_EVIDENCE.get("UC4-AC5"), corpus), JudgmentStatus.PASS);
         boolean allHeld = checks.stream().allMatch(c -> c.judgment().status() == JudgmentStatus.PASS);
         String reasoning = id + ": established by " + checks.size() + " negative/positive control(s) computed on the committed fixtures' real oracle reports in this run,"
@@ -606,10 +604,10 @@ class RequirementsEvidenceTest {
         out.put("revision", doc.revision());
         out.put("question", "does the independent oracle, run on the committed public fixtures, establish this requirement's observable behavior for those fixtures?");
         out.put("fixtures", FIXTURES);
-        out.put("evidence_class", "committed public fixtures: labelled synthetic Codex exec stream; sanitized real Claude stream with one child core; "
-                + "the same stream's 10-record prefix replay-interrupted by the fixture driver (labelled); the same stream with its reported version edited to one no "
-                + "compatibility entry covers (labelled synthetic); five sanitized real live recordings of ACCEPT-1 (Claude Code 2.1.304 feature, denial and cancelled "
-                + "runs; Codex CLI 0.160.1 command and cancelled runs) replayed through the writer. Recorded replay and labelled synthetic; the live captures themselves are private steward evidence.");
+        out.put("evidence_class", "committed public fixtures: labelled synthetic Codex exec stream; a sanitized real Claude 2.1.299 stream with its reported version "
+                + "edited to one no compatibility entry covers (labelled synthetic); sanitized real live recordings of ACCEPT-1 (Claude Code 2.1.304 feature run with one "
+                + "child core, denial and cancelled runs; Codex CLI 0.160.1 command and cancelled runs), of the Claude Code MCP run and of the Antigravity CLI 1.4.6 "
+                + "onboarding, replayed through the writer. Recorded replay and labelled synthetic; the live captures themselves are private steward evidence.");
         out.put("reduction", "a criterion passes only when every named property is reported for every owner its fixtures' frozen expected sources imply and the named scenario was exercised; "
                 + "missing check: ERROR; DEFECTIVE: FAIL; unresolved/unsupported: ABSTAIN; no occurrence or no exercising fixture: ABSTAIN (not assessed)");
         out.put("rollup", rollup(judgments.values()).name());

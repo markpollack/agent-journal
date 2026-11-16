@@ -8,7 +8,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Path;
 import java.util.List;
 
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CHILD;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.LIVE_FEATURES;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CODEX;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.at;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copy;
@@ -32,30 +32,30 @@ class OcsfOracleValueCheckTest {
 
     @Test
     void responseActivityStopReasonModelAndBlocksAreEachChecked(@TempDir Path work) {
-        Path fixture = copy(CHILD, work);
+        Path fixture = copy(LIVE_FEATURES, work);
         editEvents(pkg(fixture), events -> {
-            Json r4 = at(events, "model_response", 1, 4);
-            obj(r4).members().put("activity_id", num("2"));                       // non-terminal record claimed Completed
-            obj(r4).members().put("stop_reason", str("end_turn"));                 // stop reason the record does not report
-            obj(r4.member("model_ref")).members().put("name", str("other-model"));
-            Json r14 = at(events, "model_response", 1, 14);
-            obj(r14.member("content_blocks").elements().get(0)).members().put("block_type", str("text"));   // native block is thinking
-            obj(r14.member("content_blocks").elements().get(0)).members().put("block_index", num("1"));
-            Json r15 = at(events, "model_response", 1, 15);
-            r15.member("content_blocks").elements().add(OcsfFixtures.copy(r15.member("content_blocks").elements().get(0)));  // one block too many
-            Json r25 = at(events, "model_response", 1, 25);
-            obj(r25.member("content_blocks").elements().get(0).member("data")).members().put("thinking", str("altered"));
+            Json r5 = at(events, "model_response", 1, 5);
+            obj(r5).members().put("activity_id", num("2"));                       // non-terminal record claimed Completed
+            obj(r5).members().put("stop_reason", str("end_turn"));                 // stop reason the record does not report
+            obj(r5.member("model_ref")).members().put("name", str("other-model"));
+            Json r20 = at(events, "model_response", 1, 20);
+            obj(r20.member("content_blocks").elements().get(0)).members().put("block_type", str("text"));   // native block is thinking
+            obj(r20.member("content_blocks").elements().get(0)).members().put("block_index", num("1"));
+            Json r21 = at(events, "model_response", 1, 21);
+            r21.member("content_blocks").elements().add(OcsfFixtures.copy(r21.member("content_blocks").elements().get(0)));  // one block too many
+            Json r48 = at(events, "model_response", 1, 48);
+            obj(r48.member("content_blocks").elements().get(0).member("data")).members().put("thinking", str("altered"));
         });
         OracleReport report = verify(fixture);
         assertThat(report.outcome("response.values", MAIN)).isEqualTo(Outcome.DEFECTIVE);
         String detail = report.check("response.values", MAIN).detail();
-        assertThat(detail).contains("4:msg_011Cg2aRQ1iZf8BxQVUnD2jR activity_id 2 but the record is non-terminal")
+        assertThat(detail).contains("5:msg_011CgFtNqh6qTBEynohz6sHZ activity_id 2 but the record is non-terminal")
                 .contains("stop_reason end_turn != null")
-                .contains("model_ref.name other-model != claude-haiku-4-5-20251001")
-                .contains("14:msg_011Cg2aRa7RdELQkMpTBpGr2 block 0 block_index 1")
+                .contains("model_ref.name other-model != claude-haiku-5-5")
+                .contains("20:msg_011CgFtPK87mrRwhN6SasbqP block 0 block_index 1")
                 .contains("block 0 block_type text != thinking")
-                .contains("15:msg_011Cg2aRa7RdELQkMpTBpGr2 content_blocks 2 != 1 native blocks")
-                .contains("25:msg_011Cg2aSX39xwYN5tqhMZAyi block 0 data VALUE at $.thinking");
+                .contains("21:msg_011CgFtPK87mrRwhN6SasbqP content_blocks 2 != 1 native blocks")
+                .contains("48:msg_011CgFtQH67MQLEis66mWQBp block 0 data VALUE at $.thinking");
     }
 
     @Test
@@ -68,14 +68,14 @@ class OcsfOracleValueCheckTest {
 
     @Test
     void requestNameResponseLinkAndReportedStateAreEachChecked(@TempDir Path work) {
-        Path fixture = copy(CHILD, work);
+        Path fixture = copy(LIVE_FEATURES, work);
         editEvents(pkg(fixture), events -> {
-            Json r5 = at(events, "tool_call", 1, 5);
-            obj(r5).members().put("tool_name", str("Grep"));
-            obj(r5).members().put("response_uid", str("msg_other"));
+            Json r6 = at(events, "tool_call", 1, 6);
+            obj(r6).members().put("tool_name", str("Grep"));
+            obj(r6).members().put("response_uid", str("msg_other"));
         });
         String detail = verify(fixture).check("request.values", MAIN).detail();
-        assertThat(detail).contains("5:toolu_0183ddwvMmvPzqAU5Jeu5hwZ tool_name Grep != ToolSearch").contains("response_uid msg_other != msg_011Cg2aRQ1iZf8BxQVUnD2jR");
+        assertThat(detail).contains("6:toolu_01LqFQri46W5W1yjZRqLKDVB tool_name Grep != Write").contains("response_uid msg_other != msg_011CgFtNqh6qTBEynohz6sHZ");
         Path codex = copy(CODEX, work.resolve("codex"));
         editEvents(pkg(codex), events -> obj(at(events, "tool_call", 1, 9)).members().put("reported_state", str("in_progress")));
         assertThat(verify(codex).check("request.values", ROLLOUT).detail()).contains("9:call_0001aaaa reported_state in_progress != completed");
@@ -83,15 +83,15 @@ class OcsfOracleValueCheckTest {
 
     @Test
     void resultStructuredDetailAndMissingResultAreEachChecked(@TempDir Path work) {
-        Path fixture = copy(CHILD, work);
+        Path fixture = copy(LIVE_FEATURES, work);
         editEvents(pkg(fixture), events -> {
-            Json r6 = at(events, "tool_call", 2, 6);
-            obj(r6.member("tool_result")).members().put("structured_result", new Json.JArray(List.of()));   // record 6 has a tool_use_result object
-            Json r24 = at(events, "tool_call", 2, 24);
-            obj(r24).members().remove("tool_result");
+            Json r7 = at(events, "tool_call", 2, 7);
+            obj(r7.member("tool_result")).members().put("structured_result", new Json.JArray(List.of()));   // record 7 has a tool_use_result object
+            Json r33 = at(events, "tool_call", 2, 33);
+            obj(r33).members().remove("tool_result");
         });
         String detail = verify(fixture).check("result.values", MAIN).detail();
-        assertThat(detail).contains("6:toolu_0183ddwvMmvPzqAU5Jeu5hwZ structured_result KIND at $").contains("24:toolu_01BnEuCUmZ2Vu1LpADzksmrJ tool_result absent");
+        assertThat(detail).contains("7:toolu_01LqFQri46W5W1yjZRqLKDVB structured_result KIND at $").contains("33:toolu_01WBvs5eGudfYPm8YvrTYTQK tool_result absent");
         Path codex = copy(CODEX, work.resolve("codex"));
         editEvents(pkg(codex), events -> obj(at(events, "tool_call", 2, 12).member("tool_result")).members().put("structured_result", str("none reported")));
         assertThat(verify(codex).check("result.values", ROLLOUT).detail()).contains("12:call_0001aaaa structured_result present but not reported");
@@ -99,34 +99,34 @@ class OcsfOracleValueCheckTest {
 
     @Test
     void usageNativeObjectMustBeRetained(@TempDir Path work) {
-        Path fixture = copy(CHILD, work);
-        editEvents(pkg(fixture), events -> obj(at(events, "model_response", 1, 4).member("usage_observations").elements().get(0)).members().remove("data"));
-        assertThat(verify(fixture).check("usage.values", MAIN).detail()).contains("4:4:2:claude-haiku-4-5-20251001 native usage object (data) not retained");
+        Path fixture = copy(LIVE_FEATURES, work);
+        editEvents(pkg(fixture), events -> obj(at(events, "model_response", 1, 5).member("usage_observations").elements().get(0)).members().remove("data"));
+        assertThat(verify(fixture).check("usage.values", MAIN).detail()).contains("5:5:2:claude-haiku-5-5 native usage object (data) not retained");
     }
 
     @Test
     void costScopeIsChecked(@TempDir Path work) {
-        Path fixture = copy(CHILD, work);
-        editEvents(pkg(fixture), events -> obj(at(events, "prompt_turn", 2, 27).member("cost_observation")).members().put("scope_id", num("3")));
-        assertThat(verify(fixture).check("cost.values", MAIN).detail()).contains("record 27 scope_id 3 != 4");
+        Path fixture = copy(LIVE_FEATURES, work);
+        editEvents(pkg(fixture), events -> obj(at(events, "prompt_turn", 2, 50).member("cost_observation")).members().put("scope_id", num("3")));
+        assertThat(verify(fixture).check("cost.values", MAIN).detail()).contains("record 50 scope_id 3 != 4");
     }
 
     @Test
     void decisionSourceReasonCandidatesAndMethodAreEachChecked(@TempDir Path work) {
-        Path fixture = copy(CHILD, work);
+        Path fixture = copy(LIVE_FEATURES, work);
         editEvents(pkg(fixture), events -> {
-            Json d6 = at(events, "tool_call", 2, 6).member("permission_decision");
-            obj(d6).members().put("decision_source", str("user"));
-            obj(d6).members().put("reason_type", str("rule"));                     // record 6 reports no reason_type
-            Json d24 = at(events, "tool_call", 2, 24).member("permission_decision");
-            obj(d24.member("attribution")).members().put("candidates", new Json.JArray(List.of(str("toolu_01BnEuCUmZ2Vu1LpADzksmrJ"), str("toolu_0183ddwvMmvPzqAU5Jeu5hwZ"))));
-            obj(d24.member("attribution")).members().put("method_id", num("2"));
+            Json d7 = at(events, "tool_call", 2, 7).member("permission_decision");
+            obj(d7).members().put("decision_source", str("user"));
+            obj(d7).members().put("reason_type", str("hook"));                     // record 7 reports reason_type rule
+            Json d33 = at(events, "tool_call", 2, 33).member("permission_decision");
+            obj(d33.member("attribution")).members().put("candidates", new Json.JArray(List.of(str("toolu_01WBvs5eGudfYPm8YvrTYTQK"), str("toolu_01LqFQri46W5W1yjZRqLKDVB"))));
+            obj(d33.member("attribution")).members().put("method_id", num("2"));
         });
         String detail = verify(fixture).check("decision.values", MAIN).detail();
-        assertThat(detail).contains("6:1:toolu_0183ddwvMmvPzqAU5Jeu5hwZ decision_source user != config")
-                .contains("reason_type rule != null")
-                .contains("24:1:toolu_01BnEuCUmZ2Vu1LpADzksmrJ attribution outcome/method 1/2 != 1/1")
-                .contains("candidates [toolu_01BnEuCUmZ2Vu1LpADzksmrJ, toolu_0183ddwvMmvPzqAU5Jeu5hwZ] != [toolu_01BnEuCUmZ2Vu1LpADzksmrJ]");
+        assertThat(detail).contains("7:1:toolu_01LqFQri46W5W1yjZRqLKDVB decision_source user != config")
+                .contains("reason_type hook != rule")
+                .contains("33:1:toolu_01WBvs5eGudfYPm8YvrTYTQK attribution outcome/method 1/2 != 1/1")
+                .contains("candidates [toolu_01WBvs5eGudfYPm8YvrTYTQK, toolu_01LqFQri46W5W1yjZRqLKDVB] != [toolu_01WBvs5eGudfYPm8YvrTYTQK]");
     }
 
     @Test
@@ -166,14 +166,14 @@ class OcsfOracleValueCheckTest {
 
     @Test
     void turnCompletedStopReasonAbsentWhereReportedIsADefect(@TempDir Path work) {
-        Path fixture = copy(CHILD, work);
-        editEvents(pkg(fixture), events -> obj(at(events, "prompt_turn", 2, 27)).members().remove("stop_reason"));
-        assertThat(verify(fixture).check("turn.values", MAIN).detail()).contains("record 27 stop_reason null != end_turn");
+        Path fixture = copy(LIVE_FEATURES, work);
+        editEvents(pkg(fixture), events -> obj(at(events, "prompt_turn", 2, 50)).members().remove("stop_reason"));
+        assertThat(verify(fixture).check("turn.values", MAIN).detail()).contains("record 50 stop_reason null != end_turn");
     }
 
     @Test
     void fallbackTimeBasisClaimedAsSourceTimeIsADefect(@TempDir Path work) {
-        Path fixture = copy(CHILD, work);
+        Path fixture = copy(LIVE_FEATURES, work);
         editEvents(pkg(fixture), events -> {
             Json system = at(events, "session_context", 1, 1);                   // the init line reports no timestamp
             obj(system.member("journal")).members().put("time_basis_id", num("1"));
@@ -232,40 +232,40 @@ class OcsfOracleValueCheckTest {
     /** identity.values: a session_uid or metadata.original_event_uid that disagrees with its own record is a defect; the control is VERIFIED. */
     @Test
     void sessionOrNativeIdentityCopiedWronglyIsADefect(@TempDir Path work) {
-        Path control = copy(CHILD, work.resolve("control"));
+        Path control = copy(LIVE_FEATURES, work.resolve("control"));
         OracleReport ok = verify(control);
         assertThat(ok.outcome("identity.values", MAIN)).isEqualTo(Outcome.VERIFIED);
         assertThat(ok.check("identity.values", MAIN).detail()).contains("session_uid and metadata.original_event_uid equal the record's own values");
-        Path fixture = copy(CHILD, work);
+        Path fixture = copy(LIVE_FEATURES, work);
         editEvents(pkg(fixture), events -> {
-            obj(at(events, "model_response", 1, 4)).members().put("session_uid", str("11111111-1111-4111-8111-111111111111"));
-            obj(at(events, "tool_call", 2, 6).member("metadata")).members().put("original_event_uid", str("not-the-record-uuid"));
+            obj(at(events, "model_response", 1, 5)).members().put("session_uid", str("11111111-1111-4111-8111-111111111111"));
+            obj(at(events, "tool_call", 2, 7).member("metadata")).members().put("original_event_uid", str("not-the-record-uuid"));
         });
         OracleReport report = verify(fixture);
         assertThat(report.outcome("identity.values", MAIN)).isEqualTo(Outcome.DEFECTIVE);
         assertThat(report.check("identity.values", MAIN).detail())
-                .contains("record 4 (model_response) session_uid 11111111-1111-4111-8111-111111111111 != reported 00000000-0000-4000-8000-000000000000")
-                .contains("record 6 (tool_call) metadata.original_event_uid not-the-record-uuid != record uuid");
+                .contains("record 5 (model_response) session_uid 11111111-1111-4111-8111-111111111111 != reported 00000000-0000-4000-8000-0000000000a1")
+                .contains("record 7 (tool_call) metadata.original_event_uid not-the-record-uuid != record uuid");
     }
 
     /** usage.values: the provider on a model-scope usage is the record's reported provider; one on a response-scope usage, which reports none, is an inference. */
     @Test
     void modelProviderIsReportedNotInferred(@TempDir Path work) {
-        Path fixture = copy(CHILD, work);
+        Path fixture = copy(LIVE_FEATURES, work);
         editEvents(pkg(fixture), events -> {
-            Json turn = at(events, "prompt_turn", 2, 27);
+            Json turn = at(events, "prompt_turn", 2, 50);
             for (Json u : turn.member("usage_observations").elements()) {
                 if ("6".equals(u.member("scope_id").scalarText())) {
                     obj(u.member("model_ref")).members().put("provider_kind", str("someone-else"));
                 }
             }
-            Json response = at(events, "model_response", 1, 4);
+            Json response = at(events, "model_response", 1, 5);
             obj(response.member("usage_observations").elements().get(0).member("model_ref")).members().put("provider_kind", str("anthropic"));
         });
         OracleReport report = verify(fixture);
         assertThat(report.outcome("usage.values", MAIN)).isEqualTo(Outcome.DEFECTIVE);
         assertThat(report.check("usage.values", MAIN).detail())
-                .contains("27:27:6:claude-haiku-4-5-20251001 model_ref.provider_kind someone-else != reported")
-                .contains("4:4:2:claude-haiku-4-5-20251001 model_ref.provider_kind anthropic present but the record reports no provider");
+                .contains("50:50:6:claude-haiku-5-5 model_ref.provider_kind someone-else != reported")
+                .contains("5:5:2:claude-haiku-5-5 model_ref.provider_kind anthropic present but the record reports no provider");
     }
 }

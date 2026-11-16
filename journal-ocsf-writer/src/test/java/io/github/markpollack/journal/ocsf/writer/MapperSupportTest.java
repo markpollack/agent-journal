@@ -8,8 +8,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CLAUDE_PAIR;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStreamStdout;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeTranscript;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.nativeOf;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.options;
@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * The shared mapping helpers and the block/decision/usage conventions on the events the Claude mappers write for the
- * pair fixture: block kinds and ids, bare-string content, thinking text, rendered blocks, decision ids, integral-only
+ * live pair fixture: block kinds and ids, bare-string content, thinking text, rendered blocks, decision ids, integral-only
  * usage components, model references, attribution scope, time formatting and native record classification.
  */
 class MapperSupportTest {
@@ -32,8 +32,10 @@ class MapperSupportTest {
                 {"type":"system","subtype":"task_notification","task_id":"task-1","tool_use_id":"call-1","status":"completed","session_id":"00000000-0000-4000-8000-000000000000","summary":"Run tests","uuid":"notification-1"}
                 """);
         Path core = work.resolve("core");
-        try (OcsfRunWriter writer = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
-            Replay.feedBytes(writer.source(claudeStream()), input, 4096, options().clock());
+        RunDescriptor run = new RunDescriptor("syn-task-notification", 0, "00000000-0000-4000-8000-000000000000", java.time.Instant.parse("2026-10-21T00:00:00Z"),
+                new RunDescriptor.Cli("Claude Code", "2.1.304", "Anthropic"), null, new Jv.Obj().put("label", "LABELLED SYNTHETIC: one task_notification record without usage"));
+        try (OcsfRunWriter writer = OcsfRunWriter.open(core, run, SchemaPin.bundled(), options())) {
+            Replay.feedBytes(writer.source(claudeStreamStdout()), input, 4096, options().clock());
             writer.complete();
         }
         var pkg = io.github.markpollack.journal.tck.ocsf.PackageReader.open(core.resolve("events.jsonl"));
@@ -55,9 +57,9 @@ class MapperSupportTest {
     @Test
     void blocksCarryTheirIdsTextsAndKindsAndBareStringsAreOneTextBlock(@TempDir Path work) {
         Path core = work.resolve("core");
-        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(PAIR), SchemaPin.bundled(), options(), WriterTestSupport.PAIR_LOG)) {
-            Replay.feedBytes(w.source(claudeStream()), nativeOf(PAIR, "stream.jsonl"), 4096, options().clock());
-            Replay.feedBytes(w.source(claudeTranscript()), nativeOf(PAIR, "transcript.jsonl"), 4096, options().clock());
+        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(LIVE_CLAUDE_PAIR), SchemaPin.bundled(), options(), WriterTestSupport.PAIR_LOG)) {
+            Replay.feedBytes(w.source(claudeStreamStdout()), nativeOf(LIVE_CLAUDE_PAIR, "stream.jsonl"), 4096, options().clock());
+            Replay.feedBytes(w.source(claudeTranscript()), nativeOf(LIVE_CLAUDE_PAIR, "transcript.jsonl"), 4096, options().clock());
             w.complete();
         }
         List<Jv> events = new ArrayList<>();
@@ -109,7 +111,7 @@ class MapperSupportTest {
                 assertThat(b.member("block_kind").text()).isEqualTo(MapperSupport.BLOCK_KIND.get(((Jv.Num) b.member("block_kind_id")).value().intValue()));
             }
         }
-        assertThat(toolUse).as("root core: stream records 5 and 16 plus transcript record 13 (record 20 belongs to the child core)").isEqualTo(3);
+        assertThat(toolUse).as("stream records 5, 8, 10 and 12 plus transcript records 24, 35, 40 and 45").isEqualTo(8);
         assertThat(toolResult).as("tool_result blocks become tool_call Result events, never content blocks of a message").isEqualTo(0);
         // the block conventions on content the mappers do not route through a message: a direct call
         Jv.Arr direct = MapperSupport.blocks(new MappingContracts(), ClaudeStreamMapper.CONTRACT, Jv.parse(
@@ -130,9 +132,9 @@ class MapperSupportTest {
         assertThat(renderedDirect.elements().get(1).member("text")).isNull();
         assertThat(((Jv.Num) renderedDirect.elements().get(1).member("block_index")).value().intValue()).isEqualTo(1);
         assertThat(MapperSupport.renderedBlocks(null).elements()).isEmpty();
-        assertThat(thinking).as("the sanitized stream carries thinking blocks").isPositive();
-        assertThat(bare).as("transcript prompt record 3 and stream task-notification message record 27 are bare strings").isEqualTo(2);
-        assertThat(rendered).as("three rendered attachments: records 4, 5 and 15; credential_org renders nothing").isEqualTo(3);
+        assertThat(thinking).as("the sanitized live stream carries thinking blocks").isPositive();
+        assertThat(bare).as("transcript prompt record 3 and stream result record 15 are bare strings").isEqualTo(2);
+        assertThat(rendered).as("fourteen attachments carry rendered[] (records 4-9, 11-13, 15, 27, 37, 42 and 47); credential_org, prompt_snapshot and deferred_tools_record render nothing").isEqualTo(14);
         // rendered blocks are indexed from zero in order
         for (Jv e : events) {
             if (e.member("context_kind") != null && e.member("content_blocks") != null) {

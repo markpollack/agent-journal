@@ -38,9 +38,9 @@ import static io.github.markpollack.journal.ocsf.writer.ExperimentSupport.canoni
 import static io.github.markpollack.journal.ocsf.writer.ExperimentSupport.exact;
 import static io.github.markpollack.journal.ocsf.writer.ExperimentSupport.records;
 import static io.github.markpollack.journal.ocsf.writer.ExperimentSupport.replay;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CHILD;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStreamStdout;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.codexRollout;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -74,9 +74,9 @@ class MapperComparisonTest {
 
     static Stream<Candidate> candidates() {
         return Stream.of(
-                new Candidate("claude-stream/jslt", CHILD, "stream.jsonl", claudeStream(), ClaudeStreamMapper::new,
+                new Candidate("claude-stream/jslt", LIVE_FEATURES, "stream.jsonl", claudeStreamStdout(), ClaudeStreamMapper::new,
                         () -> new JsltEngineMapper(EngineMapper.Profile.CLAUDE_STREAM, false), 11),
-                new Candidate("claude-stream/jsonata", CHILD, "stream.jsonl", claudeStream(), ClaudeStreamMapper::new,
+                new Candidate("claude-stream/jsonata", LIVE_FEATURES, "stream.jsonl", claudeStreamStdout(), ClaudeStreamMapper::new,
                         () -> new JsonataEngineMapper(EngineMapper.Profile.CLAUDE_STREAM), 11),
                 new Candidate("codex-rollout/jslt", CODEX, "rollout.jsonl", codexRollout(), CodexRolloutMapper::new,
                         () -> new JsltEngineMapper(EngineMapper.Profile.CODEX_ROLLOUT, false), 4),
@@ -264,10 +264,10 @@ class MapperComparisonTest {
                 .append("'map' is the full SourceMapper path (engine rows: record parse by the engine's reader, env build, evaluate, output re-read into Jv, emit through SourceContext); ")
                 .append("'evaluate' is the engine's apply/evaluate call alone. Single thread. Not a production SLA.\n\n");
         sb.append("| fixture | case | records | mapper | map median us | map p95 us | map mean us | map max us | evaluate median us | evaluate p95 us |\n|---|---|---|---|---|---|---|---|---|---|\n");
-        for (String fixture : List.of(CHILD, CODEX)) {
+        for (String fixture : List.of(LIVE_FEATURES, CODEX)) {
             boolean codex = fixture.equals(CODEX);
             String artifact = codex ? "rollout.jsonl" : "stream.jsonl";
-            SourceDescriptor d = codex ? codexRollout() : claudeStream();
+            SourceDescriptor d = codex ? codexRollout() : claudeStreamStdout();
             List<NativeRecord> all = records(fixture, artifact);
             Map<String, List<NativeRecord>> kinds = new LinkedHashMap<>();
             for (NativeRecord r : all) {
@@ -334,7 +334,7 @@ class MapperComparisonTest {
                 .append("Engines are not pluggable into the writer without changing SourceMapper.forProfile (main code), which this experiment does not do.\n\n");
         sb.append("| fixture | records | flush every | median ms | p95 ms | max ms | median us/record | events.jsonl bytes |\n|---|---|---|---|---|---|---|---|\n");
         int run = 0;
-        for (String fixture : List.of(CHILD, CODEX)) {
+        for (String fixture : List.of(LIVE_FEATURES, CODEX)) {
             boolean codex = fixture.equals(CODEX);
             String artifact = codex ? "rollout.jsonl" : "stream.jsonl";
             Path file = WriterTestSupport.nativeOf(fixture, artifact);
@@ -347,7 +347,7 @@ class MapperComparisonTest {
                     WriterOptions options = WriterTestSupport.options().withAutoFlush(flush);
                     long t0 = System.nanoTime();
                     try (OcsfRunWriter w = OcsfRunWriter.open(dir, WriterTestSupport.run(fixture), SchemaPin.bundled(), options)) {
-                        SourceInput in = w.source(codex ? codexRollout() : claudeStream());
+                        SourceInput in = w.source(codex ? codexRollout() : claudeStreamStdout());
                         Replay.feedRecords(in, file, options.clock());
                         w.complete();
                     }
@@ -379,10 +379,10 @@ class MapperComparisonTest {
                 .append("with a discarding sink (the state a mapper retains at EOF). Single-shot deltas in KB; includes JIT/class-loading side effects of the first use of each library, ")
                 .append("so treat values below ~200 KB as noise rather than a measurement.\n\n");
         sb.append("| fixture | mapper | create KB | after replay KB (delta from create) |\n|---|---|---|---|\n");
-        for (String fixture : List.of(CHILD, CODEX)) {
+        for (String fixture : List.of(LIVE_FEATURES, CODEX)) {
             boolean codex = fixture.equals(CODEX);
             String artifact = codex ? "rollout.jsonl" : "stream.jsonl";
-            SourceDescriptor d = codex ? codexRollout() : claudeStream();
+            SourceDescriptor d = codex ? codexRollout() : claudeStreamStdout();
             List<NativeRecord> all = records(fixture, artifact);
             Map<String, Supplier<SourceMapper>> mappers = new LinkedHashMap<>();
             mappers.put("baseline (direct Java)", codex ? CodexRolloutMapper::new : ClaudeStreamMapper::new);

@@ -15,8 +15,8 @@ import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_SUBAGENT;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.agyStream;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStreamStdout;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.codexRollout;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.codexStream;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.nativeOf;
@@ -50,9 +50,9 @@ class PrefixReplayTest {
 
     @Test
     void everyPrefixOfTheClaudeStreamIsJudgedDefectFreeByTheOracle(@TempDir Path work) throws Exception {
-        List<String> summary = prefixes(work, PAIR, "stream.jsonl", claudeStream());
+        List<String> summary = prefixes(work, LIVE_FEATURES, "stream.jsonl", claudeStreamStdout());
         assertThat(summary).as(String.join("\n", summary)).allMatch(s -> s.endsWith("OK"));
-        assertThat(summary.size()).isEqualTo(27);
+        assertThat(summary.size()).isEqualTo(50);
     }
 
     /**

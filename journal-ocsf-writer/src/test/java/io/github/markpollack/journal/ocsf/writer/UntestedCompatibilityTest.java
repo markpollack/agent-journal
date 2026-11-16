@@ -16,7 +16,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CHILD;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.UNTESTED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStreamStdout;
@@ -115,11 +115,11 @@ class UntestedCompatibilityTest {
     /** Negative control: the same stream normalized under the nearest entry's mapper is a defect the oracle sees, not a pass. */
     @Test
     void normalizingAfterANoMatchSelectionIsADefect(@TempDir Path work) throws Exception {
-        // forge: rewrite the in-force compatibility declaration of a package whose records WERE normalized (the tested 2.1.299 fixture)
+        // forge: rewrite the in-force compatibility declaration of a package whose records WERE normalized (the tested 2.1.304 live fixture)
         // to claim no_match; the oracle must notice that normalized events follow the selection
         Path forged = work.resolve("forged");
-        try (OcsfRunWriter w = OcsfRunWriter.open(forged, run(CHILD), SchemaPin.bundled(), options())) {
-            Replay.feedBytes(w.source(WriterTestSupport.claudeStream()), nativeOf(CHILD, "stream.jsonl"), 1024, options().clock());
+        try (OcsfRunWriter w = OcsfRunWriter.open(forged, run(LIVE_FEATURES), SchemaPin.bundled(), options())) {
+            Replay.feedBytes(w.source(WriterTestSupport.claudeStreamStdout()), nativeOf(LIVE_FEATURES, "stream.jsonl"), 1024, options().clock());
             w.complete();
         }
         Path events = forged.resolve("events.jsonl");
@@ -128,8 +128,8 @@ class UntestedCompatibilityTest {
         assertThat(edited).isNotEqualTo(text);
         Files.writeString(events, edited, StandardCharsets.UTF_8);
         Files.deleteIfExists(forged.resolve("run.json")); // the file alone; no manifest to disagree with
-        Files.deleteIfExists(forged.resolve("children").resolve(WriterTestSupport.SPAWN).resolve("run.json"));
-        OracleReport report = verify(forged, nativeDir(work.resolve("n2"), CHILD, "stream.jsonl", -1));
+        Files.deleteIfExists(forged.resolve("children").resolve(WriterTestSupport.LIVE_SPAWN).resolve("run.json"));
+        OracleReport report = verify(forged, nativeDir(work.resolve("n2"), LIVE_FEATURES, "stream.jsonl", -1));
         assertThat(report.outcome("source.compatibility", "main/stream.jsonl")).isEqualTo(Check.Outcome.DEFECTIVE);
         assertThat(report.check("source.compatibility", "main/stream.jsonl").detail()).contains("were normalized");
     }
@@ -141,28 +141,28 @@ class UntestedCompatibilityTest {
     @Test
     void aTestedVersionOnItsRouteIsSelectedAndVerified(@TempDir Path work) throws Exception {
         Path core = work.resolve("core");
-        RunDescriptor spec = run(CHILD);
-        assertThat(spec.cli().version()).isEqualTo("2.1.299");
+        RunDescriptor spec = launchDeclared();
+        assertThat(spec.cli().version()).isEqualTo("2.1.304");
         try (OcsfRunWriter w = OcsfRunWriter.open(core, spec, SchemaPin.bundled(), options())) {
-            Replay.feedBytes(w.source(WriterTestSupport.claudeStream()), nativeOf(CHILD, "stream.jsonl"), 1024, options().clock());
+            Replay.feedBytes(w.source(WriterTestSupport.claudeStreamStdout()), nativeOf(LIVE_FEATURES, "stream.jsonl"), 1024, options().clock());
             w.complete();
         }
         OcsfPackage p = open(core);
         List<Json> history = p.declarations.compatibility("stream.jsonl");
         assertThat(history).as("the init record's equal assertion adds no selection").hasSize(1);
         assertThat(history.get(0).member("status").text()).isEqualTo("tested");
-        assertThat(history.get(0).member("entry_id").text()).isEqualTo("claude-code/stream-json/2.1.299-sdk");
-        assertThat(history.get(0).member("route").text()).isEqualTo("sdk");
+        assertThat(history.get(0).member("entry_id").text()).isEqualTo("claude-code/stream-json/2.1.304-stdout");
+        assertThat(history.get(0).member("route").text()).isEqualTo("stdout");
         assertThat(history.get(0).member("version_assertions").elements()).extracting(a -> a.member("origin").text()).containsExactly("launch");
-        assertThat(p.declarations.cliVersion().member("version").text()).as("the stream's own report is still declared").isEqualTo("2.1.299");
+        assertThat(p.declarations.cliVersion().member("version").text()).as("the stream's own report is still declared").isEqualTo("2.1.304");
         assertThat(p.diagnosticsWithCode("COMPATIBILITY_NO_MATCH")).isEmpty();
         assertThat(p.diagnosticsWithCode("COMPATIBILITY_IN_RANGE")).isEmpty();
         assertThat(p.diagnosticsWithCode("COMPATIBILITY_CONFLICT")).isEmpty();
         assertThat(p.diagnosticsWithCode("CONTRACT_APPLICABILITY")).isEmpty();
-        OracleReport report = verify(core, nativeDir(work, CHILD, "stream.jsonl", -1));
+        OracleReport report = verify(core, nativeDir(work, LIVE_FEATURES, "stream.jsonl", -1));
         assertThat(report.defects()).as(report.toString()).isEmpty();
         assertThat(report.outcome("source.compatibility", "main/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
-        assertThat(report.outcome("source.compatibility", "child:" + WriterTestSupport.SPAWN + "/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
+        assertThat(report.outcome("source.compatibility", "child:" + WriterTestSupport.LIVE_SPAWN + "/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
     }
 
     /** A declared version at launch with a stated discovery basis (the Codex path): the basis travels into the run and compatibility declarations. */
@@ -397,14 +397,14 @@ class UntestedCompatibilityTest {
     /** The launch declaration contradicted by the stream's init record: a conflict from record 1, nothing normalized, the first assertion not preferred. */
     @Test
     void aLaunchDeclarationContradictedByTheStreamIsAConflict(@TempDir Path work) throws Exception {
-        List<String> lines = Files.readAllLines(nativeOf(CHILD, "stream.jsonl"), StandardCharsets.UTF_8);
+        List<String> lines = Files.readAllLines(nativeOf(LIVE_FEATURES, "stream.jsonl"), StandardCharsets.UTF_8);
         List<String> edited = new java.util.ArrayList<>(lines);
-        edited.set(0, lines.get(0).replace("\"claude_code_version\":\"2.1.299\"", "\"claude_code_version\":\"2.1.303\""));
+        edited.set(0, lines.get(0).replace("\"claude_code_version\":\"2.1.304\"", "\"claude_code_version\":\"2.1.303\""));
         assertThat(edited.get(0)).contains("2.1.303");
         Path nat = write(work, edited);
         Path core = work.resolve("core");
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(CHILD), SchemaPin.bundled(), options())) {
-            Replay.feedBytes(w.source(WriterTestSupport.claudeStream()), nat.resolve("stream.jsonl"), 1024, options().clock());
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, launchDeclared(), SchemaPin.bundled(), options())) {
+            Replay.feedBytes(w.source(WriterTestSupport.claudeStreamStdout()), nat.resolve("stream.jsonl"), 1024, options().clock());
             w.complete();
         }
         OcsfPackage p = open(core);
@@ -412,7 +412,7 @@ class UntestedCompatibilityTest {
         assertThat(history).extracting(c -> c.member("status").text()).containsExactly("tested", "conflict");
         assertThat(history.get(1).member("records_before_selection").scalarText()).isEqualTo("0");
         assertThat(history.get(1).member("version_assertions").elements()).extracting(a -> a.member("version").text() + "/" + a.member("origin").text())
-                .containsExactly("2.1.299/launch", "2.1.303/source");
+                .containsExactly("2.1.304/launch", "2.1.303/source");
         assertThat(p.events).filteredOn(e -> e.recordIndex() != null).allMatch(e -> "source_record".equals(e.className));
         assertThat(p.children).isEmpty();
         OracleReport report = verify(core, nat);
@@ -461,5 +461,12 @@ class UntestedCompatibilityTest {
             }
         }
         return -1;
+    }
+
+    /** The live feature run's descriptor with the CLI version the capture declared at launch (2.1.304, as CliCapture discovers it). */
+    private static RunDescriptor launchDeclared() {
+        RunDescriptor base = run(LIVE_FEATURES);
+        return new RunDescriptor(base.runUid(), base.invocationIndex(), base.sessionUid(), base.captureStart(),
+                new RunDescriptor.Cli("Claude Code", "2.1.304", "Anthropic"), base.launchSettings(), base.synthetic());
     }
 }

@@ -78,12 +78,7 @@ final class Compatibility {
 
 
     record Entry(String id, String cli, String profile, List<String> routes, String minVersion, String maxVersion, Jv sourceSpecification, Jv schema,
-            String contract, String mapper, List<Jv> tested, String note, String retired, Jv raw) {
-
-        /** A retired entry still selects (its labelled recordings replay as tested on their route) but is historical evidence, not a production route. */
-        boolean isRetired() {
-            return retired != null;
-        }
+            String contract, String mapper, List<Jv> tested, String note, Jv raw) {
 
         boolean keyMatches(String cli, String profile, String route) {
             return this.cli.equals(cli) && this.profile.equals(profile) && route != null && routes.contains(route);
@@ -171,7 +166,7 @@ final class Compatibility {
         }
         return new Entry(required(e, "id"), required(e, "cli"), required(e, "profile"), List.copyOf(routes), neutral ? null : required(e, "min_version"),
                 neutral ? null : required(e, "max_version"),
-                e.member("source_specification"), e.member("schema"), required(e, "contract"), required(e, "mapper"), List.copyOf(tested), MapperSupport.text(e, "note"), MapperSupport.text(e, "retired"), e);
+                e.member("source_specification"), e.member("schema"), required(e, "contract"), required(e, "mapper"), List.copyOf(tested), MapperSupport.text(e, "note"), e);
     }
 
     private static String required(Jv e, String member) {
@@ -383,7 +378,7 @@ final class Compatibility {
         };
     }
 
-    /** The selected entry's own facts: identity, range, specification, schema, mapper, contract, tested evidence, note and retirement. */
+    /** The selected entry's own facts: identity, range, specification, schema, mapper, contract, tested evidence and note. */
     private static void describe(Jv.Obj d, Entry e) {
         d.put("entry_id", e.id());
         if (!e.neutral()) {
@@ -393,9 +388,6 @@ final class Compatibility {
                 .put("schema", e.schema()).put("mapper", e.mapper()).put("contract", e.contract()).put("tested", new Jv.Arr(e.tested()));
         if (e.note() != null) {
             d.put("note", e.note());
-        }
-        if (e.isRetired()) {
-            d.put("retired", e.retired());
         }
     }
 

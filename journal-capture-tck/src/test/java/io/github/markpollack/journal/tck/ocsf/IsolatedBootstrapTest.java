@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CHILD;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.LIVE_FEATURES;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copy;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.pkg;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,7 +24,7 @@ class IsolatedBootstrapTest {
 
     @Test
     void aCopiedCoreWithItsChildBootstrapsWithoutAnythingElse(@TempDir Path work) throws Exception {
-        Path fixture = copy(CHILD, work.resolve("src"));
+        Path fixture = copy(LIVE_FEATURES, work.resolve("src"));
         Path empty = work.resolve("empty");
         Files.createDirectories(empty);
         try (Stream<Path> s = Files.walk(pkg(fixture))) {
@@ -49,14 +49,14 @@ class IsolatedBootstrapTest {
         assertThat(p.catalog.enumerate()).contains("class agentic_cli/tool_call").contains("object agentic_cli/source_ref");
         assertThat(SemanticContract.validate(p.manifest.semanticContract(), p.catalog)).isEmpty();
         Json views = AnalysisViews.all(p);
-        assertThat(views.path("usage", "group_count").scalarText()).as("the task figure and the Agent result's one-response usage of the child run are two groups, and the run total and its last response two more").isEqualTo("8");
+        assertThat(views.path("usage", "group_count").scalarText()).as("six model responses; the task figure and the Agent result's one-response usage of the child run are two groups; the run total, the model's usage and the last response three more").isEqualTo("11");
         assertThat(views.member("children").elements()).hasSize(1);
-        assertThat(views.path("tool_exchanges", "calls").elements()).hasSize(2);
+        assertThat(views.path("tool_exchanges", "calls").elements()).hasSize(8);
         List<Event> stream = p.events.stream().filter(e -> "stream.jsonl".equals(e.artifact())).toList();
-        Reconstruction.Result r = Reconstruction.reconstruct(stream, 27);
-        assertThat(r.lines()).as("the parent core owns 24 of the 27 records; the child owns the other 3").hasSize(24);
-        Reconstruction.Result child = Reconstruction.reconstruct(p.children.get(0).events, 27);
-        assertThat(child.lines().keySet()).containsExactly(18, 20, 21);
+        Reconstruction.Result r = Reconstruction.reconstruct(stream, 50);
+        assertThat(r.lines()).as("the parent core owns 45 of the 50 records; the child owns the other 5").hasSize(45);
+        Reconstruction.Result child = Reconstruction.reconstruct(p.children.get(0).events, 50);
+        assertThat(child.lines().keySet()).containsExactly(24, 26, 27, 29, 30);
         assertThat(PackageMeasure.measure(p).member("definitions_closure_bytes")).isNotNull();
     }
 }

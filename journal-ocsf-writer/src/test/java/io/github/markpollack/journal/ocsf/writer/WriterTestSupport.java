@@ -25,11 +25,9 @@ import java.util.List;
 final class WriterTestSupport {
 
     static final Path FIXTURES = Path.of("..", "journal-capture-tck", "src", "test", "resources", "ocsf", "fixtures").toAbsolutePath().normalize();
-    static final String CHILD = "claude-child-2.1.299";
     static final String CODEX = "syn-codex-counterexamples";
     static final String PAIR = "syn-claude-pair-transcript";
     static final String CODEX_STREAM = "syn-codex-exec-stream";
-    static final String INTERRUPTED = "claude-child-2.1.299-interrupted";
     static final String UNTESTED = "syn-claude-untested-version";
     /** Sanitized real live recordings of ACCEPT-1 (2026-10-21), replayed through the writer to produce their committed packages. */
     static final String LIVE_FEATURES = "claude-live-2.1.304-features";
@@ -64,13 +62,14 @@ final class WriterTestSupport {
     static final String LIVE_JUNIE_VIEW = "junie-live-3813.7-view";
     static final String LIVE_JUNIE_TERMINAL = "junie-live-3813.7-terminal";
     static final String LIVE_MCP = "claude-live-2.1.304-mcp";
-    static final String SPAWN = "toolu_01BnEuCUmZ2Vu1LpADzksmrJ";
+    /** The Agent call of {@link #LIVE_FEATURES} whose child-run records are routed to their own core. */
+    static final String LIVE_SPAWN = "toolu_01WBvs5eGudfYPm8YvrTYTQK";
 
     private WriterTestSupport() {
     }
 
-    /** Why tests record the pair fixture's stream and session file together without assembly. */
-    static final String PAIR_LOG = "the pair fixture's stream and session file recorded together without assembly, to exercise both mappers in one file";
+    /** Why tests record the live pair fixture's stream and session file together without assembly. */
+    static final String PAIR_LOG = "the live pair fixture's stream and session file recorded together without assembly, to exercise both mappers in one file";
 
     /** The acquisition an assembled fixture's spec asserts for its inputs: the one live launch it records. */
     static String launch(String fixture) {
@@ -95,11 +94,7 @@ final class WriterTestSupport {
         }
     }
 
-    static SourceDescriptor claudeStream() {
-        return new SourceDescriptor("stream.jsonl", 1, "claude_stream", "sdk", "fixture stream replayed (SDK-delivered lines of the original capture)", null);
-    }
-
-    /** The same profile on the raw-stdout route (the route of the live captures). */
+    /** The Claude stream profile on the raw-stdout route (the route of the live captures). */
     static SourceDescriptor claudeStreamStdout() {
         return new SourceDescriptor("stream.jsonl", 1, "claude_stream", "stdout", "fixture stream replayed as raw standard output", null);
     }

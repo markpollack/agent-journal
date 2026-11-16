@@ -1,5 +1,6 @@
 package io.github.markpollack.journal.ocsf.writer;
 
+import io.github.markpollack.journal.tck.ocsf.AnalysisViews;
 import io.github.markpollack.journal.tck.ocsf.Event;
 import io.github.markpollack.journal.tck.ocsf.OcsfPackage;
 import io.github.markpollack.journal.tck.ocsf.OcsfReaderTool;
@@ -17,9 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CLAUDE_PAIR;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR_LOG;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStreamStdout;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeTranscript;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.nativeOf;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.options;
@@ -38,15 +40,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class CombinedSourceAdmissionTest {
 
-    static final String RUN_SESSION = "00000000-0000-4000-8000-000000000000";
+    static final String RUN_SESSION = "00000000-0000-4000-8000-0000000000a4";
     static final String OTHER_SESSION = "11111111-1111-4111-8111-111111111111";
-    static final String SHARED_CALL = "toolu_0183ddwvMmvPzqAU5Jeu5hwZ";
 
     @Test
     void thePlainWriterRecordsOneSourceAndRefusesASecond(@TempDir Path work) {
         Path core = work.resolve("core");
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
-            Replay.feedBytes(w.source(claudeStream()), nativeOf(PAIR, "stream.jsonl"), 4096, options().clock());
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options())) {
+            Replay.feedBytes(w.source(claudeStreamStdout()), nativeOf(LIVE_FEATURES, "stream.jsonl"), 4096, options().clock());
             assertThatThrownBy(() -> w.source(claudeTranscript())).isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("final assembly").hasMessageContaining("unvalidated evidence log");
             assertThat(w.complete()).isEqualTo(OcsfRunWriter.State.COMPLETED);
@@ -59,14 +60,14 @@ class CombinedSourceAdmissionTest {
     @Test
     void aSessionFileOfAnotherSessionInAnEvidenceLogIsNeverAcceptedAsOneExecution(@TempDir Path work) throws IOException {
         Path nativeDir = Files.createDirectories(work.resolve("native"));
-        Files.copy(nativeOf(PAIR, "stream.jsonl"), nativeDir.resolve("stream.jsonl"));
+        Files.copy(nativeOf(LIVE_CLAUDE_PAIR, "stream.jsonl"), nativeDir.resolve("stream.jsonl"));
         // the same session file bytes, except that every record's sessionId names another session
-        String foreign = Files.readString(nativeOf(PAIR, "transcript.jsonl"), StandardCharsets.UTF_8).replace(RUN_SESSION, OTHER_SESSION);
+        String foreign = Files.readString(nativeOf(LIVE_CLAUDE_PAIR, "transcript.jsonl"), StandardCharsets.UTF_8).replace(RUN_SESSION, OTHER_SESSION);
         assertThat(foreign).contains(OTHER_SESSION).doesNotContain(RUN_SESSION);
         Files.writeString(nativeDir.resolve("transcript.jsonl"), foreign, StandardCharsets.UTF_8);
         Path core = work.resolve("core");
-        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(PAIR), SchemaPin.bundled(), options(), PAIR_LOG)) {
-            Replay.feedBytes(w.source(claudeStream()), nativeDir.resolve("stream.jsonl"), 4096, options().clock());
+        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(LIVE_CLAUDE_PAIR), SchemaPin.bundled(), options(), PAIR_LOG)) {
+            Replay.feedBytes(w.source(claudeStreamStdout()), nativeDir.resolve("stream.jsonl"), 4096, options().clock());
             Replay.feedBytes(w.source(claudeTranscript()), nativeDir.resolve("transcript.jsonl"), 4096, options().clock());
             assertThat(w.complete()).as("an evidence log records what it was given").isEqualTo(OcsfRunWriter.State.COMPLETED);
         }
@@ -75,9 +76,9 @@ class CombinedSourceAdmissionTest {
         Map<String, List<String>> sessions = sessionsByArtifact(pkg);
         assertThat(sessions.get("stream.jsonl")).containsOnly(RUN_SESSION);
         assertThat(sessions.get("transcript.jsonl")).as("another session's facts, recorded as evidence").contains(OTHER_SESSION);
-        // the fixture's own frozen manifest (with its child core), naming the substituted bytes: same length, another hash
-        String frozen = Files.readString(nativeOf(PAIR, "expected-sources.json"), StandardCharsets.UTF_8)
-                .replace(SchemaPin.sha256(Files.readAllBytes(nativeOf(PAIR, "transcript.jsonl"))), SchemaPin.sha256(foreign.getBytes(StandardCharsets.UTF_8)));
+        // the fixture's own frozen manifest, naming the substituted bytes: same length, another hash
+        String frozen = Files.readString(nativeOf(LIVE_CLAUDE_PAIR, "expected-sources.json"), StandardCharsets.UTF_8)
+                .replace(SchemaPin.sha256(Files.readAllBytes(nativeOf(LIVE_CLAUDE_PAIR, "transcript.jsonl"))), SchemaPin.sha256(foreign.getBytes(StandardCharsets.UTF_8)));
         Files.writeString(nativeDir.resolve("expected-sources.json"), frozen, StandardCharsets.UTF_8);
         OracleReport report = WriterTestSupport.verify(core, nativeDir);
         assertThat(report.defects()).as("each source's own observations still verify against its bytes").isEmpty();
@@ -142,18 +143,25 @@ class CombinedSourceAdmissionTest {
 
     @Test
     void everyCoreOfAnEvidenceLogDeclaresItselfUnvalidatedAndReadsAlone(@TempDir Path work) throws IOException {
+        // the scrubbed real sub-agent run (Claude Code 2.1.316): its original SDK transport stream, whose Agent call splits
+        // a child core, and the session file of the same session
+        Path run = RealRecording.nativeDir(RealRecording.PUBLIC.resolve("sub-agent"));
+        String agentCall = "toolu_01KQMhaSZMrxp98fqQBkmHCC";
+        RunDescriptor spec = new RunDescriptor("real-sub-agent-2.1.316", 0, "1e60ebc7-85e6-4b7c-bd39-897d99229066", java.time.Instant.parse("2026-11-08T00:00:00Z"),
+                new RunDescriptor.Cli("Claude Code", "2.1.316", "Anthropic"), null, null);
         Path core = work.resolve("core");
-        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(PAIR), SchemaPin.bundled(), options(), PAIR_LOG)) {
-            Replay.feedBytes(w.source(claudeStream()), nativeOf(PAIR, "stream.jsonl"), 4096, options().clock());
-            Replay.feedBytes(w.source(claudeTranscript()), nativeOf(PAIR, "transcript.jsonl"), 4096, options().clock());
+        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, spec, SchemaPin.bundled(), options(), PAIR_LOG)) {
+            Replay.feedBytes(w.source(new SourceDescriptor("stream.jsonl", 1, "claude_stream", "sdk_stdio", "original SDK transport bytes of the real run", null)),
+                    run.resolve("stdout.bin"), 4096, options().clock());
+            Replay.feedBytes(w.source(claudeTranscript()), run.resolve("native").resolve("transcript.jsonl"), 4096, options().clock());
             w.complete();
         }
         OcsfPackage pkg = WriterTestSupport.open(core);
-        assertThat(pkg.all()).hasSizeGreaterThan(1).allSatisfy(c -> {
+        assertThat(pkg.all()).as("the main core and the Agent call's child core").hasSize(2).allSatisfy(c -> {
             assertThat(c.declarations.run().path("combination", "status").text()).isEqualTo("unvalidated evidence log");
             assertThat(c.declarations.run().path("combination", "reason").text()).isEqualTo(PAIR_LOG);
         });
-        long both = pkg.events.stream().filter(e -> SHARED_CALL.equals(e.text("tool_call_uid"))).map(Event::artifact).distinct().count();
+        long both = pkg.events.stream().filter(e -> agentCall.equals(e.text("tool_call_uid"))).map(Event::artifact).distinct().count();
         assertThat(both).as("an entity both sources report appears once per source: nothing consolidated it").isEqualTo(2);
         Path alone = Files.createDirectories(work.resolve("copied"));
         Files.copy(core.resolve("events.jsonl"), alone.resolve("events.jsonl"));
@@ -168,9 +176,9 @@ class CombinedSourceAdmissionTest {
     @Test
     void aMultiSourceFileWrittenBeforeThePolicyReadsAsBeforeAndIsClassifiedUnvalidated(@TempDir Path work) throws IOException {
         Path core = work.resolve("core");
-        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(PAIR), SchemaPin.bundled(), options(), PAIR_LOG)) {
-            Replay.feedBytes(w.source(claudeStream()), nativeOf(PAIR, "stream.jsonl"), 4096, options().clock());
-            Replay.feedBytes(w.source(claudeTranscript()), nativeOf(PAIR, "transcript.jsonl"), 4096, options().clock());
+        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(LIVE_CLAUDE_PAIR), SchemaPin.bundled(), options(), PAIR_LOG)) {
+            Replay.feedBytes(w.source(claudeStreamStdout()), nativeOf(LIVE_CLAUDE_PAIR, "stream.jsonl"), 4096, options().clock());
+            Replay.feedBytes(w.source(claudeTranscript()), nativeOf(LIVE_CLAUDE_PAIR, "transcript.jsonl"), 4096, options().clock());
             w.complete();
         }
         // the plain writer's output before the policy: the same file without the combination member
@@ -184,6 +192,35 @@ class CombinedSourceAdmissionTest {
         assertThat(pkg.refused()).isFalse();
         assertThat(pkg.combination()).isEqualTo(OcsfPackage.Combination.UNVALIDATED_UNDECLARED);
         assertThat(sessionsByArtifact(pkg)).containsOnlyKeys("stream.jsonl", "transcript.jsonl");
+    }
+
+    /**
+     * The live pair's stream and session file recorded together as an evidence log: response identities are run-scoped
+     * reported ids, so the logical count is the identity count, and a tool result both sources report is one owner observed
+     * twice, kept apart from identical content under distinct owners.
+     */
+    @Test
+    void anEvidenceLogCountsRunScopedIdentitiesLogicallyAndSeparatesRepeatsFromIdenticalContent(@TempDir Path work) {
+        Path core = work.resolve("core");
+        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(LIVE_CLAUDE_PAIR), SchemaPin.bundled(), options(), PAIR_LOG)) {
+            Replay.feedBytes(w.source(claudeStreamStdout()), nativeOf(LIVE_CLAUDE_PAIR, "stream.jsonl"), 4096, options().clock());
+            Replay.feedBytes(w.source(claudeTranscript()), nativeOf(LIVE_CLAUDE_PAIR, "transcript.jsonl"), 4096, options().clock());
+            w.complete();
+        }
+        Json views = AnalysisViews.all(WriterTestSupport.open(core));
+        Json responses = views.member("responses");
+        assertThat(responses.member("identity_count").scalarText()).isEqualTo(responses.member("logical_count").scalarText());
+        assertThat(responses.member("logical_count_basis").text()).startsWith("every identity is a run-scoped reported id");
+        assertThat(responses.member("observation_count").scalarText()).as("6 stream + 6 session-file occurrences").isEqualTo("12");
+        Json exchanges = views.member("tool_exchanges");
+        List<Json> repeated = exchanges.member("repeated_result_observations").elements();
+        assertThat(repeated).as("each of the four MCP results is reported by both sources").hasSize(4);
+        assertThat(repeated.get(0).member("tool_call_uid").text()).isEqualTo("toolu_01DsWdj46hAwvjAwujRMJScN");
+        assertThat(repeated.get(0).member("occurrences").elements()).extracting(Json::text).containsExactly("stream.jsonl:6", "transcript.jsonl:25");
+        assertThat(repeated.get(0).member("content_equal")).as("the session file stores the result content the stream reported").isEqualTo(new Json.JBool(true));
+        assertThat(repeated.get(0).member("counted_as").text()).isEqualTo("one owner observed 2 times; not 2 results");
+        assertThat(exchanges.member("identical_content_distinct_owners").elements()).isEmpty();
+        assertThat(views.path("associations", "operations", "observation_count").scalarText()).isEqualTo("0");
     }
 
     private static Map<String, List<String>> sessionsByArtifact(OcsfPackage pkg) {

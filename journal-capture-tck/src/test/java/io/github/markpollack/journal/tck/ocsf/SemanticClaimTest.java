@@ -415,7 +415,7 @@ class SemanticClaimTest {
 
     @Test
     void anExpandedRouteAwaitsBindingReviewWhileTheApprovedRouteStaysApproved() {
-        String added = "claude-code/stream-json/2.1.303-sdk";
+        String added = "claude-code/stream-json/sdk-stdio";
         Json cat = claimChanged(approvedCatalog, APPROVED, k -> {
             List<Json> routes = new ArrayList<>(k.path("applicability", "routes").elements());
             routes.add(new Json.JString(added));

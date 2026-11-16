@@ -36,28 +36,34 @@ class OracleFullSourceTest {
 
     @Test
     void controlVerifiesEveryFamilyOfBothSourcesWithNonEmptyPopulations(@TempDir Path work) {
-        Path fixture = copy(PAIR, work);
+        // the sanitized live pair: the stream and the session file one launch wrote, finally assembled
+        Path fixture = copy(PairedSourceFinalUsageTest.PAIR, work);
         OracleReport report = verify(fixture);
         assertThat(report.defects()).as(report.toString()).isEmpty();
-        assertThat(report.withOutcome(Outcome.UNRESOLVED)).as("only the combination, of the root and its child core: the pair is an unvalidated evidence log, never a final combined execution")
-                .hasSize(2).allSatisfy(c -> assertThat(c.property()).isEqualTo("combination.policy"));
+        assertThat(report.withOutcome(Outcome.UNRESOLVED)).as("only the combination: a declared final assembly is judged by the assembly oracle, never by this per-source verification")
+                .hasSize(1).allSatisfy(c -> assertThat(c.property()).isEqualTo("combination.policy"));
         assertThat(report.outcome("package.state", "main")).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("whole_record.coverage", TRANSCRIPT)).isEqualTo(Outcome.VERIFIED);
-        assertThat(report.check("whole_record.coverage", TRANSCRIPT).detail()).startsWith("17 owned record(s) each retained exactly once");
-        assertThat(report.check("whole_record.class", TRANSCRIPT).detail()).isEqualTo("10 normalized, 7 fallback");
+        assertThat(report.check("whole_record.coverage", TRANSCRIPT).detail()).startsWith("52 owned record(s) each retained exactly once");
+        assertThat(report.check("whole_record.class", TRANSCRIPT).detail()).isEqualTo("32 normalized, 20 fallback");
         for (String property : List.of("population.requests", "population.results", "population.responses", "population.prompts", "population.usage",
                 "population.cost", "population.decisions", "population.contexts", "context.values", "usage.values", "cost.values", "result.values",
                 "response.values", "prompt.values", "decision.values", "reconstruction.coverage", "reconstruction.structure_value", "time.basis")) {
             assertThat(report.outcome(property, TRANSCRIPT)).as(property).isEqualTo(Outcome.VERIFIED);
         }
-        // the synthetic transcript is not compact JSON: byte-exact reconstruction is observed as unsupported, value equality holds
-        assertThat(report.outcome("reconstruction.bytes", TRANSCRIPT)).isEqualTo(Outcome.UNSUPPORTED);
+        // the real session file is compact JSON: byte-exact reconstruction is observed on both sources
+        assertThat(report.outcome("reconstruction.bytes", TRANSCRIPT)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("reconstruction.bytes", STREAM)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("population.contexts", STREAM)).isEqualTo(Outcome.VERIFIED);
-        assertThat(report.check("population.contexts", TRANSCRIPT).detail()).isEqualTo("6 expected, 6 observed");
-        // every family of both sources verifies; the file as a whole is an evidence log, not one combined execution
+        assertThat(report.check("population.contexts", TRANSCRIPT).detail()).isEqualTo("21 expected, 21 observed");
+        // every family of both sources verifies; the combination, and the consolidated candidate assertions of the assembled
+        // file, are left to the assembly oracle, which accepts them
         assertThat(OcsfReaderTool.acceptance(report).exit()).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
-        assertThat(OcsfReaderTool.acceptance(report.filtered(c -> !"combination.policy".equals(c.property()))).exit()).isEqualTo(OcsfReaderTool.EXIT_OK);
+        assertThat(OcsfReaderTool.acceptance(report.filtered(c -> !"combination.policy".equals(c.property()))).reasons())
+                .allMatch(r -> r.startsWith("actual assertion unchecked: "));
+        OracleReport assembled = io.github.markpollack.journal.tck.ocsf.inventory.AssemblyOracle.verifyAll(PackageReader.open(pkg(fixture).resolve("events.jsonl")),
+                OcsfFixtures.natives(fixture), ExpectedSources.beside(OcsfFixtures.natives(fixture)), AssemblyOracleTest.expectation(fixture), AssemblyOracleTest.supplied(fixture));
+        assertThat(OcsfReaderTool.acceptance(assembled).exit()).isEqualTo(OcsfReaderTool.EXIT_OK);
     }
 
     @Test
@@ -128,7 +134,7 @@ class OracleFullSourceTest {
 
     @Test
     void alteringAReportedSettingOrAddingAnUnreportedOneIsAContextValueDefect(@TempDir Path work) {
-        Path fixture = copy(PAIR, work);
+        Path fixture = copy(PairedSourceFinalUsageTest.PAIR, work);
         editEvents(pkg(fixture), events -> {
             Json init = at(events, "stream.jsonl", "session_context", 1, 1);
             obj(init.member("settings")).members().put("working_directory", str("/elsewhere"));
@@ -140,17 +146,17 @@ class OracleFullSourceTest {
 
     @Test
     void swappingResultOwnersBetweenRecordsIsAnOwnershipDefectOnBothSources(@TempDir Path work) {
-        Path fixture = copy(PAIR, work);
+        Path fixture = copy(PairedSourceFinalUsageTest.PAIR, work);
         editEvents(pkg(fixture), events -> {
             Json a = at(events, "stream.jsonl", "tool_call", 2, 6);
-            Json b = at(events, "stream.jsonl", "tool_call", 2, 24);
+            Json b = at(events, "stream.jsonl", "tool_call", 2, 9);
             Json owner = a.member("tool_call_uid");
             obj(a).members().put("tool_call_uid", b.member("tool_call_uid"));
             obj(b).members().put("tool_call_uid", owner);
         });
         OracleReport report = verify(fixture);
         assertThat(report.outcome("result.owner", STREAM)).isEqualTo(Outcome.DEFECTIVE);
-        assertThat(report.check("result.owner", STREAM).detail()).contains("record 6 names [toolu_0183ddwvMmvPzqAU5Jeu5hwZ]");
+        assertThat(report.check("result.owner", STREAM).detail()).contains("record 6 names [toolu_01DsWdj46hAwvjAwujRMJScN]");
         assertThat(report.outcome("population.results", STREAM)).isEqualTo(Outcome.DEFECTIVE);
     }
 

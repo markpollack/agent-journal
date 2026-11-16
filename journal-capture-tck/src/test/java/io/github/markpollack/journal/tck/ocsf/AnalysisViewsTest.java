@@ -9,7 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CHILD;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.LIVE_FEATURES;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CODEX;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.at;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copy;
@@ -45,8 +45,8 @@ class AnalysisViewsTest {
 
     @Test
     void claudeChildViewsMatchTheIndependentlyAuthoredAnswers(@TempDir Path work) throws Exception {
-        Json views = AnalysisViews.all(open(copy(CHILD, work)));
-        assertThat(subsetDifferences(expected(CHILD), views, "$")).isEmpty();
+        Json views = AnalysisViews.all(open(copy(LIVE_FEATURES, work)));
+        assertThat(subsetDifferences(expected(LIVE_FEATURES), views, "$")).isEmpty();
     }
 
     @Test
@@ -80,15 +80,15 @@ class AnalysisViewsTest {
 
     @Test
     void claudeResponsesAppendBlocksAndTheChildCoreIsAssembledOnItsOwn(@TempDir Path work) {
-        OcsfPackage p = open(copy(CHILD, work));
+        OcsfPackage p = open(copy(LIVE_FEATURES, work));
         Json r = AnalysisViews.responses(p);
-        assertThat(r.member("identity_count").scalarText()).isEqualTo("3");
-        Json first = r.member("rows").elements().get(1);
-        assertThat(first.member("occurrence_count").scalarText()).isEqualTo("3");
-        assertThat(first.path("artifacts", "stream.jsonl", "assembled_blocks").elements()).extracting(b -> b.member("block_type").text())
+        assertThat(r.member("identity_count").scalarText()).isEqualTo("6");
+        Json third = r.member("rows").elements().get(2);
+        assertThat(third.member("occurrence_count").scalarText()).as("records 20, 21 and 22").isEqualTo("3");
+        assertThat(third.path("artifacts", "stream.jsonl", "assembled_blocks").elements()).extracting(b -> b.member("block_type").text())
                 .containsExactly("thinking", "text", "tool_use");
         Json child = AnalysisViews.responses(p.children.get(0));
-        assertThat(child.member("identity_count").scalarText()).isEqualTo("1");
+        assertThat(child.member("identity_count").scalarText()).isEqualTo("2");
     }
 
     @Test
@@ -127,14 +127,13 @@ class AnalysisViewsTest {
 
     @Test
     void parentAndChildUsageStayInSeparateGroups(@TempDir Path work) {
-        OcsfPackage p = open(copy(CHILD, work));
+        OcsfPackage p = open(copy(LIVE_FEATURES, work));
         Json main = AnalysisViews.usage(p);
         Json child = AnalysisViews.usage(p.children.get(0));
         assertThat(main.member("groups").elements()).extracting(g -> g.member("scope").text()).contains("Run", "Model", "Model response");
-        assertThat(child.member("groups").elements()).hasSize(1);
-        assertThat(child.member("groups").elements().get(0).member("owner").text()).isEqualTo("msg_011Cg2aSBYeTae2cPghGn3eT");
-        assertThat(child.member("groups").elements().get(0).member("applicable_final").isNull()).as("the child reports only a provisional observation").isTrue();
-        assertThat(main.member("groups").elements()).extracting(g -> g.member("owner").text()).doesNotContain("msg_011Cg2aSBYeTae2cPghGn3eT");
+        assertThat(child.member("groups").elements()).extracting(g -> g.member("owner").text()).containsExactly("msg_011CgFtPZaWh4wm5HBfj31bQ", "msg_011CgFtPgLK4bq6zRz8F5Ezs");
+        assertThat(child.member("groups").elements()).as("the child reports only provisional observations").allMatch(g -> g.member("applicable_final").isNull());
+        assertThat(main.member("groups").elements()).extracting(g -> g.member("owner").text()).doesNotContain("msg_011CgFtPZaWh4wm5HBfj31bQ", "msg_011CgFtPgLK4bq6zRz8F5Ezs");
     }
 
     /** The child-run groups of a view, keyed {@code <owner> | <aggregation or none>}, each with its applicable final. */
@@ -181,7 +180,7 @@ class AnalysisViewsTest {
     void finalObservationsOfDifferentComponentsAreNotAConflict(@TempDir Path work) {
         // the D1 representation: the Agent result without its Single response aggregation lands in the task figure's
         // group; a task total and detailed tranches share no component, so neither disagrees with the other
-        Path fixture = copy(CHILD, work);
+        Path fixture = copy(LIVE_FEATURES, work);
         editEvents(pkg(fixture), events -> {
             for (Json e : events) {
                 if ("user/tool_result".equals(e.member("context_kind") == null ? null : e.member("context_kind").text())) {
@@ -192,7 +191,7 @@ class AnalysisViewsTest {
                 }
             }
         });
-        Json group = childRunGroups(AnalysisViews.usage(open(fixture))).get("child run of tool call " + OcsfFixtures.SPAWN + " | none");
+        Json group = childRunGroups(AnalysisViews.usage(open(fixture))).get("child run of tool call " + OcsfFixtures.LIVE_SPAWN + " | none");
         assertThat(group.member("final_observations").scalarText()).isEqualTo("2");
         assertThat(group.member("conflict")).isEqualTo(new Json.JBool(false));
         assertThat(group.member("comparability").text()).isEqualTo("different components");
@@ -207,7 +206,7 @@ class AnalysisViewsTest {
                 }
             }
         });
-        Json conflicting = childRunGroups(AnalysisViews.usage(open(fixture))).get("child run of tool call " + OcsfFixtures.SPAWN + " | none");
+        Json conflicting = childRunGroups(AnalysisViews.usage(open(fixture))).get("child run of tool call " + OcsfFixtures.LIVE_SPAWN + " | none");
         assertThat(conflicting.member("comparability").text()).isEqualTo("conflicting on reported_total_tokens");
         assertThat(conflicting.member("conflict")).isEqualTo(new Json.JBool(true));
     }
@@ -225,11 +224,11 @@ class AnalysisViewsTest {
         assertThat(ambiguous.member("outcome").text()).isEqualTo("Ambiguous");
         assertThat(ambiguous.member("candidate_count").scalarText()).isEqualTo("2");
         assertThat(ambiguous.member("stored_tool_call_uid").isNull()).isTrue();
-        Json claude = AnalysisViews.associations(open(copy(CHILD, work.resolve("c"))));
+        Json claude = AnalysisViews.associations(open(copy(LIVE_FEATURES, work.resolve("c"))));
         Json decision = claude.member("rows").elements().get(0);
         assertThat(decision.member("fact").text()).isEqualTo("permission_decision");
         assertThat(decision.member("method").text()).isEqualTo("Reported identifier");
-        assertThat(decision.member("attached_to_tool_call").text()).isEqualTo("toolu_0183ddwvMmvPzqAU5Jeu5hwZ");
+        assertThat(decision.member("attached_to_tool_call").text()).isEqualTo("toolu_01LqFQri46W5W1yjZRqLKDVB");
     }
 
     @Test
@@ -261,28 +260,31 @@ class AnalysisViewsTest {
 
     @Test
     void settingsContextRowsListEachRecordAtItsScopeAndSessionUsageIsOwnedByTheSession(@TempDir Path work) {
-        Path fixture = copy(OracleFullSourceTest.PAIR, work);
+        // the sanitized live pair: the stream and the session file of one launch
+        Path fixture = copy(PairedSourceFinalUsageTest.PAIR, work);
         Json views = AnalysisViews.all(open(fixture));
         Json sc = views.member("settings_context");
-        assertThat(sc.member("settings_rows").scalarText()).isEqualTo("2");
-        assertThat(sc.member("context_rows").scalarText()).isEqualTo("4");
-        assertThat(sc.member("accounting_rows").scalarText()).as("task progress, notification, Agent result, cost-state and the result's per-model cost (ACCT-1)").isEqualTo("5");
+        assertThat(sc.member("settings_rows").scalarText()).as("the stream's init record and the session file's two api-request-shape records").isEqualTo("3");
+        assertThat(sc.member("context_rows").scalarText()).as("the session file's eighteen attachment records").isEqualTo("18");
+        assertThat(sc.member("accounting_rows").scalarText()).as("cost-state and the result's per-model cost (ACCT-1)").isEqualTo("2");
         assertThat(sc.member("rule").text()).isEqualTo("settings.context.v1");
         List<Json> rows = sc.member("rows").elements();
-        assertThat(rows).hasSize(13);
+        assertThat(rows).hasSize(23);
         Json init = rows.get(0);
         assertThat(init.member("activity").text()).isEqualTo("Settings reported");
         assertThat(init.member("context_kind").text()).isEqualTo("system/init");
         assertThat(init.member("scope").text()).isEqualTo("session");
         assertThat(init.path("settings", "working_directory").text()).isEqualTo("/work");
-        assertThat(init.path("settings", "permission_mode").text()).isEqualTo("default");
+        assertThat(init.path("settings", "permission_mode").text()).isEqualTo("auto");
         assertThat(init.path("settings", "tool_names").elements()).isNotEmpty();
         assertThat(init.member("usage_observations").scalarText()).isEqualTo("0");
         assertThat(((Json.JBool) init.member("cost_reported")).value()).isFalse();
-        // the stream's child-run accounting (task progress, task notification, Agent result) is scoped to the child run, not the session
-        assertThat(rows.stream().filter(row -> List.of("system/task_progress", "system/task_notification", "user/tool_result")
-                .contains(row.member("context_kind").text()))).hasSize(3).allSatisfy(row -> {
-                    assertThat(row.member("scope").text()).isEqualTo("child run of tool call " + OcsfFixtures.SPAWN);
+        // the stream's child-run accounting (two task progress records, the task notification, the Agent result) is scoped to the
+        // child run, not the session (the live feature recording, whose Agent call spawned one)
+        List<Json> featureRows = AnalysisViews.all(open(copy(LIVE_FEATURES, work.resolve("features")))).path("settings_context", "rows").elements();
+        assertThat(featureRows.stream().filter(row -> List.of("system/task_progress", "system/task_notification", "user/tool_result")
+                .contains(row.member("context_kind").text()))).hasSize(4).allSatisfy(row -> {
+                    assertThat(row.member("scope").text()).isEqualTo("child run of tool call " + OcsfFixtures.LIVE_SPAWN);
                     assertThat(row.member("usage_observations").scalarText()).isEqualTo("1");
                 });
         // ACCT-1: the result record's per-model running cost is a session-scope accounting row with plural cost observations
@@ -314,9 +316,9 @@ class AnalysisViewsTest {
             }
         }
         assertThat(session).isNotNull();
-        assertThat(session.member("owner").text()).isEqualTo("00000000-0000-4000-8000-000000000000");
+        assertThat(session.member("owner").text()).isEqualTo("00000000-0000-4000-8000-0000000000a4");
         assertThat(session.member("source").text()).isEqualTo("transcript.jsonl");
-        assertThat(session.path("applicable_final", "output_tokens").scalarText()).isEqualTo("1362");
+        assertThat(session.path("applicable_final", "output_tokens").scalarText()).isEqualTo("425");
         // turn-scoped settings keep their turn id (Codex)
         Json codex = AnalysisViews.all(open(copy(CODEX, work.resolve("codex")))).member("settings_context");
         Json turnContext = codex.member("rows").elements().get(1);

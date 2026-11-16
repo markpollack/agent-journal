@@ -11,9 +11,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CHILD;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.LIVE_FEATURES;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CODEX;
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.SPAWN;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.LIVE_SPAWN;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.all;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.at;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.child;
@@ -49,33 +49,33 @@ class OcsfOracleMutationTest {
 
         @Test
         void jo01WrongNormalizedUsageAmountWithUnchangedRetainedSourceIsDefective(@TempDir Path work) {
-            Path fixture = copy(CHILD, work);
+            Path fixture = copy(LIVE_FEATURES, work);
             assertThat(verify(fixture).outcome("usage.values", MAIN)).isEqualTo(Outcome.VERIFIED);
-            // the result line (record 27) reports run output_tokens 1040; the normalized observation says 999999
+            // the result line (record 50) reports run output_tokens 2577; the normalized observation says 999999
             editEvents(pkg(fixture), events -> {
-                Json turn = at(events, "prompt_turn", 2, 27);
+                Json turn = at(events, "prompt_turn", 2, 50);
                 obj(turn.member("usage_observations").elements().get(0)).members().put("output_tokens", num("999999"));
             });
             OracleReport report = verify(fixture);
             assertThat(report.outcome("population.usage", MAIN)).as("the observation still exists").isEqualTo(Outcome.VERIFIED);
             assertThat(report.outcome("usage.values", MAIN)).isEqualTo(Outcome.DEFECTIVE);
-            assertThat(report.check("usage.values", MAIN).detail()).contains("27:27:4:null output_tokens VALUE");
+            assertThat(report.check("usage.values", MAIN).detail()).contains("50:50:4:null output_tokens VALUE");
             assertThat(report.outcome("whole_record.structure_value", MAIN)).as("the retained record is untouched").isEqualTo(Outcome.VERIFIED);
         }
 
         @Test
         void jo02WrongNormalizedCostAmountWithUnchangedRetainedSourceIsDefective(@TempDir Path work) {
-            Path fixture = copy(CHILD, work);
+            Path fixture = copy(LIVE_FEATURES, work);
             assertThat(verify(fixture).outcome("cost.values", MAIN)).isEqualTo(Outcome.VERIFIED);
-            editEvents(pkg(fixture), events -> obj(at(events, "prompt_turn", 2, 27).member("cost_observation")).members().put("total_cost", num("999999")));
+            editEvents(pkg(fixture), events -> obj(at(events, "prompt_turn", 2, 50).member("cost_observation")).members().put("total_cost", num("999999")));
             OracleReport report = verify(fixture);
             assertThat(report.outcome("population.cost", MAIN)).isEqualTo(Outcome.VERIFIED);
             assertThat(report.outcome("cost.values", MAIN)).isEqualTo(Outcome.DEFECTIVE);
             assertThat(report.check("cost.values", MAIN).detail()).contains("total_cost VALUE");
             // currency and scope are checked too
             editEvents(pkg(fixture), events -> {
-                Json cost = at(events, "prompt_turn", 2, 27).member("cost_observation");
-                obj(cost).members().put("total_cost", num("0.0477412"));
+                Json cost = at(events, "prompt_turn", 2, 50).member("cost_observation");
+                obj(cost).members().put("total_cost", num("0.009542775"));
                 obj(cost).members().put("currency", str("EUR"));
             });
             assertThat(verify(fixture).check("cost.values", MAIN).detail()).contains("currency EUR != USD");
@@ -83,20 +83,20 @@ class OcsfOracleMutationTest {
 
         @Test
         void jo03RetainedJsonNumberTurnedIntoBooleanTrueIsDefective(@TempDir Path work) {
-            Path fixture = copy(CHILD, work);
+            Path fixture = copy(LIVE_FEATURES, work);
             assertThat(verify(fixture).outcome("whole_record.structure_value", MAIN)).isEqualTo(Outcome.VERIFIED);
-            // the result record's retained data: duration_api_ms 16254 -> true
-            editEvents(pkg(fixture), events -> obj(at(events, "prompt_turn", 2, 27).member("data")).members().put("duration_api_ms", new Json.JBool(true)));
+            // the result record's retained data: duration_api_ms 22637 -> true
+            editEvents(pkg(fixture), events -> obj(at(events, "prompt_turn", 2, 50).member("data")).members().put("duration_api_ms", new Json.JBool(true)));
             OracleReport report = verify(fixture);
             assertThat(report.outcome("whole_record.structure_value", MAIN)).isEqualTo(Outcome.DEFECTIVE);
-            assertThat(report.check("whole_record.structure_value", MAIN).detail()).contains("record 27 KIND at $.duration_api_ms: expected number, actual boolean");
+            assertThat(report.check("whole_record.structure_value", MAIN).detail()).contains("record 50 KIND at $.duration_api_ms: expected number, actual boolean");
             assertThat(report.outcome("reconstruction.structure_value", MAIN)).isEqualTo(Outcome.DEFECTIVE);
             // 1 -> 1.0 is a representation difference, reported separately and never hidden
-            editEvents(pkg(fixture), events -> obj(at(events, "prompt_turn", 2, 27).member("data")).members().put("duration_api_ms", num("16254.0")));
+            editEvents(pkg(fixture), events -> obj(at(events, "prompt_turn", 2, 50).member("data")).members().put("duration_api_ms", num("22637.0")));
             OracleReport respelled = verify(fixture);
             assertThat(respelled.outcome("whole_record.structure_value", MAIN)).isEqualTo(Outcome.VERIFIED);
             assertThat(respelled.outcome("whole_record.representation", MAIN)).isEqualTo(Outcome.REPRESENTATION_DIFFERS);
-            assertThat(respelled.check("whole_record.representation", MAIN).detail()).contains("expected spelling 16254, actual 16254.0");
+            assertThat(respelled.check("whole_record.representation", MAIN).detail()).contains("expected spelling 22637, actual 22637.0");
         }
     }
 
@@ -105,12 +105,12 @@ class OcsfOracleMutationTest {
 
         @Test
         void costSpellingIsRepresentationValueIsValue(@TempDir Path work) {
-            Path fixture = copy(CHILD, work);
-            editEvents(pkg(fixture), events -> obj(at(events, "prompt_turn", 2, 27).member("cost_observation")).members().put("total_cost", num("0.04774120")));
+            Path fixture = copy(LIVE_FEATURES, work);
+            editEvents(pkg(fixture), events -> obj(at(events, "prompt_turn", 2, 50).member("cost_observation")).members().put("total_cost", num("0.0095427750")));
             OracleReport report = verify(fixture);
             assertThat(report.outcome("cost.values", MAIN)).isEqualTo(Outcome.VERIFIED);
             assertThat(report.outcome("cost.representation", MAIN)).isEqualTo(Outcome.REPRESENTATION_DIFFERS);
-            editEvents(pkg(fixture), events -> obj(at(events, "prompt_turn", 2, 27).member("cost_observation")).members().put("total_cost", num("0.0477413")));
+            editEvents(pkg(fixture), events -> obj(at(events, "prompt_turn", 2, 50).member("cost_observation")).members().put("total_cost", num("0.009542776")));
             assertThat(verify(fixture).outcome("cost.values", MAIN)).isEqualTo(Outcome.DEFECTIVE);
         }
 
@@ -154,8 +154,8 @@ class OcsfOracleMutationTest {
 
         @Test
         void aComponentPresentWhereTheSourceReportsNoneIsADefectAbsenceIsNotZero(@TempDir Path work) {
-            Path fixture = copy(CHILD, work);
-            editEvents(pkg(fixture), events -> obj(at(events, "model_response", 1, 4).member("usage_observations").elements().get(0)).members().put("reasoning_tokens", num("0")));
+            Path fixture = copy(LIVE_FEATURES, work);
+            editEvents(pkg(fixture), events -> obj(at(events, "model_response", 1, 5).member("usage_observations").elements().get(0)).members().put("reasoning_tokens", num("0")));
             OracleReport report = verify(fixture);
             assertThat(report.outcome("usage.values", MAIN)).isEqualTo(Outcome.DEFECTIVE);
             assertThat(report.check("usage.values", MAIN).detail()).contains("reasoning_tokens present (0) but not reported; absence is not zero");
@@ -250,19 +250,19 @@ class OcsfOracleMutationTest {
 
         @Test
         void childEventMovedIntoTheParentCoreFailsOwnershipOnBothCores(@TempDir Path work) {
-            Path fixture = copy(CHILD, work);
+            Path fixture = copy(LIVE_FEATURES, work);
             Json[] moved = new Json[1];
-            editEvents(child(fixture), events -> moved[0] = events.remove(events.indexOf(at(events, "tool_call", 2, 21))));
+            editEvents(child(fixture), events -> moved[0] = events.remove(events.indexOf(at(events, "tool_call", 2, 27))));
             editEvents(pkg(fixture), events -> {
-                obj(moved[0].member("journal")).members().put("run_uid", str("claude-child-2.1.299"));
+                obj(moved[0].member("journal")).members().put("run_uid", str("claude-live-2.1.304-features"));
                 events.add(moved[0]);
             });
             OracleReport report = verify(fixture);
-            String child = "child:" + SPAWN + "/stream.jsonl";
-            assertThat(report.check("whole_record.coverage", MAIN).detail()).contains("record 21 is not owned by this core but retained here");
-            assertThat(report.check("whole_record.coverage", child).detail()).contains("record 21: 0 whole-record events");
+            String child = "child:" + LIVE_SPAWN + "/stream.jsonl";
+            assertThat(report.check("whole_record.coverage", MAIN).detail()).contains("record 27 is not owned by this core but retained here");
+            assertThat(report.check("whole_record.coverage", child).detail()).contains("record 27: 0 whole-record events");
             assertThat(report.outcome("population.results", child)).isEqualTo(Outcome.DEFECTIVE);
-            assertThat(report.check("population.results", MAIN).detail()).contains("extra [21:toolu_018fX6Mygf8aSE8c8bt7pyu6]");
+            assertThat(report.check("population.results", MAIN).detail()).contains("extra [27:toolu_01RnNHTYgz6yym3A1m1sYZ6S]");
         }
     }
 
@@ -271,14 +271,14 @@ class OcsfOracleMutationTest {
 
         @Test
         void resultContentErrorFlagAndStatusAreExact(@TempDir Path work) {
-            Path fixture = copy(CHILD, work);
-            editEvents(pkg(fixture), events -> obj(at(events, "tool_call", 2, 6).member("tool_result")).members().put("data", str("done")));
+            Path fixture = copy(LIVE_FEATURES, work);
+            editEvents(pkg(fixture), events -> obj(at(events, "tool_call", 2, 7).member("tool_result")).members().put("data", str("done")));
             OracleReport content = verify(fixture);
             assertThat(content.outcome("result.values", MAIN)).isEqualTo(Outcome.DEFECTIVE);
-            assertThat(content.check("result.values", MAIN).detail()).contains("6:toolu_0183ddwvMmvPzqAU5Jeu5hwZ content");
-            Path other = copy(CHILD, work.resolve("status"));
+            assertThat(content.check("result.values", MAIN).detail()).contains("7:toolu_01LqFQri46W5W1yjZRqLKDVB content");
+            Path other = copy(LIVE_FEATURES, work.resolve("status"));
             editEvents(pkg(other), events -> {
-                Json result = at(events, "tool_call", 2, 6);
+                Json result = at(events, "tool_call", 2, 7);
                 obj(result).members().put("status_id", num("1"));
                 obj(result).members().put("status_basis_id", num("1"));
                 obj(result.member("tool_result")).members().put("error_reported", new Json.JBool(false));
@@ -289,9 +289,9 @@ class OcsfOracleMutationTest {
 
         @Test
         void requestArgumentsAndToolKindAreExact(@TempDir Path work) {
-            Path fixture = copy(CHILD, work);
+            Path fixture = copy(LIVE_FEATURES, work);
             editEvents(pkg(fixture), events -> {
-                Json request = at(events, "tool_call", 1, 5);
+                Json request = at(events, "tool_call", 1, 6);
                 obj(request.member("arguments")).members().put("extra", new Json.JBool(true));
                 obj(request).members().put("tool_kind_id", num("6"));
             });
@@ -301,9 +301,9 @@ class OcsfOracleMutationTest {
 
         @Test
         void permissionDecisionValuesAndScopeAreExact(@TempDir Path work) {
-            Path fixture = copy(CHILD, work);
+            Path fixture = copy(LIVE_FEATURES, work);
             editEvents(pkg(fixture), events -> {
-                Json decision = at(events, "tool_call", 2, 6).member("permission_decision");
+                Json decision = at(events, "tool_call", 2, 7).member("permission_decision");
                 obj(decision).members().put("decision_id", num("2"));
                 obj(decision).members().put("decision", str("Denied"));
                 obj(decision).members().put("reported_decision", str("deny"));
@@ -311,13 +311,13 @@ class OcsfOracleMutationTest {
             OracleReport report = verify(fixture);
             assertThat(report.outcome("decision.values", MAIN)).isEqualTo(Outcome.DEFECTIVE);
             assertThat(report.check("decision.values", MAIN).detail()).contains("decision_id 2 != 1").contains("reported_decision deny != accept");
-            Path other = copy(CHILD, work.resolve("scope"));
+            Path other = copy(LIVE_FEATURES, work.resolve("scope"));
             editEvents(pkg(other), events -> {
-                Json decision = at(events, "tool_call", 2, 6).member("permission_decision");
+                Json decision = at(events, "tool_call", 2, 7).member("permission_decision");
                 obj(decision).members().put("scope_id", num("4"));
                 obj(decision).members().put("scope", str("Run"));
             });
-            assertThat(verify(other).check("population.decisions", MAIN).detail()).contains("missing [6:1:toolu_0183ddwvMmvPzqAU5Jeu5hwZ]");
+            assertThat(verify(other).check("population.decisions", MAIN).detail()).contains("missing [7:1:toolu_01LqFQri46W5W1yjZRqLKDVB]");
         }
 
         @Test
@@ -351,22 +351,22 @@ class OcsfOracleMutationTest {
 
         @Test
         void changedOriginalTimeOrFramingIsADefect(@TempDir Path work) {
-            Path fixture = copy(CHILD, work);
+            Path fixture = copy(LIVE_FEATURES, work);
             editEvents(pkg(fixture), events -> {
-                obj(at(events, "model_response", 1, 4).member("metadata")).members().put("original_time", str("2026-01-01T00:00:00.000Z"));
-                obj(at(events, "model_response", 1, 5).member("source_ref")).members().put("record_bytes", num("1"));
+                obj(at(events, "model_response", 1, 5).member("metadata")).members().put("original_time", str("2026-01-01T00:00:00.000Z"));
+                obj(at(events, "model_response", 1, 6).member("source_ref")).members().put("record_bytes", num("1"));
             });
             OracleReport report = verify(fixture);
             assertThat(report.outcome("time.basis", MAIN)).isEqualTo(Outcome.DEFECTIVE);
-            assertThat(report.check("time.basis", MAIN).detail()).contains("record 4 reports");
-            assertThat(report.check("whole_record.framing", MAIN).detail()).contains("record 5: record_bytes 1/");
+            assertThat(report.check("time.basis", MAIN).detail()).contains("record 5 reports");
+            assertThat(report.check("whole_record.framing", MAIN).detail()).contains("record 6: record_bytes 1/");
         }
 
         @Test
         void turnStatusAndStopReasonAreExact(@TempDir Path work) {
-            Path fixture = copy(CHILD, work);
+            Path fixture = copy(LIVE_FEATURES, work);
             editEvents(pkg(fixture), events -> {
-                Json turn = at(events, "prompt_turn", 2, 27);
+                Json turn = at(events, "prompt_turn", 2, 50);
                 obj(turn).members().put("status_id", num("2"));
                 obj(turn).members().put("stop_reason", str("max_tokens"));
             });
@@ -379,16 +379,16 @@ class OcsfOracleMutationTest {
 
         @Test
         void removedWholeRecordIsAGapInCoverageAndReconstruction(@TempDir Path work) {
-            Path fixture = copy(CHILD, work);
-            editEvents(pkg(fixture), events -> events.remove(first(events, e -> isEvent(e, "source_record", 1) && recordIndex(e) == 7)));
+            Path fixture = copy(LIVE_FEATURES, work);
+            editEvents(pkg(fixture), events -> events.remove(first(events, e -> isEvent(e, "source_record", 1) && recordIndex(e) == 10)));
             OracleReport report = verify(fixture);
-            assertThat(report.check("whole_record.coverage", MAIN).detail()).contains("record 7: 0 whole-record events");
-            assertThat(report.check("reconstruction.coverage", MAIN).detail()).contains("no whole-record event for record(s) [7]");
+            assertThat(report.check("whole_record.coverage", MAIN).detail()).contains("record 10: 0 whole-record events");
+            assertThat(report.check("reconstruction.coverage", MAIN).detail()).contains("no whole-record event for record(s) [10]");
         }
 
         @Test
         void malformedAndUndecodableNativeLinesStayInTheInventoryAndMustBeRetained(@TempDir Path work) throws Exception {
-            Path fixture = copy(CHILD, work);
+            Path fixture = copy(LIVE_FEATURES, work);
             Path stream = natives(fixture).resolve("stream.jsonl");
             byte[] original = Files.readAllBytes(stream);
             byte[] extra = "{\"type\":\"system\",\"subtype\":\"dup\",\"subtype\":\"again\"}\n\n".getBytes(StandardCharsets.UTF_8);
@@ -400,11 +400,11 @@ class OcsfOracleMutationTest {
             Files.write(stream, all);
             OcsfFixtures.refreeze(fixture); // the test's own labelled input is the frozen denominator
             OracleReport report = verify(fixture);
-            // the strict parser did not end the inventory: records 28 (duplicate key), 29 (blank) and 30 (not UTF-8) are counted and owed
-            assertThat(report.check("source.inventory", MAIN).detail()).contains("records 27 declared, artifact has 30").contains("opaque_records 0 declared, artifact has 3");
-            assertThat(report.check("whole_record.coverage", MAIN).detail()).contains("record 28: 0 whole-record events").contains("record 30: 0 whole-record events");
+            // the strict parser did not end the inventory: records 51 (duplicate key), 52 (blank) and 53 (not UTF-8) are counted and owed
+            assertThat(report.check("source.inventory", MAIN).detail()).contains("records 50 declared, artifact has 53").contains("opaque_records 0 declared, artifact has 3");
+            assertThat(report.check("whole_record.coverage", MAIN).detail()).contains("record 51: 0 whole-record events").contains("record 53: 0 whole-record events");
             assertThat(report.outcome("whole_record.bytes", MAIN)).as("opaque records exist and none is retained").isEqualTo(Outcome.DEFECTIVE);
-            assertThat(report.check("whole_record.bytes", MAIN).detail()).contains("record 28 (MALFORMED) not retained").contains("record 30 (UNDECODABLE) not retained");
+            assertThat(report.check("whole_record.bytes", MAIN).detail()).contains("record 51 (MALFORMED) not retained").contains("record 53 (UNDECODABLE) not retained");
             // the parsed records before them are still judged normally
             assertThat(report.outcome("usage.values", MAIN)).isEqualTo(Outcome.VERIFIED);
         }
@@ -442,11 +442,11 @@ class OcsfOracleMutationTest {
 
         @Test
         void aChildLinkedToTheWrongSpawnOrDroppedIsADefect(@TempDir Path work) throws Exception {
-            Path control = copy(CHILD, work.resolve("control"));
+            Path control = copy(LIVE_FEATURES, work.resolve("control"));
             assertThat(verify(control).outcome("package.children", "main")).isEqualTo(Outcome.VERIFIED);
 
             // dropped: the child directory is removed and the parent's link with it (the candidate claims no child); the frozen manifest expects one
-            Path dropped = copy(CHILD, work.resolve("dropped"));
+            Path dropped = copy(LIVE_FEATURES, work.resolve("dropped"));
             editDeclarations(pkg(dropped), decls -> decls.removeIf(d -> "child".equals(d.member("declaration").member("kind").text())));
             editManifest(pkg(dropped), m -> obj(m.get("run")).members().put("children", new Json.JArray(List.of())));
             try (var s = java.nio.file.Files.walk(child(dropped))) {
@@ -456,11 +456,11 @@ class OcsfOracleMutationTest {
             }
             OracleReport gone = verify(dropped);
             assertThat(gone.outcome("package.children", "main")).isEqualTo(Outcome.DEFECTIVE);
-            assertThat(gone.check("package.children", "main").detail()).contains("expected child " + SPAWN).contains("is not linked by the candidate");
+            assertThat(gone.check("package.children", "main").detail()).contains("expected child " + LIVE_SPAWN).contains("is not linked by the candidate");
 
             // wrong spawn: the child's parent link and the parent's child link both name another tool call
-            Path wrong = copy(CHILD, work.resolve("wrong"));
-            String other = "toolu_0183ddwvMmvPzqAU5Jeu5hwZ";
+            Path wrong = copy(LIVE_FEATURES, work.resolve("wrong"));
+            String other = "toolu_01LqFQri46W5W1yjZRqLKDVB";
             editDeclarations(pkg(wrong), decls -> decls.forEach(d -> {
                 if ("child".equals(d.member("declaration").member("kind").text())) {
                     obj(d.member("child")).members().put("spawn_tool_call_uid", str(other));
@@ -479,7 +479,7 @@ class OcsfOracleMutationTest {
             });
             OracleReport mislinked = verify(wrong);
             assertThat(mislinked.outcome("package.children", "main")).isEqualTo(Outcome.DEFECTIVE);
-            assertThat(mislinked.check("package.children", "main").detail()).contains("child " + other + " is not an expected split core").contains("expected child " + SPAWN);
+            assertThat(mislinked.check("package.children", "main").detail()).contains("child " + other + " is not an expected split core").contains("expected child " + LIVE_SPAWN);
         }
     }
 }

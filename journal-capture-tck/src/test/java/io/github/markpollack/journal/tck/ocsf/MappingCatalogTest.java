@@ -40,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * exists in the test sources; every view is a known analysis view or semantic operation.
  *
  * <p>The table, written to {@code target/mapping-catalog/CLI-COVERAGE.md} and {@code cli-coverage.json}, has one
- * column per admitted CLI/version/profile/route (the historical sdk route labelled as such) and one state per concept,
+ * column per admitted CLI/version/profile/route and one state per concept,
  * computed by {@link CatalogCoverage} on every committed recording of the route and combined: {@code defective} and
  * {@code blocked} (an owed result missing) fail this test; {@code unresolved}, {@code verified}, {@code retained-only},
  * {@code unavailable-at-source} and {@code unexercised} are kept separate.
@@ -77,7 +77,6 @@ class MappingCatalogTest {
     }
 
     static final List<Route> ROUTES = List.of(
-            new Route("claude", "ClaudeStreamProfile", OcsfFixtures.CHILD, "stream.jsonl", "Claude Code stream 2.1.299 sdk (sanitized real fixture)", "claude-code/stream-json/2.1.299-sdk"),
             new Route("claude", "ClaudeStreamProfile", OcsfFixtures.LIVE_FEATURES, "stream.jsonl", "Claude Code stream 2.1.304 stdout (sanitized live feature recording)", "claude-code/stream-json/2.1.304-stdout"),
             new Route("claude", "ClaudeStreamProfile", OcsfFixtures.LIVE_DENIAL, "stream.jsonl", "Claude Code stream 2.1.304 stdout (sanitized live denial recording)", "claude-code/stream-json/2.1.304-stdout"),
             new Route("claude", "ClaudeStreamProfile", OcsfFixtures.LIVE_MCP, "stream.jsonl", "Claude Code stream 2.1.304 stdout (sanitized live recording: Java SDK MCP test server calls)", "claude-code/stream-json/2.1.304-stdout"),
@@ -85,7 +84,6 @@ class MappingCatalogTest {
             new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording)", "codex-cli/exec-json-stream/0.160.1"),
             new Route("claude", "ClaudeStreamProfile", OcsfFixtures.LIVE_CANCELLED, "stream.jsonl", "Claude Code stream 2.1.304 stdout (sanitized live cancelled recording)", "claude-code/stream-json/2.1.304-stdout"),
             new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_CANCELLED, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live cancelled recording)", "codex-cli/exec-json-stream/0.160.1"),
-            new Route("claude", "ClaudeStreamProfile", OcsfFixtures.INTERRUPTED, "stream.jsonl", "Claude Code stream 2.1.299 sdk (interrupted prefix of the real fixture)", "claude-code/stream-json/2.1.299-sdk"),
             new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_FILE_CHANGE, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: file change)", "codex-cli/exec-json-stream/0.160.1"),
             new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_MCP, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: MCP calls)", "codex-cli/exec-json-stream/0.160.1"),
             new Route("codex", "CodexStreamProfile", OcsfFixtures.LIVE_CODEX_REASONING, "stream.jsonl", "Codex CLI exec stream 0.160.1 stdout (sanitized live recording: reasoning summary)", "codex-cli/exec-json-stream/0.160.1"),
@@ -101,15 +99,14 @@ class MappingCatalogTest {
             new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_MCP_DENIED, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: MCP call soft-denied in request-review mode)", "antigravity-cli/stream-json/1.4.6-stdout"),
             new Route("agy", "AntigravityStreamProfile", OcsfFixtures.LIVE_AGY_MCP, "stream.jsonl", "Antigravity CLI stream-json 1.4.6 stdout (sanitized live recording: MCP echo twice and a tool error under skip-permissions)", "antigravity-cli/stream-json/1.4.6-stdout"));
 
-    /** A coverage-table column: one admitted CLI/version/profile/route, or the historical sdk route, labelled so. */
+    /** A coverage-table column: one admitted CLI/version/profile/route. */
     record Column(String entry, String label, String support) {
     }
 
     static final List<Column> COLUMNS = List.of(
             new Column("claude-code/stream-json/2.1.304-stdout", "Claude Code 2.1.304, claude_stream, stdout", "admitted"),
             new Column("codex-cli/exec-json-stream/0.160.1", "Codex CLI 0.160.1, codex_stream, stdout", "admitted"),
-            new Column("antigravity-cli/stream-json/1.4.6-stdout", "Antigravity CLI 1.4.6, agy_stream, stdout", "admitted"),
-            new Column("claude-code/stream-json/2.1.299-sdk", "Claude Code 2.1.299, claude_stream, sdk (historical evidence, retired route)", "historical"));
+            new Column("antigravity-cli/stream-json/1.4.6-stdout", "Antigravity CLI 1.4.6, agy_stream, stdout", "admitted"));
 
     static List<Route> recordings(String entry) {
         return ROUTES.stream().filter(r -> r.entry().equals(entry)).toList();
@@ -616,7 +613,7 @@ class MappingCatalogTest {
      * are admitted columns: an admitted coverage column, a sanitized live recording among the catalog's routes, a field
      * disposition catalog naming the entry with its inventoried fixtures, a pinned vendor inventory of the entry, an accepted
      * native-source specification, an independent oracle profile, roster applicability and a live attempt in the results.
-     * Experimental (combined-source or session-file) and historical (retired route) entries carry their own state and are
+     * Experimental (combined-source or session-file) entries carry their own state and are
      * never an admitted column; a test-only stand-in is not a registry entry at all. This is the existing registrations
      * cross-checked, not another registry.
      */
@@ -633,8 +630,8 @@ class MappingCatalogTest {
         Map<String, String> admissionById = new TreeMap<>();
         for (Registered r : registry) {
             admissionById.put(r.id(), r.admission());
-            if (!Set.of("admitted", "experimental", "historical").contains(String.valueOf(r.admission()))) {
-                problems.add(r.id() + ": admission " + r.admission() + " is not admitted, experimental or historical");
+            if (!Set.of("admitted", "experimental").contains(String.valueOf(r.admission()))) {
+                problems.add(r.id() + ": admission " + r.admission() + " is not admitted or experimental");
                 continue;
             }
             Column column = columns.stream().filter(c -> c.entry().equals(r.id())).findFirst().orElse(null);
@@ -729,7 +726,7 @@ class MappingCatalogTest {
     /** Every check the oracle reports on the committed fixtures that exercise its properties (stream routes, rollout, pair transcript). */
     static List<Check> reportedChecks(Path work) {
         List<Check> out = new ArrayList<>();
-        for (String fixture : List.of(OcsfFixtures.CHILD, OcsfFixtures.CODEX, OcsfFixtures.CODEX_STREAM, OcsfFixtures.INTERRUPTED, OcsfFixtures.LIVE_FEATURES,
+        for (String fixture : List.of(OcsfFixtures.CODEX, OcsfFixtures.CODEX_STREAM, OcsfFixtures.LIVE_CANCELLED, OcsfFixtures.LIVE_FEATURES,
                 OcsfFixtures.LIVE_DENIAL, OcsfFixtures.LIVE_CODEX, OcsfFixtures.LIVE_AGY_FEATURES, OcsfFixtures.LIVE_AGY_DENIAL)) {
             out.addAll(OcsfFixtures.verify(OcsfFixtures.copy(fixture, work.resolve("p"))).checks());
         }

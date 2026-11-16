@@ -13,11 +13,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CHILD;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_STREAM;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.FIXTURES;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.INTERRUPTED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CLAUDE_PAIR;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_COPILOT;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_JUNIE_TERMINAL;
@@ -47,7 +45,6 @@ import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_A
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_MCP_DENIED;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_SUBAGENT;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.agyStream;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStreamStdout;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeTranscript;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.codexRollout;
@@ -65,14 +62,12 @@ class PublicFixtureRegenerationTest {
     @Test
     void regenerate() throws IOException {
         Assumptions.assumeTrue("true".equals(System.getProperty("ocsf.regenerate")), "no -Docsf.regenerate=true");
-        write(CHILD, List.of(claudeStream()), List.of("stream.jsonl"));
         write(CODEX, List.of(codexRollout()), List.of("rollout.jsonl"));
         write("syn-codex-onboarding-exec-0.166.0", List.of(codexStream()), List.of("stream.jsonl"));
         write("syn-codex-onboarding-rollout-0.166.0", List.of(new SourceDescriptor("stream.jsonl", 2, "codex_rollout", "native_session_file", "synthetic current native structures", null, "lines")), List.of("stream.jsonl"));
-        writeEvidenceLog(PAIR, List.of(claudeStream(), claudeTranscript()), List.of("stream.jsonl", "transcript.jsonl"),
+        writeEvidenceLog(PAIR, List.of(retiredSdkStream(), claudeTranscript()), List.of("stream.jsonl", "transcript.jsonl"),
                 "the synthetic stream and session file of one sdk-route run, recorded together without assembly to exercise both mappers and the readers of a multi-source file");
         write(CODEX_STREAM, List.of(codexStream()), List.of("stream.jsonl"));
-        writeInterrupted(INTERRUPTED, CHILD, "stream.jsonl", 10);
         write(UNTESTED, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
         write(LIVE_FEATURES, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
         write(WriterTestSupport.SYN_CHILD_RUNS, List.of(claudeStreamStdout()), List.of("stream.jsonl"));
@@ -124,27 +119,12 @@ class PublicFixtureRegenerationTest {
     }
 
     /**
-     * The replay-interrupted fixture: the first {@code records} whole records of another fixture's stream are its
-     * native artifact (written here, so the prefix is exactly what the writer was fed), its frozen expected sources
-     * declare the run incomplete, and the writer is interrupted by the driver after feeding them.
+     * The pair fixture's stream on the sdk route it was delivered on (the Java claude-code-sdk's filtered rawJson lines). The
+     * registry keys no entry on that route since it was retired and removed, so the writer retains the stream whole under
+     * the untested-compatibility contract; the session file beside it still selects its own entry.
      */
-    private static void writeInterrupted(String fixture, String from, String artifact, int records) throws IOException {
-        Path dir = FIXTURES.resolve(fixture);
-        Path nativeDir = dir.resolve("native");
-        Files.createDirectories(nativeDir);
-        byte[] prefix = Replay.prefixBytes(nativeOf(from, artifact), records);
-        Files.write(nativeDir.resolve(artifact), prefix);
-        WriterTestSupport.freeze(nativeDir, run(fixture).runUid(), false, artifact, "claude_stream");
-        Path out = dir.resolve("package");
-        delete(out);
-        Clock fixed = Clock.fixed(Instant.parse("2026-10-21T00:00:00Z"), ZoneOffset.UTC);
-        try (OcsfRunWriter w = OcsfRunWriter.open(out, run(fixture), SchemaPin.bundled(), WriterOptions.defaults().withClock(fixed))) {
-            SourceInput in = w.source(claudeStream());
-            Replay.feedBytes(in, prefix, 1024, fixed, prefix.length, false);
-            w.flush();
-            w.interrupt("fixture driver stopped the replay after " + records + " whole records (labelled replay interruption)");
-        }
-        System.out.println("regenerated " + out);
+    private static SourceDescriptor retiredSdkStream() {
+        return new SourceDescriptor("stream.jsonl", 1, "claude_stream", "sdk", "fixture stream replayed (SDK-delivered lines of the original capture; no compatibility entry is keyed on the sdk route)", null);
     }
 
     /**

@@ -49,7 +49,7 @@ class FullOneReviewRegressionTest {
         assertThat(report.outcome("source.expected", STREAM)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("source.expected", TRANSCRIPT)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("source.extent", TRANSCRIPT)).isEqualTo(Outcome.VERIFIED);
-        assertThat(report.outcome("package.children", "main")).isEqualTo(Outcome.VERIFIED);
+        assertThat(report.outcome("package.children", "main")).as("the pair's stream, on a route no entry is keyed on, is not split").isEqualTo(Outcome.NOT_APPLICABLE);
         assertThat(report.outcome("acquisition.complete", "main")).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("source.state", STREAM)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("context.values", TRANSCRIPT)).isEqualTo(Outcome.VERIFIED);
@@ -58,7 +58,9 @@ class FullOneReviewRegressionTest {
         // as one combined execution (CombinedSourceAdmissionTest)
         OcsfReaderTool.Acceptance acceptance = OcsfReaderTool.acceptance(report);
         assertThat(acceptance.exit()).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
-        assertThat(acceptance.reasons()).as("the root's and its child core's combination policy").hasSize(2).allMatch(r -> r.contains("combination.policy"));
+        assertThat(acceptance.reasons()).as("the root's combination policy").anyMatch(r -> r.contains("combination.policy"))
+                .as("and otherwise only the stream's, retained untested on a route no entry is keyed on: its unsupported normalization and unchecked candidate assertions")
+                .allMatch(r -> r.contains("combination.policy") || r.contains("[" + STREAM + "] UNSUPPORTED") || r.startsWith("actual assertion unchecked: " + STREAM));
     }
 
     @Nested
@@ -135,21 +137,22 @@ class FullOneReviewRegressionTest {
 
         @Test
         void aReScopedOrUnlinkedChildIsADefect(@TempDir Path work) {
-            Path rescoped = copy(PAIR, work.resolve("rescoped"));
+            // the live feature recording: its Agent call splits one child core
+            Path rescoped = copy(OcsfFixtures.LIVE_FEATURES, work.resolve("rescoped"));
             editManifest(OcsfFixtures.child(rescoped), run -> obj(run.path("run", "source_scope")).members().put("owner_value", str("toolu_SOMEBODY_ELSE")));
             OracleReport report = verify(rescoped);
             assertThat(report.outcome("package.children", "main")).isEqualTo(Outcome.DEFECTIVE);
-            assertThat(report.check("package.children", "main").detail()).contains("declares scope").contains("expected stream.jsonl.parent_tool_use_id = " + OcsfFixtures.SPAWN);
+            assertThat(report.check("package.children", "main").detail()).contains("declares scope").contains("expected stream.jsonl.parent_tool_use_id = " + OcsfFixtures.LIVE_SPAWN);
 
-            Path unlinked = copy(PAIR, work.resolve("unlinked"));
+            Path unlinked = copy(OcsfFixtures.LIVE_FEATURES, work.resolve("unlinked"));
             editManifest(pkg(unlinked), run -> obj(run.member("run")).members().put("children", new Json.JArray(List.of())));
             OracleReport r2 = verify(unlinked);
-            assertThat(r2.check("package.children", "main").detail()).contains("expected child " + OcsfFixtures.SPAWN + " (stream.jsonl.parent_tool_use_id) is not linked by the candidate");
+            assertThat(r2.check("package.children", "main").detail()).contains("expected child " + OcsfFixtures.LIVE_SPAWN + " (stream.jsonl.parent_tool_use_id) is not linked by the candidate");
 
-            Path unexpected = copy(PAIR, work.resolve("unexpected"));
+            Path unexpected = copy(OcsfFixtures.LIVE_FEATURES, work.resolve("unexpected"));
             editExpected(unexpected, m -> m.members().put("children", new Json.JArray(List.of())));
             OracleReport r3 = verify(unexpected);
-            assertThat(r3.check("package.children", "main").detail()).contains("child " + OcsfFixtures.SPAWN + " is not an expected split core");
+            assertThat(r3.check("package.children", "main").detail()).contains("child " + OcsfFixtures.LIVE_SPAWN + " is not an expected split core");
         }
 
         @Test
@@ -209,17 +212,16 @@ class FullOneReviewRegressionTest {
 
         @Test
         void aRequiredCheckMissingFromTheReportBlocksAcceptance(@TempDir Path work) {
-            // the pair is an unvalidated evidence log (combination.policy UNRESOLVED, judged by CombinedSourceAdmissionTest);
-            // without that check the report isolates the required-check rule this test is about
-            OracleReport report = verify(copy(PAIR, work)).filtered(c -> !"combination.policy".equals(c.property()));
+            // the sanitized live feature recording, which this verification accepts whole, isolates the required-check rule
+            OracleReport report = verify(copy(OcsfFixtures.LIVE_FEATURES, work));
             assertThat(OcsfReaderTool.acceptance(report).exit()).isEqualTo(OcsfReaderTool.EXIT_OK);
-            assertThat(report.required()).contains("whole_record.coverage [" + TRANSCRIPT + "]", "acquisition.complete [main]", "source.expected [" + TRANSCRIPT + "]");
+            assertThat(report.required()).contains("whole_record.coverage [" + STREAM + "]", "acquisition.complete [main]", "source.expected [" + STREAM + "]");
             for (String property : List.of("whole_record.coverage", "population.contexts", "context.values", "reconstruction.coverage", "source.state", "source.inventory")) {
-                OracleReport without = report.without(property, TRANSCRIPT);
+                OracleReport without = report.without(property, STREAM);
                 assertThat(without.defects()).isEmpty();
                 OcsfReaderTool.Acceptance a = OcsfReaderTool.acceptance(without);
                 assertThat(a.exit()).as(property).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
-                assertThat(a.reasons()).contains("required check missing from the report: " + property + " [" + TRANSCRIPT + "]");
+                assertThat(a.reasons()).contains("required check missing from the report: " + property + " [" + STREAM + "]");
             }
             assertThat(OcsfReaderTool.acceptance(report.without("acquisition.complete", "main")).exit()).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
             assertThat(OcsfReaderTool.acceptance(report.without("package.children", "main")).exit()).as("package.children is not in the required set; the source set checks are").isEqualTo(OcsfReaderTool.EXIT_OK);

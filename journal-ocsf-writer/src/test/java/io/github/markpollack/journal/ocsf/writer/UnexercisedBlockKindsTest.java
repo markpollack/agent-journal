@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStreamStdout;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.notVerified;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.open;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.options;
@@ -50,10 +50,10 @@ class UnexercisedBlockKindsTest {
         Files.createDirectories(nativeDir);
         Files.writeString(nativeDir.resolve("stream.jsonl"), String.join("\n", RECORDS) + "\n", StandardCharsets.UTF_8);
         RunDescriptor run = new RunDescriptor("syn-block-kinds", 0, "syn-session", Instant.parse("2026-10-21T00:00:00Z"),
-                new RunDescriptor.Cli("Claude Code", "2.1.303", "Anthropic"), null,
+                new RunDescriptor.Cli("Claude Code", "2.1.304", "Anthropic"), null,
                 new Jv.Obj().put("label", "LABELLED SYNTHETIC: block kinds absent from the real runs"));
         try (OcsfRunWriter w = OcsfRunWriter.open(core, run, SchemaPin.bundled(), options())) {
-            SourceInput in = w.source(claudeStream());
+            SourceInput in = w.source(claudeStreamStdout());
             for (String r : RECORDS) {
                 in.record(r.getBytes(StandardCharsets.UTF_8), "LF", options().clock().instant());
             }

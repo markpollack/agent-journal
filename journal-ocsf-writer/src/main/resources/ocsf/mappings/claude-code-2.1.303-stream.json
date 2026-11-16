@@ -3,12 +3,10 @@
   "applies_to": {
     "product": "Claude Code",
     "version": "2.1.303",
-    "launch": "Exact registry routes: historical sdk rawJson, raw stdout, and original SDK transport bytes on sdk_stdio.",
+    "launch": "Exact registry routes: raw stdout, and original SDK transport bytes on sdk_stdio.",
     "source_kind": "Live output",
-    "versions": "Selected only through the listed exact compatibility entries. The version-neutral sdk_stdio entry (any Claude Code version; the version is recorded, not gated) reuses these meanings with exact native qualification; it does not admit filtered sdk or stdout at that version.",
+    "versions": "Selected only through the listed exact compatibility entries. The version-neutral sdk_stdio entry (any Claude Code version; the version is recorded, not gated) reuses these meanings with exact native qualification; it does not admit stdout at that version.",
     "compatibility_entries": [
-      "claude-code/stream-json/2.1.299-sdk",
-      "claude-code/stream-json/2.1.303-sdk",
       "claude-code/stream-json/2.1.304-stdout",
       "claude-code/stream-json/sdk-stdio"
     ]
@@ -282,12 +280,12 @@
     "rate_limit_event": {
       "meaning": "a vendor account rate-limit status snapshot (rate_limit_info: status, resetsAt, rateLimitType, overageStatus, unifiedWindows utilization/resetsAt) emitted by the CLI during the run",
       "disposition": "retained-only (known meaning); not normalized: it is account state, not an execution fact, usage component or cost of this run; no common concept in the ACP/Spring AI/OTel/Weave/Phoenix mapping catalog; a consumer reads it from data",
-      "limit": "observed on every tested route: 2.1.299 sdk (fixture claude-child-2.1.299), 2.1.303 sdk (pair A inventory) and 2.1.304 stdout (live runs)"
+      "limit": "observed on 2.1.304 stdout (live runs)"
     },
     "system/thinking_tokens": {
       "meaning": "a vendor running estimate of thinking tokens so far (estimated_tokens, estimated_tokens_delta) emitted before responses",
       "disposition": "retained-only (known meaning); not normalized: an estimate, not a reported usage component; normalizing it as reasoning_tokens would compete with the reported usage.output_tokens_details.thinking_tokens of the assistant and result records, which are normalized (reasoning_tokens)",
-      "limit": "observed on every tested route (2.1.299 sdk, 2.1.303 sdk, 2.1.304 stdout); its relation to the reported final thinking_tokens is not specified by the vendor and is not asserted here"
+      "limit": "observed on 2.1.304 stdout; its relation to the reported final thinking_tokens is not specified by the vendor and is not asserted here"
     },
     "system (other subtypes)": {
       "meaning": "system records with a subtype other than init and thinking_tokens",
@@ -302,7 +300,7 @@
     "system/task_lifecycle": {
       "meaning": "system/task_started, task_updated, and task_progress or task_notification without a usage object: sub-agent task lifecycle notifications (task_id, the spawning tool_use_id, subagent_type, description, prompt, status)",
       "disposition": "retained-only (known meaning); the child run is represented by owner routing of the child-scope records to its own file. Since D1 a task_progress or task_notification usage object is also normalized (claude.stream.system.task_usage->session_context.accounting); duration_ms and tool_uses stay in its data",
-      "limit": "observed on 2.1.299 sdk (fixture) and 2.1.304 stdout (live feature run)"
+      "limit": "observed on 2.1.304 stdout (live feature run)"
     }
   },
   "mcp": {

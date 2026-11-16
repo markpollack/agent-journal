@@ -64,7 +64,7 @@ class RequirementsAccountingIT {
     }
 
     /** The common scopes, stated once. */
-    static final String CLAUDE_ALL = "Claude Code 2.1.299 sdk (sanitized real fixture), 2.1.304 stdout (sanitized live fixtures)";
+    static final String CLAUDE_ALL = "Claude Code 2.1.304 stdout (sanitized live fixtures)";
     static final String CODEX_ALL = "Codex CLI 0.160.1 stdout (labelled synthetic and sanitized live fixtures)";
     static final String BOTH = CLAUDE_ALL + "; " + CODEX_ALL;
     static final String STAND_IN = "stand-in CLI processes (shell scripts replaying committed streams; labelled test-only)";
@@ -174,7 +174,7 @@ class RequirementsAccountingIT {
                 junit("StandalonePrefixTest#aFlushedPrefixReadAloneIsAnOpenInterpretablePrefixAndTheCompletedFileCarriesItsFinalization", "file alone"), live("packages read 9 to 32 times before exit on each run")));
         CRITERIA.put("UC4-AC2", List.of(junit("WriterLifecycleTest#completeRequiresEveryDeclaredSourceToHaveEndedAndInputsCannotBeMixed", "completion rule"),
                 junit("CliCaptureTest#aCompleteRunIsReadableBeforeExitCompletedAcquiredAndJudgedAgainstTheIndependentCopy", STAND_IN + ": EOF, exit 0, COMPLETED")));
-        CRITERIA.put("UC4-AC3", List.of(oracle("UC4-AC3", "replay-interrupted 2.1.299 prefix; live cancelled Claude 2.1.304 and Codex 0.160.1 fixtures"),
+        CRITERIA.put("UC4-AC3", List.of(oracle("UC4-AC3", "live cancelled Claude 2.1.304 and Codex 0.160.1 fixtures"),
                 junit("CliCaptureTest#aDeliberateCancellationTerminatesTheProcessAndInterruptsTheRecordingWithTheReason", STAND_IN + ": SIGTERM via the handle, exit 143, reason recorded"),
                 junit("CliCaptureLifecycleTest#aSilentCliIsCancelledAtTheDeadline", STAND_IN + ": the deadline fires without any output; 0 records, honest interruption"),
                 junit("CliCaptureLifecycleTest#outputThenAStallIsCancelledAtTheDeadlineWithThePrefixKept", STAND_IN + ": the deadline fires during a stall; the prefix is kept and judged incomplete"),
@@ -186,7 +186,7 @@ class RequirementsAccountingIT {
         CRITERIA.put("UC4-AC5", List.of(oracle("UC4-AC5", "interrupted and cancelled fixtures"),
                 junit("CliCaptureTest#aNonZeroExitAfterACompleteStreamIsACompletelyAcquiredFailedRun", STAND_IN + ": complete acquisition, failed CLI outcome"),
                 junit("CliCaptureTest#anAbnormalExitInsideARecordLeavesAnHonestIncompleteTailAndAFailedProcess", STAND_IN + ": finalized, acquisition incomplete")));
-        CRITERIA.put("UC4-AC6", List.of(oracle("UC4-AC6", "Claude 2.1.299 fixture child and 2.1.304 live Agent child"),
+        CRITERIA.put("UC4-AC6", List.of(oracle("UC4-AC6", "Claude 2.1.304 live Agent child"),
                 junit("WriterLifecycleTest#childRecordsAreRoutedToTheirOwnCoreAsTheyArrive", "routing as records arrive"),
                 junit("StandaloneEventFileTest#theChildEventFileAloneCarriesItsOwnDeclarationsAndIsJudgedOnItsOwn", "child file alone")));
         CRITERIA.put("UC4-AC7", List.of(junit("OcsfOracleValueCheckTest#resultStructuredDetailAndMissingResultAreEachChecked", "missing result stays open"),
@@ -215,7 +215,7 @@ class RequirementsAccountingIT {
                 junit("LiveFixtureFeaturesTest#theCancelledRecordingsAreHonestInterruptedPrefixes", "both CLIs cancelled"),
                 junit("LiveFixtureFeaturesTest#theCodexRecordingExhibitsOperationsFailureRepetitionAndUsage", CODEX_ALL),
                 junit("CodexExecStreamTest#controlVerifiesEveryFamilyWithStatedPopulationsAndIsAccepted", "labelled synthetic Codex stream"),
-                junit("OcsfOracleFixtureTest#sanitizedClaudeStreamWithChildCoreIsJudgedPerCoreWithoutDefect", "sanitized real 2.1.299 stream"),
+                junit("OcsfOracleFixtureTest#sanitizedClaudeStreamWithChildCoreIsJudgedPerCoreWithoutDefect", "sanitized live 2.1.304 feature stream"),
                 note("not claimed (not observed on any tested route): media/multimodal blocks, redacted or encrypted reasoning, an interactively answered permission prompt (the bidirectional stream-json route), Codex sub-agents, Codex permission decisions, a live open request at interruption")));
         CRITERIA.put("UC5-AC8", List.of(junit("RequirementsRosterTest#everyRuleHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedRoster", "54 rules, strict"),
                 junit("RequirementsRosterTest#everyCriterionHeadingIsParsedExactlyOnceStrictlyAndMatchesThePinnedCounts", "81 criteria, strict"),

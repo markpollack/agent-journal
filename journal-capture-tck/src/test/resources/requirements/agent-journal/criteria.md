@@ -183,7 +183,7 @@ Rule: RULE-20. Tests: `WriterLifecycleTest#completeRequiresEveryDeclaredSourceTo
 ### UC4-AC3: Finalize an interrupted run honestly
 
 When capture is interrupted, the writer shall end open sources as interrupted, retain any incomplete tail record, and finalize the acquired prefix as `INTERRUPTED`.
-Rule: RULE-20. Tests: `WriterLifecycleTest#interruptionEndsOpenSourcesAndFinalizesWhatWasAcquired`, `WriterLifecycleTest#eofInsideARecordRetainsTheIncompleteTailHonestly`, `StandalonePrefixTest#anInterruptedFileReadAloneSaysSoAndACutFileKeepsEveryWholeLine`; `RequirementsEvidenceTest` assesses it on the replay-interrupted fixture `claude-child-2.1.299-interrupted` (labelled, not live).
+Rule: RULE-20. Tests: `WriterLifecycleTest#interruptionEndsOpenSourcesAndFinalizesWhatWasAcquired`, `WriterLifecycleTest#eofInsideARecordRetainsTheIncompleteTailHonestly`, `StandalonePrefixTest#anInterruptedFileReadAloneSaysSoAndACutFileKeepsEveryWholeLine`; `RequirementsEvidenceTest` assesses it on the cancelled live fixtures `claude-live-2.1.304-cancelled` and `codex-live-0.160.1-cancelled`.
 
 ### UC4-AC4: Report a write failure as failed
 

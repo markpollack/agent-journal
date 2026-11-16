@@ -15,8 +15,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CLAUDE_PAIR;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStreamStdout;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeTranscript;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.freeze;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.manifest;
@@ -39,18 +40,18 @@ class WriterAcquisitionRegressionTest {
     @Test
     void eofInsideARecordIsFinalizedHonestlyAndNotAcceptedAsComplete(@TempDir Path work) throws Exception {
         Path core = work.resolve("core");
-        Path stream = nativeOf(PAIR, "stream.jsonl");
+        Path stream = nativeOf(LIVE_FEATURES, "stream.jsonl");
         byte[] all = WriterTestSupport.bytes(stream);
         int cut = Replay.prefixBytes(stream, 6).length + 40;
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
-            Replay.feedBytes(w.source(claudeStream()), all, 11, options().clock(), cut, true);
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options())) {
+            Replay.feedBytes(w.source(claudeStreamStdout()), all, 11, options().clock(), cut, true);
             assertThat(w.complete()).as("storage is finalized").isEqualTo(OcsfRunWriter.State.COMPLETED);
         }
         Jv m = manifest(core);
         assertThat(m.path("package", "state").text()).isEqualTo("COMPLETED");
         assertThat(m.path("recording", "acquisition", "status").text()).isEqualTo("incomplete");
         Path nat = nativeDir(work, Arrays.copyOf(all, cut));
-        freeze(nat, run(PAIR).runUid(), true, "stream.jsonl", "claude_stream");
+        freeze(nat, run(LIVE_FEATURES).runUid(), true, "stream.jsonl", "claude_stream");
         OracleReport report = verify(core, nat);
         assertThat(report.defects()).as(notVerified(report).toString()).isEmpty();
         assertThat(report.outcome("package.state", "main")).as("storage finalization holds").isEqualTo(Check.Outcome.VERIFIED);
@@ -65,10 +66,10 @@ class WriterAcquisitionRegressionTest {
     @Test
     void aSourceEndedAsInterruptedThenCompletedIsPreservedButNotAcceptedAsComplete(@TempDir Path work) throws Exception {
         Path core = work.resolve("core");
-        Path stream = nativeOf(PAIR, "stream.jsonl");
+        Path stream = nativeOf(LIVE_FEATURES, "stream.jsonl");
         byte[] prefix = Replay.prefixBytes(stream, 10);
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
-            SourceInput in = w.source(claudeStream());
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options())) {
+            SourceInput in = w.source(claudeStreamStdout());
             Replay.feedBytes(in, prefix, 1000, options().clock(), prefix.length, false);
             in.end(SourceInput.End.INTERRUPTED, options().clock().instant());
             assertThat(w.complete()).as("every source has ended, so storage finalizes as COMPLETED").isEqualTo(OcsfRunWriter.State.COMPLETED);
@@ -81,7 +82,7 @@ class WriterAcquisitionRegressionTest {
         assertThat(Jv.write(m.path("recording", "acquisition", "detail"))).contains("interrupted after 10 record(s)");
         // against the interrupted prefix itself: preserved in full, honest, not complete
         Path nat = nativeDir(work, prefix);
-        freeze(nat, run(PAIR).runUid(), true, "stream.jsonl", "claude_stream");
+        freeze(nat, run(LIVE_FEATURES).runUid(), true, "stream.jsonl", "claude_stream");
         OracleReport report = verify(core, nat);
         assertThat(report.defects()).as(notVerified(report).toString()).isEmpty();
         assertThat(report.outcome("whole_record.coverage", "main/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
@@ -93,17 +94,17 @@ class WriterAcquisitionRegressionTest {
         Path whole = work.resolve("whole");
         Files.createDirectories(whole);
         Files.copy(stream, whole.resolve("stream.jsonl"));
-        freeze(whole, run(PAIR).runUid(), true, "stream.jsonl", "claude_stream");
+        freeze(whole, run(LIVE_FEATURES).runUid(), true, "stream.jsonl", "claude_stream");
         OracleReport wholeReport = verify(core, whole);
         assertThat(wholeReport.outcome("source.extent", "main/stream.jsonl")).isEqualTo(Check.Outcome.UNSUPPORTED);
-        assertThat(wholeReport.check("source.extent", "main/stream.jsonl").detail()).contains("10 of 27 record(s)");
+        assertThat(wholeReport.check("source.extent", "main/stream.jsonl").detail()).contains("10 of 50 record(s)");
         assertThat(cli("verify", core.toString(), whole.toString())).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
     }
 
     @Test
     void aCompletedPackageWithNoSourceIsNotACompleteCapture(@TempDir Path work) throws Exception {
         Path core = work.resolve("core");
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options())) {
             assertThat(w.complete()).isEqualTo(OcsfRunWriter.State.COMPLETED);
         }
         assertThat(manifest(core).path("recording", "acquisition", "status").text()).isEqualTo("no sources declared");
@@ -114,8 +115,8 @@ class WriterAcquisitionRegressionTest {
         assertThat(report.check("acquisition.complete", "main").detail()).contains("no source declared");
         assertThat(OcsfReaderTool.acceptance(report).exit()).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
         // and against a frozen manifest that expects the stream: an omitted source is a defect
-        Files.copy(nativeOf(PAIR, "stream.jsonl"), nat.resolve("stream.jsonl"));
-        freeze(nat, run(PAIR).runUid(), true, "stream.jsonl", "claude_stream");
+        Files.copy(nativeOf(LIVE_FEATURES, "stream.jsonl"), nat.resolve("stream.jsonl"));
+        freeze(nat, run(LIVE_FEATURES).runUid(), true, "stream.jsonl", "claude_stream");
         assertThat(cli("verify", core.toString(), nat.toString())).isEqualTo(OcsfReaderTool.EXIT_DEFECTS);
     }
 
@@ -124,26 +125,26 @@ class WriterAcquisitionRegressionTest {
         // before the combination policy the plain writer took both sources and the CLI accepted the file (exit 0) with
         // no identity relation between them checked (CDX-R1-04); now only a declared evidence log records them together
         Path core = work.resolve("core");
-        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(PAIR), SchemaPin.bundled(), options(), WriterTestSupport.PAIR_LOG)) {
-            Replay.feedBytes(w.source(claudeStream()), nativeOf(PAIR, "stream.jsonl"), 4096, options().clock());
-            Replay.feedBytes(w.source(claudeTranscript()), nativeOf(PAIR, "transcript.jsonl"), 4096, options().clock());
+        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(LIVE_CLAUDE_PAIR), SchemaPin.bundled(), options(), WriterTestSupport.PAIR_LOG)) {
+            Replay.feedBytes(w.source(claudeStreamStdout()), nativeOf(LIVE_CLAUDE_PAIR, "stream.jsonl"), 4096, options().clock());
+            Replay.feedBytes(w.source(claudeTranscript()), nativeOf(LIVE_CLAUDE_PAIR, "transcript.jsonl"), 4096, options().clock());
             assertThat(w.complete()).isEqualTo(OcsfRunWriter.State.COMPLETED);
         }
         Path nat = work.resolve("native");
         Files.createDirectories(nat);
-        Files.copy(nativeOf(PAIR, "stream.jsonl"), nat.resolve("stream.jsonl"));
-        Files.copy(nativeOf(PAIR, "transcript.jsonl"), nat.resolve("transcript.jsonl"));
-        // the committed frozen manifest of the fixture (with its expected split core) is the denominator
-        Files.copy(WriterTestSupport.FIXTURES.resolve(PAIR).resolve("native").resolve("expected-sources.json"), nat.resolve("expected-sources.json"));
+        Files.copy(nativeOf(LIVE_CLAUDE_PAIR, "stream.jsonl"), nat.resolve("stream.jsonl"));
+        Files.copy(nativeOf(LIVE_CLAUDE_PAIR, "transcript.jsonl"), nat.resolve("transcript.jsonl"));
+        // the committed frozen manifest of the fixture is the denominator
+        Files.copy(WriterTestSupport.FIXTURES.resolve(LIVE_CLAUDE_PAIR).resolve("native").resolve("expected-sources.json"), nat.resolve("expected-sources.json"));
         OracleReport report = verify(core, nat);
         assertThat(report.defects()).as(notVerified(report).toString()).isEmpty();
         assertThat(report.outcome("acquisition.complete", "main")).isEqualTo(Check.Outcome.VERIFIED);
         assertThat(report.outcome("source.extent", "main/transcript.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
-        assertThat(report.outcome("package.children", "main")).isEqualTo(Check.Outcome.VERIFIED);
+        assertThat(report.outcome("package.children", "main")).as("the live pair splits no child core").isEqualTo(Check.Outcome.NOT_APPLICABLE);
         assertThat(report.outcome("combination.policy", "main")).isEqualTo(Check.Outcome.UNRESOLVED);
         OcsfReaderTool.Acceptance acceptance = OcsfReaderTool.acceptance(report);
         assertThat(acceptance.exit()).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
-        assertThat(acceptance.reasons()).as("the root's and its child core's combination policy").hasSize(2)
+        assertThat(acceptance.reasons()).as("the root core's combination policy (the live pair splits no child core)").hasSize(1)
                 .allMatch(r -> r.contains("combination.policy") && r.contains("unvalidated evidence log"));
         assertThat(cli("verify", core.toString(), nat.toString(), work.resolve("report.json").toString())).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
         assertThat(Files.readString(work.resolve("report.json"))).contains("\"missingRequired\" : [ ]");

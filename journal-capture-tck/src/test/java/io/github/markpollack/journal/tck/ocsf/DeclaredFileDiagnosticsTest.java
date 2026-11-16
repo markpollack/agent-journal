@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CHILD;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.LIVE_FEATURES;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CODEX;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copy;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.declaration;
@@ -182,7 +182,7 @@ class DeclaredFileDiagnosticsTest {
         });
         assertThat(open(redefined).diagnosticsWithCode("DEFINITION_CONFLICT").get(0).detail()).contains("agentic_cli/operation is defined a second time");
 
-        Path amendedTwice = copy(CHILD, work.resolve("amended"));
+        Path amendedTwice = copy(LIVE_FEATURES, work.resolve("amended"));
         editDeclarations(pkg(amendedTwice), decls -> {
             Json amendment = declaration(decls, "definition:metadata#2");
             Json base = declaration(decls, "definition:metadata");
@@ -200,7 +200,7 @@ class DeclaredFileDiagnosticsTest {
         assertThat(d).as("reported once, by the declaration pass").hasSize(1);
         assertThat(d.get(0).detail()).contains("line ").contains("differs from its pin");
 
-        Path early = copy(CHILD, work.resolve("early"));
+        Path early = copy(LIVE_FEATURES, work.resolve("early"));
         Path file = pkg(early).resolve("events.jsonl");
         List<Json> all = lines(file);
         Json amendment = declaration(all, "definition:metadata#2");
@@ -215,23 +215,23 @@ class DeclaredFileDiagnosticsTest {
 
     @Test
     void aLaunchVersionThatDisagreesWithTheStreamIsAWarningAndTheFileAloneDerivesAcquisition(@TempDir Path work) throws Exception {
-        Path differs = copy(CHILD, work.resolve("differs"));
-        editDeclarations(pkg(differs), decls -> obj(declaration(decls, "run:claude-child-2.1.299").path("run", "cli")).members().put("version", str("2.1.300")));
+        Path differs = copy(LIVE_FEATURES, work.resolve("differs"));
+        editDeclarations(pkg(differs), decls -> obj(declaration(decls, "run:claude-live-2.1.304-features").path("run", "cli")).members().put("version", str("2.1.300")));
         OcsfPackage pd = open(differs);
-        assertThat(pd.diagnosticsWithCode("CLI_VERSION_DIFFERS").get(0).detail()).contains("declared CLI version 2.1.300 at launch but the selected stream reported 2.1.299");
+        assertThat(pd.diagnosticsWithCode("CLI_VERSION_DIFFERS").get(0).detail()).contains("declared CLI version 2.1.300 at launch but the selected stream reported 2.1.304");
 
-        Path noVersion = copy(CHILD, work.resolve("no-version"));
-        editDeclarations(pkg(noVersion), decls -> obj(declaration(decls, "run:claude-child-2.1.299").path("run", "cli")).members().remove("version"));
+        Path noVersion = copy(LIVE_FEATURES, work.resolve("no-version"));
+        editDeclarations(pkg(noVersion), decls -> obj(declaration(decls, "run:claude-live-2.1.304-features").path("run", "cli")).members().remove("version"));
         Path alone = work.resolve("alone");
         Files.createDirectories(alone);
         Files.copy(pkg(noVersion).resolve("events.jsonl"), alone.resolve("events.jsonl"));
         OcsfPackage pa = PackageReader.open(alone.resolve("events.jsonl"));
         assertThat(pa.diagnosticsWithCode("CLI_VERSION_DIFFERS")).isEmpty();
-        assertThat(pa.manifest.cliVersion()).as("the derived manifest takes the stream-reported version").isEqualTo("2.1.299");
+        assertThat(pa.manifest.cliVersion()).as("the derived manifest takes the stream-reported version").isEqualTo("2.1.304");
         assertThat(pa.manifest.text("run", "cli", "version_basis")).contains("reported by the selected source");
 
         // derived acquisition without a recording declaration: pending while a source is open, incomplete after an interruption
-        Path pending = copy(CHILD, work.resolve("pending"));
+        Path pending = copy(LIVE_FEATURES, work.resolve("pending"));
         editDeclarations(pkg(pending), decls -> {
             decls.remove(declaration(decls, "recording:end"));
             decls.remove(declaration(decls, "source_end:stream.jsonl"));
@@ -245,7 +245,7 @@ class DeclaredFileDiagnosticsTest {
         assertThat(pp.manifest.source("stream.jsonl").member("note").text()).contains("still open");
         assertThat(pp.diagnosticsWithCode("ANCILLARY_ABSENT").get(0).detail()).contains("open prefix");
 
-        Path interrupted = copy(CHILD, work.resolve("interrupted"));
+        Path interrupted = copy(LIVE_FEATURES, work.resolve("interrupted"));
         editDeclarations(pkg(interrupted), decls -> {
             decls.remove(declaration(decls, "recording:end"));
             obj(declaration(decls, "source_end:stream.jsonl").member("source_end")).members().put("how", str("INTERRUPTED"));

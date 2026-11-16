@@ -4,7 +4,7 @@
  "fixture": "syn-claude-child-runs-2.1.304",
  "core": "children/toolu_01SYNTHETICCHILDRUNAAAAA",
  "events_jsonl": "fixtures/syn-claude-child-runs-2.1.304/package/children/toolu_01SYNTHETICCHILDRUNAAAAA/events.jsonl",
- "events_jsonl_sha256": "46b684cc1156ed18555943496558f0652e219de1d03c80ea84c3a82cb4681157",
+ "events_jsonl_sha256": "090c99dccf22bff1c3f9eb4a124bb2133fbe27e18a825d283cfd438b2d4271cd",
  "execution_records": 4,
  "declarations_skipped": 55,
  "record_rule": "a line whose top-level 'declaration' member is an object is a declaration (validated by the Java reader); every other line is an OCSF execution event (validated here)",

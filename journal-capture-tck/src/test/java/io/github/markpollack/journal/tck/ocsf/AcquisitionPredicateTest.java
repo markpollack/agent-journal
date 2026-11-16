@@ -277,16 +277,17 @@ class AcquisitionPredicateTest {
 
     @Test
     void childScopeFieldsAreEachCompared(@TempDir Path work) {
-        Path path = copy(PAIR, work.resolve("path"));
+        // the live feature recording: its Agent call splits one child core
+        Path path = copy(OcsfFixtures.LIVE_FEATURES, work.resolve("path"));
         editManifest(OcsfFixtures.child(path), run -> obj(run.path("run", "source_scope")).members().put("owner_path", str("other_path")));
-        assertThat(verify(path).check("package.children", "main").detail()).contains("declares scope").contains("expected stream.jsonl.parent_tool_use_id = " + OcsfFixtures.SPAWN);
-        Path artifact = copy(PAIR, work.resolve("artifact"));
+        assertThat(verify(path).check("package.children", "main").detail()).contains("declares scope").contains("expected stream.jsonl.parent_tool_use_id = " + OcsfFixtures.LIVE_SPAWN);
+        Path artifact = copy(OcsfFixtures.LIVE_FEATURES, work.resolve("artifact"));
         editManifest(OcsfFixtures.child(artifact), run -> obj(run.path("run", "source_scope")).members().put("artifact", str("transcript.jsonl")));
         assertThat(verify(artifact).outcome("package.children", "main")).isEqualTo(Outcome.DEFECTIVE);
-        Path noScope = copy(PAIR, work.resolve("no-scope"));
+        Path noScope = copy(OcsfFixtures.LIVE_FEATURES, work.resolve("no-scope"));
         editManifest(OcsfFixtures.child(noScope), run -> obj(run.member("run")).members().remove("source_scope"));
         assertThat(verify(noScope).check("package.children", "main").detail()).contains("declares scope none");
-        Path control = copy(PAIR, work.resolve("control"));
+        Path control = copy(OcsfFixtures.LIVE_FEATURES, work.resolve("control"));
         assertThat(verify(control).check("package.children", "main").detail()).isEqualTo("1 expected split core(s), each linked with its declared owner scope");
         Path codex = copy(OcsfFixtures.CODEX, work.resolve("codex"));
         assertThat(verify(codex).outcome("package.children", "main")).isEqualTo(Outcome.NOT_APPLICABLE);
@@ -298,7 +299,9 @@ class AcquisitionPredicateTest {
         OracleReport r = verify(fixture);
         java.util.Map<?, ?> oracle = (java.util.Map<?, ?>) r.toMap().get("oracle");
         assertThat(oracle.get("expectedSources").toString()).isEqualTo("stream.jsonl (claude_stream), transcript.jsonl (claude_transcript) [complete run]");
-        assertThat(r.required()).contains("source.available [" + STREAM + "]", "source.state [" + TRANSCRIPT + "]", "package.readable [child:" + OcsfFixtures.SPAWN + "]");
+        assertThat(r.required()).contains("source.available [" + STREAM + "]", "source.state [" + TRANSCRIPT + "]");
+        assertThat(verify(copy(OcsfFixtures.LIVE_FEATURES, work.resolve("features"))).required()).as("a split child core's own checks are required too")
+                .contains("package.readable [child:" + OcsfFixtures.LIVE_SPAWN + "]");
         assertThat(r.toMap().get("required")).isEqualTo(r.required());
         assertThat(r.toMap().get("missingRequired")).isEqualTo(List.of());
         editExpected(fixture, m -> m.members().put("complete", new Json.JBool(false)));

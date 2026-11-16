@@ -4,8 +4,6 @@
   "reviewed": "2026-10-21 (ACCEPT-1); 2026-10-24 (D1): task usage normalized, the Agent result carve-out, whole-variant task wildcards replaced by exact entries; 2026-10-26 (ACCT-1): every exercised retained entry carries a reviewed classification (vendor_residual, structural, redundant, common_capacity_gap, candidate); exact entries for the usage and message residual members; run duration, per-model cost and the Agent result's status and duration normalized",
   "profile": "claude_stream",
   "compatibility_entries": [
-    "claude-code/stream-json/2.1.299-sdk",
-    "claude-code/stream-json/2.1.303-sdk",
     "claude-code/stream-json/2.1.304-stdout",
     "claude-code/stream-json/2.1.316-sdk-stdio"
   ],
@@ -16,7 +14,6 @@
   "contract": "claude-code/stream-json/2.1.303/0.3.0-prototype",
   "contract_file": "claude-code-2.1.303-stream",
   "evidence_fixtures": [
-    "claude-child-2.1.299",
     "claude-live-2.1.304-features",
     "claude-live-2.1.304-denial",
     "claude-live-2.1.304-mcp"

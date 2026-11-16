@@ -78,7 +78,9 @@ class AccountingProcedureAcceptanceTest {
 
     @Test
     void theSameVendorUsesExactFrozenVersionBindings(@TempDir Path work) {
-        for (String fixtureName : List.of("claude-child-2.1.299", "claude-live-2.1.304-features")) {
+        // the live recordings' frozen binding names the exact stdout entry; another Claude Code stream entry of the same
+        // vendor and profile (the version-neutral original-bytes SDK route) declared instead is a binding defect
+        for (String fixtureName : List.of("claude-live-2.1.304-features", "claude-live-2.1.304-mcp")) {
             Path fixture = copy(fixtureName, work);
             OracleReport control = OcsfFixtures.verify(fixture);
             assertThat(control.checks().stream().filter(c -> c.property().equals("source.binding")))
@@ -102,11 +104,7 @@ class AccountingProcedureAcceptanceTest {
                                                             .members()
                                                             .put(
                                                                     "entry_id",
-                                                                    str(
-                                                                            fixtureName.contains(
-                                                                                            "299")
-                                                                                    ? "claude-code/stream-json/2.1.304-stdout"
-                                                                                    : "claude-code/stream-json/2.1.299-sdk"))));
+                                                                    str("claude-code/stream-json/sdk-stdio"))));
             assertThat(OcsfFixtures.verify(fixture).checks())
                     .anyMatch(
                             c ->

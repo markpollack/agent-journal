@@ -8,9 +8,9 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Path;
 import java.util.Map;
 
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CHILD;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.LIVE_FEATURES;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CODEX;
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.SPAWN;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.LIVE_SPAWN;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copy;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.verify;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,22 +58,22 @@ class OcsfOracleFixtureTest {
 
     @Test
     void sanitizedClaudeStreamWithChildCoreIsJudgedPerCoreWithoutDefect(@TempDir Path work) {
-        OracleReport report = verify(copy(CHILD, work));
+        OracleReport report = verify(copy(LIVE_FEATURES, work));
         assertThat(report.defects()).isEmpty();
         String main = "main/stream.jsonl";
-        String child = "child:" + SPAWN + "/stream.jsonl";
-        assertThat(report.check("whole_record.coverage", main).detail()).startsWith("24 owned record(s)");
-        assertThat(report.check("whole_record.coverage", child).detail()).startsWith("3 owned record(s)");
-        assertThat(report.check("population.requests", main).detail()).isEqualTo("2 expected, 2 observed");
-        assertThat(report.check("population.requests", child).detail()).isEqualTo("1 expected, 1 observed");
-        assertThat(report.check("population.usage", main).detail()).isEqualTo("13 expected, 13 observed");
-        assertThat(report.check("population.usage", child).detail()).isEqualTo("1 expected, 1 observed");
+        String child = "child:" + LIVE_SPAWN + "/stream.jsonl";
+        assertThat(report.check("whole_record.coverage", main).detail()).startsWith("45 owned record(s)");
+        assertThat(report.check("whole_record.coverage", child).detail()).startsWith("5 owned record(s)");
+        assertThat(report.check("population.requests", main).detail()).isEqualTo("8 expected, 8 observed");
+        assertThat(report.check("population.requests", child).detail()).isEqualTo("2 expected, 2 observed");
+        assertThat(report.check("population.usage", main).detail()).isEqualTo("24 expected, 24 observed");
+        assertThat(report.check("population.usage", child).detail()).isEqualTo("2 expected, 2 observed");
         assertThat(report.check("population.cost", main).detail()).as("the run total and the one model's running cost (ACCT-1)").isEqualTo("2 expected, 2 observed");
         assertThat(report.outcome("population.cost", child)).isEqualTo(Outcome.NOT_APPLICABLE);
         assertThat(report.outcome("cost.values", main)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("decision.values", main)).isEqualTo(Outcome.VERIFIED);
         assertThat(report.outcome("decision.values", child)).isEqualTo(Outcome.VERIFIED);
-        assertThat(report.outcome("event.order", "child:" + SPAWN)).isEqualTo(Outcome.VERIFIED);
+        assertThat(report.outcome("event.order", "child:" + LIVE_SPAWN)).isEqualTo(Outcome.VERIFIED);
         for (Check c : report.checks()) {
             assertThat(c.outcome()).as(c.toString()).isNotEqualTo(Outcome.UNRESOLVED);
         }

@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CHILD;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.LIVE_FEATURES;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CODEX;
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.SPAWN;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.LIVE_SPAWN;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copy;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editDeclarations;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editManifest;
@@ -56,35 +56,35 @@ class CompatibilityAndIdentityOracleTest {
 
     @Test
     void aTestedSelectionIsVerifiedAndEachInternalInconsistencyIsADefect(@TempDir Path work) {
-        Path control = copy(CHILD, work.resolve("control"));
+        Path control = copy(LIVE_FEATURES, work.resolve("control"));
         OracleReport ok = verify(control);
         assertThat(ok.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.VERIFIED);
-        assertThat(ok.check("source.compatibility", MAIN).detail()).contains("entry claude-code/stream-json/2.1.299-sdk selected").contains("status tested").doesNotContain("not individually tested");
+        assertThat(ok.check("source.compatibility", MAIN).detail()).contains("entry claude-code/stream-json/2.1.304-stdout selected").contains("status tested").doesNotContain("not individually tested");
 
-        Path noEntry = copy(CHILD, work.resolve("no-entry"));
+        Path noEntry = copy(LIVE_FEATURES, work.resolve("no-entry"));
         editCompatibility(noEntry, c -> c.members().remove("entry_id"));
         assertThat(verify(noEntry).check("source.compatibility", MAIN).detail()).contains("status tested without an entry_id");
 
-        Path outside = copy(CHILD, work.resolve("outside"));
-        editCompatibility(outside, c -> c.members().put("min_version", str("2.1.300")));
-        assertThat(verify(outside).check("source.compatibility", MAIN).detail()).contains("version 2.1.299 lies outside the declared range [2.1.300, 2.1.299]");
+        Path outside = copy(LIVE_FEATURES, work.resolve("outside"));
+        editCompatibility(outside, c -> c.members().put("min_version", str("2.1.305")));
+        assertThat(verify(outside).check("source.compatibility", MAIN).detail()).contains("version 2.1.304 lies outside the declared range [2.1.305, 2.1.304]");
 
-        Path aboveMax = copy(CHILD, work.resolve("above-max"));
-        editCompatibility(aboveMax, c -> c.members().put("max_version", str("2.1.298")));
-        assertThat(verify(aboveMax).check("source.compatibility", MAIN).detail()).contains("lies outside the declared range [2.1.299, 2.1.298]");
+        Path aboveMax = copy(LIVE_FEATURES, work.resolve("above-max"));
+        editCompatibility(aboveMax, c -> c.members().put("max_version", str("2.1.303")));
+        assertThat(verify(aboveMax).check("source.compatibility", MAIN).detail()).contains("lies outside the declared range [2.1.304, 2.1.303]");
 
-        Path noVersion = copy(CHILD, work.resolve("no-version"));
+        Path noVersion = copy(LIVE_FEATURES, work.resolve("no-version"));
         editCompatibility(noVersion, c -> c.members().remove("max_version"));
         assertThat(verify(noVersion).check("source.compatibility", MAIN).detail()).contains("status tested without version, min_version and max_version");
 
-        Path notNamed = copy(CHILD, work.resolve("not-named"));
+        Path notNamed = copy(LIVE_FEATURES, work.resolve("not-named"));
         editCompatibility(notNamed, c -> c.members().put("tested", new Json.JArray(List.of())));
         OracleReport nn = verify(notNamed);
         assertThat(nn.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.DEFECTIVE);
-        assertThat(nn.check("source.compatibility", MAIN).detail()).contains("status tested but version 2.1.299 is not named under the declared tested evidence");
+        assertThat(nn.check("source.compatibility", MAIN).detail()).contains("status tested but version 2.1.304 is not named under the declared tested evidence");
 
         // in_range: verified with the honest qualifier; no entry is still a defect
-        Path inRange = copy(CHILD, work.resolve("in-range"));
+        Path inRange = copy(LIVE_FEATURES, work.resolve("in-range"));
         editCompatibility(inRange, c -> {
             c.members().put("status", str("in_range"));
             c.members().put("tested", new Json.JArray(List.of()));
@@ -99,23 +99,23 @@ class CompatibilityAndIdentityOracleTest {
 
     @Test
     void theOtherDeclaredStatusesAreUnresolvedNotApplicableOrUnknownAndTheReaderNamesThem(@TempDir Path work) {
-        Path unknownVersion = copy(CHILD, work.resolve("vu"));
+        Path unknownVersion = copy(LIVE_FEATURES, work.resolve("vu"));
         editCompatibility(unknownVersion, c -> c.members().put("status", str("version_unknown")));
         OracleReport vu = verify(unknownVersion);
         assertThat(vu.outcome("source.compatibility", MAIN)).as("records normalized while no entry was selected: no provisional interpretation is accepted").isEqualTo(Outcome.DEFECTIVE);
         assertThat(vu.check("source.compatibility", MAIN).detail()).contains("were normalized while the version was unknown").contains("never interpreted provisionally");
         OcsfPackage vup = open(unknownVersion);
         assertThat(vup.diagnosticsWithCode("COMPATIBILITY_VERSION_UNKNOWN")).hasSize(1);
-        assertThat(vup.diagnosticsWithCode("CONTRACT_APPLICABILITY")).as("without a selection the contract's own single version is compared again (2.1.303 vs 2.1.299)").hasSize(1);
+        assertThat(vup.diagnosticsWithCode("CONTRACT_APPLICABILITY")).as("without a selection the contract's own single version is compared again (2.1.303 vs 2.1.304)").hasSize(1);
 
-        Path unscoped = copy(CHILD, work.resolve("ns"));
+        Path unscoped = copy(LIVE_FEATURES, work.resolve("ns"));
         editCompatibility(unscoped, c -> c.members().put("status", str("not_version_scoped")));
         OracleReport ns = verify(unscoped);
         assertThat(ns.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.NOT_APPLICABLE);
         assertThat(ns.check("source.compatibility", MAIN).detail()).contains("profile claude_stream normalizes nothing and has no compatibility entry");
         assertThat(open(unscoped).diagnosticsWithCode("COMPATIBILITY_STATUS_UNKNOWN")).isEmpty();
 
-        Path bogus = copy(CHILD, work.resolve("bogus"));
+        Path bogus = copy(LIVE_FEATURES, work.resolve("bogus"));
         editCompatibility(bogus, c -> c.members().put("status", str("probably_fine")));
         OracleReport bg = verify(bogus);
         assertThat(bg.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.UNRESOLVED);
@@ -125,7 +125,7 @@ class CompatibilityAndIdentityOracleTest {
         assertThat(bgp.diagnosticsWithCode("COMPATIBILITY_STATUS_UNKNOWN").get(0).detail()).contains("probably_fine");
 
         // no declaration at all (a file written before the registry): unresolved, and the reader says so on a 0.3.0 file
-        Path undeclared = copy(CHILD, work.resolve("undeclared"));
+        Path undeclared = copy(LIVE_FEATURES, work.resolve("undeclared"));
         editDeclarations(pkg(undeclared), decls -> decls.removeIf(d -> "compatibility".equals(d.member("declaration").member("kind").text())));
         editManifest(pkg(undeclared), m -> {
             for (Json s : m.get("sources").elements()) {
@@ -158,10 +158,10 @@ class CompatibilityAndIdentityOracleTest {
 
         // an entry named beside no_match
         Path named = copy(UNTESTED, work.resolve("named"));
-        editCompatibility(named, c -> c.members().put("entry_id", str("claude-code/stream-json/2.1.299-sdk")));
+        editCompatibility(named, c -> c.members().put("entry_id", str("claude-code/stream-json/2.1.304-stdout")));
         OracleReport nm = verify(named);
         assertThat(nm.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.DEFECTIVE);
-        assertThat(nm.check("source.compatibility", MAIN).detail()).contains("status no_match but an entry_id claude-code/stream-json/2.1.299-sdk is named");
+        assertThat(nm.check("source.compatibility", MAIN).detail()).contains("status no_match but an entry_id claude-code/stream-json/2.1.304-stdout is named");
 
         // every selection relabelled tested, as if an entry had covered 2.1.999: the retained records then owe normalized facts
         Path relabelled = copy(UNTESTED, work.resolve("relabelled"));
@@ -174,7 +174,7 @@ class CompatibilityAndIdentityOracleTest {
         assertThat(rl.check("whole_record.class", MAIN).detail()).contains("record 1 has a normalization rule but is retained only as a source_record fallback");
 
         // a tested fixture relabelled no_match: its normalized events betray it (the writer-side forge, repeated here on the committed package)
-        Path forged = copy(CHILD, work.resolve("forged"));
+        Path forged = copy(LIVE_FEATURES, work.resolve("forged"));
         editCompatibility(forged, c -> {
             c.members().put("status", str("no_match"));
             c.members().remove("entry_id");
@@ -188,9 +188,9 @@ class CompatibilityAndIdentityOracleTest {
 
     @Test
     void aNormalizedEventUnderAnotherContractThanTheSourcesIsADefectOfTheSelection(@TempDir Path work) {
-        Path fixture = copy(CHILD, work);
+        Path fixture = copy(LIVE_FEATURES, work);
         // give one normalized event the opaque-text contract (declared in no file: the reader also reports the reference), keeping the selection tested
-        OcsfFixtures.editEvents(pkg(fixture), events -> obj(OcsfFixtures.at(events, "model_response", 1, 4).member("journal")).members().put("contract_uid", str("common/opaque-text/1.0.0")));
+        OcsfFixtures.editEvents(pkg(fixture), events -> obj(OcsfFixtures.at(events, "model_response", 1, 5).member("journal")).members().put("contract_uid", str("common/opaque-text/1.0.0")));
         OracleReport r = verify(fixture);
         assertThat(r.outcome("source.compatibility", MAIN)).isEqualTo(Outcome.DEFECTIVE);
         assertThat(r.check("source.compatibility", MAIN).detail()).contains("1 normalized event(s) carry a contract other than the source's declared claude-code/stream-json/2.1.303/1.0.0");
@@ -199,7 +199,7 @@ class CompatibilityAndIdentityOracleTest {
     @Test
     void theProcessOutcomeOfALaunchingCaptureIsReadFromTheFileAndWarnedAbout(@TempDir Path work) throws Exception {
         for (Map.Entry<String, String> c : expectedProcessWarnings().entrySet()) {
-            Path fixture = copy(CHILD, work.resolve(c.getKey().toLowerCase().replace('_', '-')));
+            Path fixture = copy(LIVE_FEATURES, work.resolve(c.getKey().toLowerCase().replace('_', '-')));
             Json.JObject process = process(c.getKey());
             editDeclarations(pkg(fixture), decls -> decls.forEach(d -> {
                 if ("recording".equals(d.member("declaration").member("kind").text())) {
@@ -220,7 +220,7 @@ class CompatibilityAndIdentityOracleTest {
             assertThat(a.manifest.text("recording", "process", "how")).isEqualTo(process.get("how").text());
         }
         // a successful exit is silent
-        Path quiet = copy(CHILD, work.resolve("quiet"));
+        Path quiet = copy(LIVE_FEATURES, work.resolve("quiet"));
         Json.JObject exited = process("CLI_EXIT_ZERO");
         editDeclarations(pkg(quiet), decls -> decls.forEach(d -> {
             if ("recording".equals(d.member("declaration").member("kind").text())) {
@@ -233,7 +233,7 @@ class CompatibilityAndIdentityOracleTest {
             assertThat(q.diagnosticsWithCode(code)).isEmpty();
         }
         // and a replay package carries no process outcome at all
-        assertThat(open(copy(CHILD, work.resolve("plain"))).manifest.text("recording", "process", "how")).isNull();
+        assertThat(open(copy(LIVE_FEATURES, work.resolve("plain"))).manifest.text("recording", "process", "how")).isNull();
     }
 
     static Map<String, String> expectedProcessWarnings() {
@@ -294,9 +294,9 @@ class CompatibilityAndIdentityOracleTest {
         assertThat(rollout.outcome("identity.values", "main/rollout.jsonl")).isEqualTo(Outcome.VERIFIED);
         assertThat(rollout.check("identity.values", "main/rollout.jsonl").detail()).contains("normalized event(s)");
         // on the Claude child core the check examines the child's own normalized events
-        OracleReport claude = verify(copy(CHILD, work.resolve("claude")));
-        assertThat(claude.outcome("identity.values", "child:" + SPAWN + "/stream.jsonl")).isEqualTo(Outcome.VERIFIED);
-        assertThat(claude.check("identity.values", "child:" + SPAWN + "/stream.jsonl").detail()).startsWith("4 normalized event(s)");
-        assertThat(claude.check("identity.values", MAIN).detail()).startsWith("19 normalized event(s)");
+        OracleReport claude = verify(copy(LIVE_FEATURES, work.resolve("claude")));
+        assertThat(claude.outcome("identity.values", "child:" + LIVE_SPAWN + "/stream.jsonl")).isEqualTo(Outcome.VERIFIED);
+        assertThat(claude.check("identity.values", "child:" + LIVE_SPAWN + "/stream.jsonl").detail()).startsWith("7 normalized event(s)");
+        assertThat(claude.check("identity.values", MAIN).detail()).startsWith("42 normalized event(s)");
     }
 }

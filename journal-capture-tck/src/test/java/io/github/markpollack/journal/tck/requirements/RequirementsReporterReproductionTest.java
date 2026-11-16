@@ -13,7 +13,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Path;
 import java.util.List;
 
-import static io.github.markpollack.journal.tck.requirements.RequirementsEvidenceTest.CLAUDE_CHILD;
+import static io.github.markpollack.journal.tck.requirements.RequirementsEvidenceTest.LIVE_FEATURES;
 import static io.github.markpollack.journal.tck.requirements.RequirementsEvidenceTest.CODEX_STREAM;
 import static io.github.markpollack.journal.tck.requirements.RequirementsEvidenceTest.CRITERION_EVIDENCE;
 import static io.github.markpollack.journal.tck.requirements.RequirementsEvidenceTest.judge;
@@ -40,7 +40,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class RequirementsReporterReproductionTest {
 
-    private static final String CHILD_OWNER = "child:toolu_01BnEuCUmZ2Vu1LpADzksmrJ/stream.jsonl";
+    private static final String CHILD_OWNER = "child:toolu_01WBvs5eGudfYPm8YvrTYTQK/stream.jsonl";
 
     @Test
     void rr01PromptEvidenceAbsentIsAnErrorAndDefectiveIsAFailOnThePromptCriterionWhileResponsesPass(@TempDir Path work) {
@@ -71,13 +71,13 @@ class RequirementsReporterReproductionTest {
         assertThat(evidence.properties()).contains("result.owner");
         Judgment control = judge("UC3-AC1", evidence, corpus);
         assertThat(control.status()).as(control.reasoning()).isEqualTo(JudgmentStatus.PASS);
-        assertThat(control.checks()).as("every property on every owner of the matched fixtures: 5 properties x 17 owners (codex synthetic 1, claude child 2, interrupted 1, live features 2, live denial 1, live cancelled 1, live MCP 1, live codex 1, live codex cancelled 1, antigravity features, denial, interrupt-open, subagent, MCP-denied and MCP 1 each); the untested-version fixture is outside the scenario").hasSize(85);
+        assertThat(control.checks()).as("every property on every owner of the matched fixtures: 5 properties x 14 owners (codex synthetic 1, live features 2, live denial 1, live cancelled 1, live MCP 1, live codex 1, live codex cancelled 1, antigravity features, denial, interrupt-open, subagent, MCP-denied and MCP 1 each); the untested-version fixture is outside the scenario").hasSize(70);
 
         Judgment missingProperty = judge("UC3-AC1", evidence, corpus.with(map(corpus.reports(), r -> r.filtered(c -> !c.property().equals("result.owner")))));
         assertThat(missingProperty.status()).as("REPAIRED: result.owner never appears").isEqualTo(JudgmentStatus.ERROR);
-        assertThat(missingProperty.reasoning()).contains("17 required check(s) missing").contains("result.owner [main/stream.jsonl]");
+        assertThat(missingProperty.reasoning()).contains("14 required check(s) missing").contains("result.owner [main/stream.jsonl]");
 
-        assertThat(corpus.reports().get(CLAUDE_CHILD).checks()).anyMatch(c -> c.owner().equals(CHILD_OWNER));
+        assertThat(corpus.reports().get(LIVE_FEATURES).checks()).anyMatch(c -> c.owner().equals(CHILD_OWNER));
         Judgment missingOwner = judge("UC3-AC1", evidence, corpus.with(map(corpus.reports(), r -> r.filtered(c -> !c.owner().equals(CHILD_OWNER)))));
         assertThat(missingOwner.status()).as("REPAIRED: the child core, an owner the frozen manifest implies, has no check").isEqualTo(JudgmentStatus.ERROR);
         assertThat(missingOwner.reasoning()).contains("5 required check(s) missing").contains(CHILD_OWNER);
@@ -87,7 +87,7 @@ class RequirementsReporterReproductionTest {
     void rr03InterruptionCriterionIsNotAssessedOnCompleteRunsAndScopedToTheInterruptedFixtureOtherwise(@TempDir Path work) {
         Corpus all = verifyFixtures(work);
         Corpus complete = RequirementsEvidenceTest.completeRunsOnly(all);
-        for (String fixture : List.of(CODEX_STREAM, CLAUDE_CHILD)) {
+        for (String fixture : List.of(CODEX_STREAM, LIVE_FEATURES)) {
             assertThat(complete.frozen().get(fixture).complete()).as(fixture + " is frozen as a complete run; nothing was interrupted or cut").isTrue();
         }
         Judgment j = judge("UC4-AC5", CRITERION_EVIDENCE.get("UC4-AC5"), complete);
@@ -96,13 +96,13 @@ class RequirementsReporterReproductionTest {
         assertThat(j.checks()).as("no obligation was evaluated on a fixture that does not exercise the scenario").isEmpty();
         assertThat(judge("UC4-AC3", CRITERION_EVIDENCE.get("UC4-AC3"), complete).status()).isEqualTo(JudgmentStatus.ABSTAIN);
 
-        assertThat(all.frozen().get(RequirementsEvidenceTest.CLAUDE_INTERRUPTED).complete()).as("the replay-interrupted fixture is frozen as incomplete").isFalse();
+        assertThat(all.frozen().get(RequirementsEvidenceTest.LIVE_CANCELLED).complete()).as("the cancelled live fixture is frozen as incomplete").isFalse();
         Judgment scoped = judge("UC4-AC5", CRITERION_EVIDENCE.get("UC4-AC5"), all);
         assertThat(scoped.status()).withFailMessage(scoped.reasoning()).isEqualTo(JudgmentStatus.PASS);
         List<String> completeFixtures = all.frozen().entrySet().stream().filter(e -> e.getValue().complete()).map(java.util.Map.Entry::getKey).toList();
         List<String> interruptedFixtures = all.frozen().entrySet().stream().filter(e -> !e.getValue().complete()).map(java.util.Map.Entry::getKey).toList();
-        assertThat(interruptedFixtures).contains(RequirementsEvidenceTest.CLAUDE_INTERRUPTED, RequirementsEvidenceTest.LIVE_CANCELLED, RequirementsEvidenceTest.LIVE_CODEX_CANCELLED);
-        assertThat(scoped.reasoning()).contains("scoped to").contains(RequirementsEvidenceTest.CLAUDE_INTERRUPTED)
+        assertThat(interruptedFixtures).contains(RequirementsEvidenceTest.LIVE_CANCELLED, RequirementsEvidenceTest.LIVE_CODEX_CANCELLED);
+        assertThat(scoped.reasoning()).contains("scoped to").contains(RequirementsEvidenceTest.LIVE_CANCELLED)
                 .contains("fixtures not exercising the scenario: [" + String.join(", ", completeFixtures) + "]");
         assertThat(scoped.checks()).as("only the interrupted or cancelled fixtures' obligations were evaluated").allMatch(c -> interruptedFixtures.stream().anyMatch(f -> c.id().startsWith(f)));
     }

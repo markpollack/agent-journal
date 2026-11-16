@@ -88,8 +88,9 @@ profiles that combine them): Claude Code 2.1.299, 2.1.303 and 2.1.304 session tr
 GitHub Copilot CLI 1.0.100 stdout events, session events, OTel file and usage report; Junie 3813.7
 stdout, session events and session summary; Codex CLI 0.160.1 rollout files; the version-neutral
 Claude Code SDK stdio and session-file route (tested on 2.1.316 and 2.1.319); the version-neutral
-Codex CLI exec stream and rollout route (tested on 0.166.0). The Claude Code 2.1.299 and 2.1.303 SDK
-route is historical: its recordings replay, the route is not extended.
+Codex CLI exec stream and rollout route (tested on 0.166.0). The retired Claude Code 2.1.299 and 2.1.303
+filtered SDK route has no compatibility entry: a stream recorded on it is retained whole and flagged
+untested.
 
 Admission means the route's normalization is exercised on recorded live input and checked by the
 independent oracle. It is not approval of every meaning: meanings the catalogs still mark proposed

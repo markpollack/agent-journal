@@ -13,10 +13,9 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CHILD;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.SPAWN;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_SPAWN;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStreamStdout;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.nativeOf;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.options;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.run;
@@ -34,10 +33,10 @@ class StandalonePrefixTest {
     @Test
     void aFlushedPrefixReadAloneIsAnOpenInterpretablePrefixAndTheCompletedFileCarriesItsFinalization(@TempDir Path work) throws IOException {
         Path core = work.resolve("core");
-        Path stream = nativeOf(PAIR, "stream.jsonl");
+        Path stream = nativeOf(LIVE_FEATURES, "stream.jsonl");
         byte[] all = WriterTestSupport.bytes(stream);
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
-            SourceInput in = w.source(claudeStream());
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options())) {
+            SourceInput in = w.source(claudeStreamStdout());
             byte[] prefix = Replay.prefixBytes(stream, 6);
             Replay.feedBytes(in, prefix, 7, options().clock(), prefix.length, false);
             w.flush();
@@ -51,7 +50,7 @@ class StandalonePrefixTest {
             assertThat(open.manifest.text("recording", "acquisition", "status")).isEqualTo("pending");
             assertThat(open.manifest.source("stream.jsonl").member("final").scalarText()).isEqualTo("false");
             assertThat(open.events).isNotEmpty();
-            assertThat(open.events("tool_call", 1)).as("record 5 requested a tool; its request is readable from the prefix").hasSize(1);
+            assertThat(open.events("tool_call", 1)).as("record 6 requested a tool; its request is readable from the prefix").hasSize(1);
             assertThat(open.catalog.classes()).containsKey("agentic_cli/tool_call");
 
             in.bytes(all, prefix.length, all.length - prefix.length, options().clock().instant());
@@ -63,16 +62,16 @@ class StandalonePrefixTest {
         assertThat(done.manifest.packageState()).isEqualTo("COMPLETED");
         assertThat(done.manifest.text("recording", "acquisition", "status")).isEqualTo("complete");
         assertThat(done.manifest.source("stream.jsonl").member("sha256").text()).isEqualTo(SchemaPin.sha256(all));
-        assertThat(done.manifest.source("stream.jsonl").member("records").scalarText()).isEqualTo("27");
+        assertThat(done.manifest.source("stream.jsonl").member("records").scalarText()).isEqualTo("50");
         assertThat(done.events).hasSize(PackageReader.open(core.resolve("events.jsonl")).events.size());
     }
 
     @Test
     void anInterruptedFileReadAloneSaysSoAndACutFileKeepsEveryWholeLine(@TempDir Path work) throws IOException {
         Path core = work.resolve("core");
-        Path stream = nativeOf(PAIR, "stream.jsonl");
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
-            SourceInput in = w.source(claudeStream());
+        Path stream = nativeOf(LIVE_FEATURES, "stream.jsonl");
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options())) {
+            SourceInput in = w.source(claudeStreamStdout());
             byte[] prefix = Replay.prefixBytes(stream, 10);
             Replay.feedBytes(in, prefix, 1000, options().clock(), prefix.length, false);
             w.interrupt("operator cancelled");
@@ -106,9 +105,9 @@ class StandalonePrefixTest {
                 throw new IOException("injected: disk full");
             }
         });
-        OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), opts);
-        SourceInput in = w.source(claudeStream());
-        Path stream = nativeOf(PAIR, "stream.jsonl");
+        OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), opts);
+        SourceInput in = w.source(claudeStreamStdout());
+        Path stream = nativeOf(LIVE_FEATURES, "stream.jsonl");
         byte[] first = Replay.prefixBytes(stream, 5);
         Replay.feedBytes(in, first, 1000, opts.clock(), first.length, false);
         w.flush();
@@ -132,19 +131,19 @@ class StandalonePrefixTest {
     @Test
     void aChildFileWrittenDuringTheRunIsInterpretableAloneBeforeTheRunEnds(@TempDir Path work) throws IOException {
         Path core = work.resolve("core");
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(CHILD), SchemaPin.bundled(), options())) {
-            SourceInput in = w.source(claudeStream());
-            Path stream = nativeOf(CHILD, "stream.jsonl");
-            byte[] prefix = Replay.prefixBytes(stream, 22); // records 18, 20 and 21 belong to the child
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options())) {
+            SourceInput in = w.source(claudeStreamStdout());
+            Path stream = nativeOf(LIVE_FEATURES, "stream.jsonl");
+            byte[] prefix = Replay.prefixBytes(stream, 28); // records 24, 26 and 27 belong to the child
             Replay.feedBytes(in, prefix, 512, options().clock(), prefix.length, false);
             w.flush();
-            Path childCore = core.resolve("children").resolve(SPAWN);
+            Path childCore = core.resolve("children").resolve(LIVE_SPAWN);
             OcsfPackage child = alone(childCore, work.resolve("child-alone"));
             assertThat(child.refused()).as(child.diagnostics.toString()).isFalse();
             assertThat(child.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
             assertThat(child.manifest.packageState()).isEqualTo("RECORDING");
-            assertThat(child.manifest.parent().member("run_uid").text()).isEqualTo(run(CHILD).runUid());
-            assertThat(child.manifest.sourceScope().member("owner_value").text()).isEqualTo(SPAWN);
+            assertThat(child.manifest.parent().member("run_uid").text()).isEqualTo(run(LIVE_FEATURES).runUid());
+            assertThat(child.manifest.sourceScope().member("owner_value").text()).isEqualTo(LIVE_SPAWN);
             assertThat(child.events).hasSize(4);
             assertThat(child.manifest.source("stream.jsonl").member("final").scalarText()).as("the source is still open in the child too").isEqualTo("false");
             OcsfPackage parent = alone(core, work.resolve("parent-alone"));

@@ -10,13 +10,6 @@
   "rule_of_obligation": "An obligation is a required canonical outcome: every native occurrence its trigger selects in a registered recording (counted from the native record alone, before any candidate output is read) must reach its destination in the owner's core with every stated value, and the oracle's own source profile must expect it. Retention of the containing record, a broad subtree disposition or another owner's passing check never discharges it. A residual is a reviewed token-named member that owes no canonical outcome (vendor_specific) or whose classification is an open question (unresolved); its path is an exact leaf, or an array or object whose listed members it covers (an array residual with entry_types covers only entries of those types); a residual owes nothing only once an Owner decision approves its classification at its digest. meaning_digest is sha256 over the canonical JSON of {owner_path, trigger, destination, observation, semantics}: a changed meaning needs a new revision. relevant_digest is sha256 over the canonical JSON of the extension definitions of the destination (its usage observation with every enum value, the unit member and the context kind), the destination class's description, every extension object the usage observation reaches (whole, descriptions included, with their attributes' dictionary entries) and the contract rules the obligation names: a change makes the binding stale until it is restated and reviewed. The review status written here is a label; only owner-decisions.json approves. kind states the required outcome: usage (a usage observation; the default), cost (an entry of the destination's cost_observations[] at the stated scope and model, with currency, quantity kind and aggregation) or attribute (one attribute of the destination event equal to the native value). writer.basis_prefixes binds the writer's basis labels that assert the meaning, and rules the contract rules the event may be written under: the gate checks both on every discharged occurrence (ACCT-1), so a writer label is never trusted by its wording or its revision suffix",
   "bindings": [
     {
-      "compatibility_entry": "claude-code/stream-json/2.1.299-sdk",
-      "recordings": [
-        "claude-child-2.1.299",
-        "claude-child-2.1.299-interrupted"
-      ]
-    },
-    {
       "compatibility_entry": "claude-code/stream-json/2.1.304-stdout",
       "recordings": [
         "claude-live-2.1.304-features",

@@ -1743,7 +1743,7 @@
         "AnalysisViewsTest#responsesAssembleUpdatesAndKeepIdenticalContentUnderDifferentIdsSeparate",
         "OcsfOracleMutationTest#missingDuplicatedAndReorderedRowsAreDefects",
         "CodexExecStreamTest#viewsMatchTheIndependentlyAuthoredAnswersAndStateTheirCountUnits",
-        "CodexExecStreamTest#claudePairCountsRunScopedIdentitiesLogicallyAndSeparatesRepeatsFromIdenticalContent"
+        "CombinedSourceAdmissionTest#anEvidenceLogCountsRunScopedIdentitiesLogicallyAndSeparatesRepeatsFromIdenticalContent"
       ],
       "disposition": "normalized",
       "decision": {
@@ -5224,7 +5224,7 @@
         "AnalysisViewsTest#identicalResultContentUnderTwoOwnersIsKeptSeparate",
         "OcsfOracleValueCheckTest#resultStructuredDetailAndMissingResultAreEachChecked",
         "OracleFullSourceTest#swappingResultOwnersBetweenRecordsIsAnOwnershipDefectOnBothSources",
-        "CodexExecStreamTest#claudePairCountsRunScopedIdentitiesLogicallyAndSeparatesRepeatsFromIdenticalContent",
+        "CombinedSourceAdmissionTest#anEvidenceLogCountsRunScopedIdentitiesLogicallyAndSeparatesRepeatsFromIdenticalContent",
         "AntigravityStreamTest#aChangedChildConversationOfTheSubagentSpawnIsDetected"
       ],
       "disposition": "normalized",
@@ -10793,7 +10793,7 @@
         {
           "cli": "claude",
           "artifact": "stream.jsonl",
-          "records": "fixture claude-child-2.1.299 (records with parent_tool_use_id = toolu_01BnEuCUmZ2Vu1LpADzksmrJ)",
+          "records": "fixture claude-live-2.1.304-features (records with parent_tool_use_id = toolu_01WBvs5eGudfYPm8YvrTYTQK)",
           "field": "parent_tool_use_id non-null: the record belongs to the child spawned by that tool call; routed to the child file with its own declarations",
           "availability": "present"
         },
@@ -10888,7 +10888,7 @@
         "value": "adapt",
         "reason": "A child run has its own core linked to the spawning call; ACP sub-agents exist only in its unstable schema."
       },
-      "notes": "Neither frozen pair contains a child; the concept is exercised by the sanitized fixture claude-child-2.1.299 (spawn toolu_01BnEuCUmZ2Vu1LpADzksmrJ) from pair D, which the cited tests use. The stream contract's owner_routing (parent_tool_use_id -> child core) is a labelled split of the parent's own stream, not live child capture; the child's sidechain transcript and .meta.json (REPORT row 6, \u00a74 known omissions) were not acquired for A, and a missing child file is a gap, not an empty child (work order \u00a71). Child-scope usage (scope 7) is not produced by any current contract. ACCEPT-1 (2026-10-21): child routing by parent_tool_use_id is implemented (layout 0.3.0-prototype, each child file with its own declarations) and exercised on the committed claude-child-2.1.299 fixture; the oracle checks the expected split cores and their owner scopes (package.children). Codex exec stream: no child concept observed. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: collab spawn_agent with sender/receiver thread ids, prompt and agent states; the child's own activity is not projected.",
+      "notes": "Neither frozen pair contains a child; the concept is exercised by the sanitized live fixture claude-live-2.1.304-features (spawn toolu_01WBvs5eGudfYPm8YvrTYTQK), which the cited tests use (the earlier sanitized fixture claude-child-2.1.299 of the retired sdk route was deleted 2026-11-15). The stream contract's owner_routing (parent_tool_use_id -> child core) is a labelled split of the parent's own stream, not live child capture; the child's sidechain transcript and .meta.json (REPORT row 6, \u00a74 known omissions) were not acquired for A, and a missing child file is a gap, not an empty child (work order \u00a71). Child-scope usage (scope 7) is not produced by any current contract. ACCEPT-1 (2026-10-21): child routing by parent_tool_use_id is implemented (layout 0.3.0-prototype, each child file with its own declarations) and exercised on the committed live fixture claude-live-2.1.304-features; the oracle checks the expected split cores and their owner scopes (package.children). Codex exec stream: no child concept observed. FND-1 vendor audit (Codex 0.160.1 exec, d27764b): supported: collab spawn_agent with sender/receiver thread ids, prompt and agent states; the child's own activity is not projected.",
       "observations": [
         {
           "item": "child interior and parent link",
@@ -11357,8 +11357,6 @@
           "statement": "Every event Journal writes names the contract rule that produced it in journal.rule_uid (since extension 0.5.0-prototype), beside journal.contract_uid. OCSF unmapped is left to its own purpose, source-specific data no OCSF attribute maps; Journal's provenance is not source data. Packages written with extension 0.4.0 or earlier carry the rule as unmapped.rule_id and remain readable from their own definitions.",
           "applicability": {
             "routes": [
-              "claude-code/stream-json/2.1.299-sdk",
-              "claude-code/stream-json/2.1.303-sdk",
               "claude-code/stream-json/2.1.304-stdout",
               "claude-code/session-transcript/2.1.299-session-file",
               "claude-code/session-transcript/2.1.303-session-file",
@@ -11393,7 +11391,7 @@
           "binding": {
             "rules": [],
             "relevant_digest": "sha256:a74f3f7db5f97b3b2291efc600e6bdb762590095b5ca417720192979e8b22330",
-            "digest": "sha256:01eb2bac56edfc07a3b8d958e6e9371d80a77c2e62256e9ffc735810c7a22ac4"
+            "digest": "sha256:cb6b19ebbba972062c6014a4ea7eeae74eba3b726d567e2d28e247d443784306"
           },
           "replaces": "extension 0.4.0-prototype and earlier stored the rule as OCSF unmapped.rule_id; r4 updates the normative example contract UID for the new mapping resource; remains proposed.",
           "approval": {

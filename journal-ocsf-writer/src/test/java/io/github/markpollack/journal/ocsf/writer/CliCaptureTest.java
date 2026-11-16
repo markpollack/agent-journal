@@ -26,11 +26,10 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CHILD;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CODEX_STREAM;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_AGY_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CLAUDE_PAIR;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.nativeOf;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.verify;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -140,22 +139,25 @@ class CliCaptureTest {
         assertThat(Files.readString(r.expectedSources())).contains("\"spawn_tool_call_uid\":\"" + LIVE_SPAWN + "\"");
     }
 
-    /** A version tested on another route only (2.1.299, sdk) replayed on stdout: no match, retained whole and flagged; no child split, nothing normalized after the version report. */
+    /**
+     * A version tested on another route only (2.1.316, sdk_stdio: the scrubbed real sub-agent run's original SDK transport
+     * bytes) replayed on stdout: no match, retained whole and flagged; no child split, nothing normalized after the version report.
+     */
     @Test
     void aVersionTestedOnAnotherRouteOnlyIsNoMatchRetainedAndFlagged(@TempDir Path work) throws Exception {
         Path task = Files.createDirectories(work.resolve("task"));
-        Path fake = fakeClaude(work, nativeOf(CHILD, "stream.jsonl"), 0, 0, false);
+        Path fake = fakeClaude(work, RealRecording.nativeDir(RealRecording.PUBLIC.resolve("sub-agent")).resolve("stdout.bin").toAbsolutePath(), 0, 0, false);
         CliCapture.Result r = new CliCapture(launch(CliCapture.Cli.CLAUDE, fake, task, work.resolve("out"), work.resolve("home"), null, null), options(work)).run();
         assertThat(r.state()).isEqualTo(OcsfRunWriter.State.COMPLETED);
         assertThat(r.how()).isEqualTo("exited");
-        assertThat(r.records()).isEqualTo(27);
-        assertThat(r.cliVersion()).isEqualTo("2.1.299");
+        assertThat(r.records()).isEqualTo(49);
+        assertThat(r.cliVersion()).isEqualTo("2.1.316");
         OcsfPackage p = PackageReader.open(r.packageDir().resolve("events.jsonl"));
         assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).as(p.diagnostics.toString()).isEmpty();
-        assertThat(p.manifest.compatibility("stream.jsonl").member("status").text()).as("2.1.299 is tested on the sdk route only; stdout matches no entry").isEqualTo("no_match");
+        assertThat(p.manifest.compatibility("stream.jsonl").member("status").text()).as("2.1.316 is tested on the sdk_stdio route only; stdout matches no entry").isEqualTo("no_match");
         assertThat(p.manifest.compatibility("stream.jsonl").member("entry_id")).as("the nearest entry is not selected").isNull();
         assertThat(p.manifest.compatibility("stream.jsonl").member("normalizes").text()).isEqualTo("no");
-        assertThat(p.manifest.compatibility("stream.jsonl").member("detail").text()).contains("2.1.299").contains("route stdout").contains("claude-code/stream-json/2.1.304-stdout [2.1.304, 2.1.304]");
+        assertThat(p.manifest.compatibility("stream.jsonl").member("detail").text()).contains("2.1.316").contains("route stdout").contains("claude-code/stream-json/2.1.304-stdout [2.1.304, 2.1.304]");
         assertThat(p.diagnosticsWithCode("COMPATIBILITY_NO_MATCH")).hasSize(1);
         assertThat(p.children).as("owner routing is normalization; nothing after the selection was normalized").isEmpty();
         assertThat(p.events.stream().filter(e -> e.recordIndex() != null && e.recordIndex() > 1).map(e -> e.className).distinct().toList()).containsExactly("source_record");

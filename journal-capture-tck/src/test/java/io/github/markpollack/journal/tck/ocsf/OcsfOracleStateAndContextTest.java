@@ -15,6 +15,8 @@ import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.at;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copy;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editEvents;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.editManifest;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.first;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.isEvent;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.lines;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.num;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.obj;
@@ -57,12 +59,13 @@ class OcsfOracleStateAndContextTest {
         editEvents(pkg(codex), events -> obj(at(events, "session_context", 1, 4)).members().put("turn_uid", str("other-turn")));
         assertThat(verify(codex).check("context.values", ROLLOUT).detail()).contains("4:turn_context turn_uid other-turn != ");
 
-        Path pair = copy(PAIR, work.resolve("pair"));
+        // the sanitized live pair: the stream's init record and the session file's attachments
+        Path pair = copy(PairedSourceFinalUsageTest.PAIR, work.resolve("pair"));
         editEvents(pkg(pair), events -> {
             Json env = at(events, "transcript.jsonl", "session_context", 2, 4);
             obj(env).members().put("rendered_role", str("user"));
             obj(env).members().remove("content_blocks");
-            Json credential = at(events, "transcript.jsonl", "session_context", 2, 6);
+            Json credential = at(events, "transcript.jsonl", "session_context", 2, 14);
             obj(credential).members().put("content_blocks", new Json.JArray(List.of()));
             Json init = at(events, "stream.jsonl", "session_context", 1, 1);
             obj(init).members().remove("settings");
@@ -72,7 +75,7 @@ class OcsfOracleStateAndContextTest {
         String transcript = report.check("context.values", TRANSCRIPT).detail();
         assertThat(transcript).contains("4:attachment/environment rendered_role user != system")
                 .contains("4:attachment/environment content_blocks absent != 1")
-                .contains("6:attachment/credential_org content_blocks present but the source renders nothing");
+                .contains("14:attachment/credential_org content_blocks present but the source renders nothing");
         String stream = report.check("context.values", STREAM).detail();
         assertThat(stream).contains("1:system/init settings absent; the record reports [working_directory, model, permission_mode, version, tool_names, server_connections]")
                 .contains("1:system/init whole record (data) not retained");
@@ -122,7 +125,7 @@ class OcsfOracleStateAndContextTest {
     void declaredEventCountsAreCheckedAgainstTheFileInEveryState(@TempDir Path work) {
         Path complete = copy(PAIR, work.resolve("complete"));
         editManifest(pkg(complete), run -> obj(run.member("package")).members().put("events_count", num("3")));
-        assertThat(open(complete).diagnosticsWithCode("EVENTS_COUNT_MISMATCH").get(0).detail()).contains("declares 3 event(s) but events.jsonl holds 46");
+        assertThat(open(complete).diagnosticsWithCode("EVENTS_COUNT_MISMATCH").get(0).detail()).contains("declares 3 event(s) but events.jsonl holds 45");
 
         Path recording = copy(PAIR, work.resolve("recording"));
         editManifest(pkg(recording), run -> {
@@ -130,7 +133,7 @@ class OcsfOracleStateAndContextTest {
             obj(run.member("package")).members().put("events_jsonl_sha256", Json.JNull.INSTANCE);
             obj(run.member("package")).members().put("events_count", num("50"));
         });
-        assertThat(open(recording).diagnosticsWithCode("EVENTS_COUNT_MISMATCH").get(0).detail()).contains("declares 50 persisted event(s) but events.jsonl holds only 46");
+        assertThat(open(recording).diagnosticsWithCode("EVENTS_COUNT_MISMATCH").get(0).detail()).contains("declares 50 persisted event(s) but events.jsonl holds only 45");
 
         Path recordingFewer = copy(PAIR, work.resolve("recording-fewer"));
         editManifest(pkg(recordingFewer), run -> {
@@ -168,22 +171,30 @@ class OcsfOracleStateAndContextTest {
 
     @Test
     void aChildCoreCarryingAnotherArtifactsEventIsOutsideItsScope(@TempDir Path work) throws Exception {
-        Path fixture = copy(PAIR, work);
-        Path child = pkg(fixture).resolve("children").resolve(OcsfFixtures.SPAWN);
-        List<Json> parentEvents = lines(pkg(fixture).resolve("events.jsonl"));
-        Json stray = OcsfFixtures.copy(at(parentEvents, "transcript.jsonl", "source_record", 1, 11));
-        obj(stray.member("journal")).members().put("run_uid", str(open(fixture).children.get(0).manifest.runUid()));
-        obj(stray.member("journal")).members().put("sequence", num("99"));
+        // the sealed real sub-agent run (terminal-real claude-sub-agent): its child core declares the stream, the session file
+        // and the sub-agent's own file, and owns the stream records of its spawn and the sub-agent file; a session-file event
+        // put into it is outside its owner scope
+        Path copy = FixtureEvidenceClassTest.copyTree(TerminalRealRecordingTest.CASES.resolve("claude-sub-agent"), work.resolve("case"));
+        Path events = TerminalRealRecordingTest.root(work, "case");
+        Path root = events.getParent();
+        Path child = root.resolve("children").resolve("toolu_01KQMhaSZMrxp98fqQBkmHCC");
+        String owner = "child:toolu_01KQMhaSZMrxp98fqQBkmHCC/transcript.jsonl";
+        assertThat(verifyCase(copy, events).outcome("source.scope", owner)).as("control").isEqualTo(Outcome.NOT_APPLICABLE);
+        Json stray = OcsfFixtures.copy(first(lines(events), e -> isEvent(e, "source_record", 1) && "transcript.jsonl".equals(e.path("source_ref", "artifact").text())));
+        obj(stray.member("journal")).members().put("run_uid", str(PackageReader.open(child.resolve("events.jsonl")).manifest.runUid()));
+        obj(stray.member("journal")).members().put("sequence", num("99999"));
         List<Json> childEvents = new ArrayList<>(lines(child.resolve("events.jsonl")));
         childEvents.add(stray);
         writeLines(child.resolve("events.jsonl"), childEvents);
         OcsfFixtures.repin(child);
-        OracleReport report = verify(fixture);
-        String owner = "child:" + OcsfFixtures.SPAWN + "/transcript.jsonl";
+        OracleReport report = verifyCase(copy, events);
         assertThat(report.outcome("source.scope", owner)).isEqualTo(Outcome.DEFECTIVE);
-        assertThat(report.check("source.scope", owner).detail()).contains("outside its owner scope (stream.jsonl)");
-        Path control = copy(PAIR, work.resolve("control"));
-        assertThat(verify(control).outcome("source.scope", owner)).isEqualTo(Outcome.NOT_APPLICABLE);
+        assertThat(report.check("source.scope", owner).detail()).contains("outside its owner scope (stdout.jsonl)");
         assertThat(Files.exists(child.resolve("run.json"))).isTrue();
+    }
+
+    private static OracleReport verifyCase(Path dir, Path events) throws java.io.IOException {
+        return new io.github.markpollack.journal.tck.ocsf.inventory.AcquisitionVerification().verify(PackageReader.open(events), events.getParent().resolve("sources"),
+                events.getParent().resolve("sources/acquisition.json"), dir.resolve("assembly-expectation.json"));
     }
 }

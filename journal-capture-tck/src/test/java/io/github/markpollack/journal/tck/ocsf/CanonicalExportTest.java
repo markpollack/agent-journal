@@ -41,7 +41,7 @@ class CanonicalExportTest {
 
     @Test
     void childCoresRemainSeparateTrajectories(@TempDir Path work) throws IOException {
-        Path fixture = OcsfFixtures.copy("claude-child-2.1.299", work);
+        Path fixture = OcsfFixtures.copy(OcsfFixtures.LIVE_FEATURES, work);
         OcsfPackage pkg = PackageReader.open(fixture.resolve("package/events.jsonl"));
         assertThat(pkg.children).isNotEmpty();
         StringWriter writer = new StringWriter();

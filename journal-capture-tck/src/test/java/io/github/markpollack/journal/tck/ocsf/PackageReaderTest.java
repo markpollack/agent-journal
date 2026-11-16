@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CHILD;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.LIVE_FEATURES;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CODEX;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copy;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.declaration;
@@ -199,22 +199,22 @@ class PackageReaderTest {
 
     @Test
     void childCoresAreLinkedAndJudgedSeparately(@TempDir Path work) {
-        Path fixture = copy(CHILD, work);
+        Path fixture = copy(LIVE_FEATURES, work);
         OcsfPackage p = open(fixture);
         assertThat(p.children).hasSize(1);
         OcsfPackage child = p.children.get(0);
-        assertThat(child.label()).isEqualTo("child:" + OcsfFixtures.SPAWN);
-        assertThat(child.manifest.parent().member("run_uid").text()).isEqualTo("claude-child-2.1.299");
-        assertThat(child.events).hasSize(4);
-        assertThat(p.events).as("27 plus the result record's per-model cost accounting event (ACCT-1)").hasSize(28);
-        assertThat(child.manifest.sourceScope().member("owner_value").text()).isEqualTo(OcsfFixtures.SPAWN);
+        assertThat(child.label()).isEqualTo("child:" + OcsfFixtures.LIVE_SPAWN);
+        assertThat(child.manifest.parent().member("run_uid").text()).isEqualTo("claude-live-2.1.304-features");
+        assertThat(child.events).hasSize(7);
+        assertThat(p.events).as("the main core's events, the result record's per-model cost accounting event (ACCT-1) among them").hasSize(55);
+        assertThat(child.manifest.sourceScope().member("owner_value").text()).isEqualTo(OcsfFixtures.LIVE_SPAWN);
         assertThat(p.manifest.sourceScope().member("owner_value").isNull()).isTrue();
-        // applicability comes from the compatibility declaration: 2.1.299 on route sdk is a tested version of the selected entry, so no
+        // applicability comes from the compatibility declaration: 2.1.304 on route stdout is a tested version of the selected entry, so no
         // CONTRACT_APPLICABILITY warning is raised even though the contract document names 2.1.303 as its observed baseline
         assertThat(p.diagnosticsWithCode("CONTRACT_APPLICABILITY")).isEmpty();
         assertThat(p.diagnosticsWithCode("COMPATIBILITY_NO_MATCH")).isEmpty();
         assertThat(p.manifest.compatibility("stream.jsonl").member("status").text()).isEqualTo("tested");
-        assertThat(p.manifest.compatibility("stream.jsonl").member("entry_id").text()).isEqualTo("claude-code/stream-json/2.1.299-sdk");
+        assertThat(p.manifest.compatibility("stream.jsonl").member("entry_id").text()).isEqualTo("claude-code/stream-json/2.1.304-stdout");
         assertThat(child.manifest.compatibility("stream.jsonl").member("status").text()).as("the child file declares the selection too").isEqualTo("tested");
         // each core carries its own complete closure
         assertThat(child.catalog.classes()).containsKeys("agentic_cli/tool_call", "agentic_cli/model_response");
@@ -222,7 +222,7 @@ class PackageReaderTest {
 
     @Test
     void missingOrMislinkedChildIsADefect(@TempDir Path work) throws Exception {
-        Path fixture = copy(CHILD, work);
+        Path fixture = copy(LIVE_FEATURES, work);
         editManifest(OcsfFixtures.child(fixture), run -> obj(run.path("run", "parent")).members().put("run_uid", str("someone-else")));
         assertThat(open(fixture).children.get(0).diagnosticsWithCode("CHILD_PARENT_MISMATCH")).as("the child core reports its own mislink").hasSize(1);
         Files.delete(OcsfFixtures.child(fixture).resolve("run.json"));

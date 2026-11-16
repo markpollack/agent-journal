@@ -25,11 +25,19 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class MappingCatalogSummaryTest {
 
-    static final MappingCatalogTest.Route CHILD_ROUTE = MappingCatalogTest.ROUTES.get(0);
-    static final MappingCatalogTest.Route LIVE_FEATURES_ROUTE = MappingCatalogTest.ROUTES.get(1);
-    static final MappingCatalogTest.Route LIVE_DENIAL_ROUTE = MappingCatalogTest.ROUTES.get(2);
+    /** The live feature recording, whose Agent call splits one child core. */
+    static final MappingCatalogTest.Route CHILD_ROUTE = route(OcsfFixtures.LIVE_FEATURES);
+    static final MappingCatalogTest.Route LIVE_FEATURES_ROUTE = CHILD_ROUTE;
+    static final MappingCatalogTest.Route LIVE_DENIAL_ROUTE = route(OcsfFixtures.LIVE_DENIAL);
+    static final MappingCatalogTest.Route LIVE_MCP_ROUTE = route(OcsfFixtures.LIVE_MCP);
+    static final MappingCatalogTest.Route LIVE_CANCELLED_ROUTE = route(OcsfFixtures.LIVE_CANCELLED);
+    static final MappingCatalogTest.Route LIVE_CODEX_ROUTE = route(OcsfFixtures.LIVE_CODEX);
+
+    static MappingCatalogTest.Route route(String fixture) {
+        return MappingCatalogTest.ROUTES.stream().filter(r -> r.fixture().equals(fixture)).findFirst().orElseThrow();
+    }
     static final String MAIN = "main/stream.jsonl";
-    static final String CHILD = "child:" + OcsfFixtures.SPAWN + "/stream.jsonl";
+    static final String CHILD = "child:" + OcsfFixtures.LIVE_SPAWN + "/stream.jsonl";
 
     static Json concept(String id) {
         for (Json e : MappingCatalogTest.catalog()) {
@@ -210,15 +218,17 @@ class MappingCatalogSummaryTest {
         assertThat(summary("redacted-or-encrypted-reasoning", CHILD_ROUTE, run, run.report())).startsWith("unexercised").contains("block:redacted_thinking");
         assertThat(summary("media-and-multimodal-blocks", CHILD_ROUTE, run, run.report())).startsWith("unexercised").contains("block:media");
         assertThat(summary("interrupted-run-and-never-observed-result", CHILD_ROUTE, run, run.report())).startsWith("unexercised").contains("run:incomplete");
-        // what the stream does carry still counts: thinking blocks, and one tool_reference block nested in a tool result,
-        // a kind outside the profile's block table, checked exactly by result.values
+        // what the stream does carry still counts: thinking blocks
         assertThat(summary("reasoning-blocks-and-signature", CHILD_ROUTE, run, run.report())).isEqualTo("verified");
-        assertThat(CatalogCoverage.occurrences("block:unknown", CHILD_ROUTE, OcsfFixtures.natives(run.fixture()),
-                ExpectedSources.beside(OcsfFixtures.natives(run.fixture())))).isEqualTo(1);
-        assertThat(summary("unknown-block-kinds", CHILD_ROUTE, run, run.report())).isEqualTo("verified");
-        // the interrupted prefix of the same stream does exercise the interruption concept
-        Run prefix = run(MappingCatalogTest.ROUTES.get(7), work.resolve("prefix"));
-        assertThat(summary("interrupted-run-and-never-observed-result", MappingCatalogTest.ROUTES.get(7), prefix, prefix.report())).doesNotStartWith("unexercised");
+        // the live MCP recording carries two tool_reference blocks nested in a tool result (record 6), a kind outside the
+        // profile's block table, checked exactly by result.values
+        Run mcp = run(LIVE_MCP_ROUTE, work.resolve("mcp"));
+        assertThat(CatalogCoverage.occurrences("block:unknown", LIVE_MCP_ROUTE, OcsfFixtures.natives(mcp.fixture()),
+                ExpectedSources.beside(OcsfFixtures.natives(mcp.fixture())))).isEqualTo(2);
+        assertThat(summary("unknown-block-kinds", LIVE_MCP_ROUTE, mcp, mcp.report())).isEqualTo("verified");
+        // the cancelled live recording does exercise the interruption concept
+        Run prefix = run(LIVE_CANCELLED_ROUTE, work.resolve("prefix"));
+        assertThat(summary("interrupted-run-and-never-observed-result", LIVE_CANCELLED_ROUTE, prefix, prefix.report())).doesNotStartWith("unexercised");
     }
 
     @Test
@@ -244,14 +254,14 @@ class MappingCatalogSummaryTest {
 
     @Test
     void aSourceAvailabilityClaimIsScopedToItsNamedRoute(@TempDir Path work) {
-        // an absence recorded on the 2.1.299 sdk recording; the 2.1.304 stdout recording shares the artifact name only
+        // an absence recorded on the Codex exec stream route; the Claude 2.1.304 stdout recording shares the artifact name only
         Json entry = NeutralJson.parse("""
-                {"id": "scoped-availability-control", "concept": "a field the 2.1.299 sdk stream lacks", "disposition": "normalized",
-                 "oracle": [], "native_evidence": [{"cli": "claude", "artifact": "stream.jsonl", "route": "claude-code/stream-json/2.1.299-sdk",
-                 "records": "1-27", "field": "no such field", "availability": "absent"}]}
+                {"id": "scoped-availability-control", "concept": "a field the Codex 0.160.1 exec stream lacks", "disposition": "normalized",
+                 "oracle": [], "native_evidence": [{"cli": "codex", "artifact": "stream.jsonl", "route": "codex-cli/exec-json-stream/0.160.1",
+                 "records": "all", "field": "no such field", "availability": "absent"}]}
                 """);
-        Run old = run(CHILD_ROUTE, work.resolve("old"));
-        assertThat(MappingCatalogTest.summarize(entry, CHILD_ROUTE, old.fixture(), old.report())).isEqualTo("unavailable-at-source");
+        Run old = run(LIVE_CODEX_ROUTE, work.resolve("old"));
+        assertThat(MappingCatalogTest.summarize(entry, LIVE_CODEX_ROUTE, old.fixture(), old.report())).isEqualTo("unavailable-at-source");
         Run live = run(LIVE_FEATURES_ROUTE, work.resolve("live"));
         assertThat(MappingCatalogTest.summarize(entry, LIVE_FEATURES_ROUTE, live.fixture(), live.report())).startsWith("unresolved")
                 .contains("claude-code/stream-json/2.1.304-stdout");
@@ -259,7 +269,7 @@ class MappingCatalogSummaryTest {
 
     @Test
     void anIncompleteFrozenRunMustNotClaimACompleteCapture(@TempDir Path work) {
-        MappingCatalogTest.Route route = MappingCatalogTest.ROUTES.get(7);
+        MappingCatalogTest.Route route = LIVE_CANCELLED_ROUTE;
         Run prefix = run(route, work);
         // the frozen manifest marks the prefix incomplete; the oracle honestly reports completeness UNSUPPORTED
         assertThat(prefix.report().check("acquisition.complete", "main").outcome()).isEqualTo(Outcome.UNSUPPORTED);

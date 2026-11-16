@@ -2,22 +2,20 @@
   "kind": "agent-journal/compatibility-registry",
   "version": "0.2",
   "reviewed": "2026-10-23 (Antigravity 1.4.6 stdout entry; admission states); 2026-10-21 (ACCEPT-1; narrowed to exact tested version/route combinations in the ACCEPT-1 follow-up, Owner disposition 4); 2026-10-23 (selection before normalization: version bootstrap, retain-only pending records, contradictory assertions)",
-  "selection_rule": "exactly one entry whose cli, profile and route match and whose inclusive [min_version, max_version] contains the CLI version selects the source description, contract and mapper; when no such exact entry exists, the route's version-neutral entry (versions any, no range; at most one per cli, profile and route) selects, and the CLI version is recorded, not gated (Owner, 2026-11-08); overlapping entries are a configuration error rejected at load; no match retains the acquired input under the untested-compatibility contract and flags it, never the numerically nearest entry; a version inside the range that is not listed under tested is reported in_range (reviewed range, not individually tested; no bundled entry currently has such a range: every entry is one exactly tested version on its tested route, and 2.1.300 to 2.1.302, 2.1.299 or 2.1.303 on stdout and 2.1.304 on sdk match no entry); a version not yet known is reported version_unknown, and every record that arrives meanwhile is retained whole and unnormalized; vendor normalization of a record requires a selected entry (tested or in_range): the version bootstrap below reads only the version and its location, selects, and then the record that carried the version is normalized under that selection; contradictory version assertions within one capture (the launch declaration and the stream, or two records) are status conflict: every assertion is kept with its origin, and normalization stops for the rest of the capture",
+  "selection_rule": "exactly one entry whose cli, profile and route match and whose inclusive [min_version, max_version] contains the CLI version selects the source description, contract and mapper; when no such exact entry exists, the route's version-neutral entry (versions any, no range; at most one per cli, profile and route) selects, and the CLI version is recorded, not gated (Owner, 2026-11-08); overlapping entries are a configuration error rejected at load; no match retains the acquired input under the untested-compatibility contract and flags it, never the numerically nearest entry; a version inside the range that is not listed under tested is reported in_range (reviewed range, not individually tested; no bundled entry currently has such a range: every entry is one exactly tested version on its tested route, and 2.1.299 to 2.1.303 on stdout match no entry); a version not yet known is reported version_unknown, and every record that arrives meanwhile is retained whole and unnormalized; vendor normalization of a record requires a selected entry (tested or in_range): the version bootstrap below reads only the version and its location, selects, and then the record that carried the version is normalized under that selection; contradictory version assertions within one capture (the launch declaration and the stream, or two records) are status conflict: every assertion is kept with its origin, and normalization stops for the rest of the capture",
   "routes": {
     "stdout": "the CLI's raw standard output read by the capture process (no SDK stage)",
     "sdk_stdio": "Original transport stdout bytes observed before SDK decoding; distinct from filtered sdk rawJson.",
-    "sdk": "stream lines delivered by a vendor SDK (claude-code-sdk rawJson); a filtered surface",
     "native_session_file": "the file the CLI wrote on its own account, read after the run",
     "otel_file": "the file the CLI's own OpenTelemetry file exporter wrote during the run",
     "usage_report_file": "the report the CLI wrote at exit to a file the launch named",
     "stderr": "the CLI's standard error read by the capture process"
   },
   "admission": {
-    "meaning": "the evidence state of each entry, apart from whether it selects a contract: admitted (a production stream route whose live captures, sanitized replay fixtures, inventories, dispositions, independent profile, mapping catalog route and column and live-scenario roster are all registered; MappingCatalogTest rejects an admitted entry that lacks one), experimental (a source route tested on recorded evidence, used as a declared source of a reviewed final-assembly profile or kept for its recordings; not admitted: it lacks a field-disposition catalog, an independent oracle profile or live-scenario registration), historical (a retired route kept so its labelled recordings replay as tested; never extended)",
+    "meaning": "the evidence state of each entry, apart from whether it selects a contract: admitted (a production stream route whose live captures, sanitized replay fixtures, inventories, dispositions, independent profile, mapping catalog route and column and live-scenario roster are all registered; MappingCatalogTest rejects an admitted entry that lacks one), experimental (a source route tested on recorded evidence, used as a declared source of a reviewed final-assembly profile or kept for its recordings; not admitted: it lacks a field-disposition catalog, an independent oracle profile or live-scenario registration)",
     "values": [
       "admitted",
-      "experimental",
-      "historical"
+      "experimental"
     ]
   },
   "version_bootstrap": {
@@ -54,70 +52,6 @@
   },
   "entries": [
     {
-      "id": "claude-code/stream-json/2.1.299-sdk",
-      "admission": "historical",
-      "retired": "2026-10-22 (Owner): the sdk route is historical evidence only, a filtered surface delivered by the Java claude-code-sdk in earlier milestones; raw stdout is the only production route; this entry stays so the labelled 2.1.299 recordings replay as tested on their route and is never extended",
-      "cli": "Claude Code",
-      "profile": "claude_stream",
-      "routes": [
-        "sdk"
-      ],
-      "min_version": "2.1.299",
-      "max_version": "2.1.299",
-      "source_specification": {
-        "path": "schema/vendor/claude-code/stream-json/2.1.303.json",
-        "specification_version": "0.2.0",
-        "profile": "claude_stream"
-      },
-      "schema": {
-        "extension": "agentic_cli",
-        "version": "1.0.0",
-        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
-      },
-      "contract": "claude-code-2.1.303-stream",
-      "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
-      "tested": [
-        {
-          "version": "2.1.299",
-          "route": "sdk",
-          "evidence": "fixture claude-child-2.1.299 (sanitized real stream), OcsfOracleFixtureTest, RequirementsEvidenceTest, StandaloneEventFileTest"
-        }
-      ],
-      "note": "exact tested combination (Owner disposition 4, 2026-10-21): 2.1.299 on the sdk route only; 2.1.299 on raw stdout matches no entry"
-    },
-    {
-      "id": "claude-code/stream-json/2.1.303-sdk",
-      "admission": "historical",
-      "retired": "2026-10-22 (Owner): the sdk route is historical evidence only, a filtered surface delivered by the Java claude-code-sdk in earlier milestones; raw stdout is the only production route; this entry stays so the labelled 2.1.303 recordings replay as tested on their route and is never extended",
-      "cli": "Claude Code",
-      "profile": "claude_stream",
-      "routes": [
-        "sdk"
-      ],
-      "min_version": "2.1.303",
-      "max_version": "2.1.303",
-      "source_specification": {
-        "path": "schema/vendor/claude-code/stream-json/2.1.303.json",
-        "specification_version": "0.2.0",
-        "profile": "claude_stream"
-      },
-      "schema": {
-        "extension": "agentic_cli",
-        "version": "1.0.0",
-        "compiled_sha256": "e4f202366f038a196c9dbd5d30c9616262b2710f8b82af45bc4de9cecf9a32e2"
-      },
-      "contract": "claude-code-2.1.303-stream",
-      "mapper": "io.github.markpollack.journal.ocsf.writer.ClaudeStreamMapper",
-      "tested": [
-        {
-          "version": "2.1.303",
-          "route": "sdk",
-          "evidence": "private pair A stream (FULL-1/FULL-1R steward evidence 2026-10-21-complete-source-canonical, 2026-10-21-full1r)"
-        }
-      ],
-      "note": "exact tested combination: 2.1.303 on the sdk route only (the contract's observed baseline); 2.1.303 on raw stdout matches no entry"
-    },
-    {
       "id": "claude-code/stream-json/2.1.304-stdout",
       "admission": "admitted",
       "cli": "Claude Code",
@@ -146,7 +80,7 @@
           "evidence": "C3 live runs (steward evidence 2026-10-21-c3-live-claude); ACCEPT-1 live runs through the integrated launch path (CliCapture) and their sanitized fixtures claude-live-2.1.304-features, -denial, -cancelled; the live MCP run of 2026-10-23 (retained 2.1.304 binary, Java SDK MCP test server) and its fixture claude-live-2.1.304-mcp"
         }
       ],
-      "note": "exact tested combination: 2.1.304 on raw stdout launched by CliCapture; 2.1.304 on the sdk route matches no entry"
+      "note": "exact tested combination: 2.1.304 on raw stdout launched by CliCapture"
     },
     {
       "id": "claude-code/session-transcript/2.1.299-session-file",
@@ -688,14 +622,6 @@
     "opaque_text": "retains bytes only and normalizes nothing; it has no compatibility entry and is reported not_version_scoped"
   },
   "onboarding_debt": [
-    {
-      "route": "claude-code/stream-json/2.1.299-sdk",
-      "reason": "Historical retired route; frozen evidence only."
-    },
-    {
-      "route": "claude-code/stream-json/2.1.303-sdk",
-      "reason": "Historical retired route; frozen evidence only."
-    },
     {
       "route": "claude-code/session-transcript/2.1.299-session-file",
       "reason": "Pre-existing experimental route; source specification exists, full ten-area vendor registration remains unexercised. This gap grants no admission."

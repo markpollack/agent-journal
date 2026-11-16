@@ -80,7 +80,7 @@ class ExecutedComparisonTest {
                                     "syn-codex-counterexamples",
                                     3,
                                     "syn-claude-pair-transcript",
-                                    2, // the evidence-log combination, of the root and of its child core
+                                    1, // the evidence-log combination of the root (its stream, retained untested on the retired sdk route, splits no child)
                                     "copilot-live-1.0.100-otel",
                                     5,
                                     "junie-live-3813.7-view",
@@ -116,6 +116,9 @@ class ExecutedComparisonTest {
             assertThat(report.uncheckedFacts()).as(name + " unchecked registered facts").isEmpty();
             assertions.stream()
                     .filter(a -> "UNCHECKED".equals(a.status()) || "NON_PASSING".equals(a.status()))
+                    // the pair fixture's stream was delivered on the retired sdk route: no entry is keyed on it, so it is
+                    // retained untested and claims no normalized fact to compare; its session file is still judged
+                    .filter(a -> !("syn-claude-pair-transcript".equals(name) && "UNCHECKED".equals(a.status()) && a.address().startsWith("main/stream.jsonl:")))
                     .forEach(a -> defects.add(name + " " + a.status() + " " + a.address()));
         }
         assertThat(defects).isEmpty();

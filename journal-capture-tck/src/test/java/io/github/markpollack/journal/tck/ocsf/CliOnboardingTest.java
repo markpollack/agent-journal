@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** Experimental onboarding visibility complements, but never weakens or implies, admission. */
 class CliOnboardingTest {
     private static final Set<String> LEGACY_DEBT = Set.of(
-            "claude-code/stream-json/2.1.299-sdk", "claude-code/stream-json/2.1.303-sdk",
             "claude-code/session-transcript/2.1.299-session-file", "claude-code/session-transcript/2.1.303-session-file",
             "claude-code/session-transcript/2.1.304-session-file", "github-copilot-cli/events/1.0.100-stdout",
             "github-copilot-cli/events/1.0.100-session-file", "github-copilot-cli/otel/1.0.100", "github-copilot-cli/usage-report/1.0.100",

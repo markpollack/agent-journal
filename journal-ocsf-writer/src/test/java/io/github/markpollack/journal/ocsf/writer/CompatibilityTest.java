@@ -20,7 +20,7 @@ class CompatibilityTest {
     @Test
     void theBundledRegistryLoadsAndNamesContractsMappersAndSpecificationsThatExist() {
         Compatibility c = Compatibility.bundled();
-        assertThat(c.entries()).hasSize(20);
+        assertThat(c.entries()).hasSize(18);
         MappingContracts contracts = new MappingContracts();
         for (Compatibility.Entry e : c.entries()) {
             assertThat(contracts.uid(e.contract())).as(e.id() + " contract resource").isNotBlank();
@@ -56,9 +56,7 @@ class CompatibilityTest {
             assertThat(selected.detail()).contains("recorded, not gated");
         }
         // the route still decides: original SDK bytes are never admitted on another route
-        for (String route : java.util.List.of("sdk", "stdout")) {
-            assertThat(c.select(CLAUDE, "claude_stream", route, "2.1.316").normalizes()).isFalse();
-        }
+        assertThat(c.select(CLAUDE, "claude_stream", "stdout", "2.1.316").normalizes()).isFalse();
         // a version-neutral session-file entry yields to the exact entries of its route
         assertThat(c.select(CLAUDE, "claude_transcript", "native_session_file", "2.1.303").entry().id()).isEqualTo("claude-code/session-transcript/2.1.303-session-file");
         assertThat(c.select(CLAUDE, "claude_transcript", "native_session_file", "2.1.319").entry().id()).isEqualTo("claude-code/session-transcript/session-file");
@@ -71,22 +69,13 @@ class CompatibilityTest {
     @Test
     void exactTestedVersionsAndInclusiveBoundariesSelectTheOneEntry() {
         Compatibility c = Compatibility.bundled();
-        Compatibility.Selection low = c.select(CLAUDE, "claude_stream", "sdk", "2.1.299");
-        assertThat(low.status()).isEqualTo(Compatibility.Status.TESTED);
-        assertThat(low.entry().id()).isEqualTo("claude-code/stream-json/2.1.299-sdk");
-        Compatibility.Selection mid = c.select(CLAUDE, "claude_stream", "sdk", "2.1.303");
-        assertThat(mid.status()).isEqualTo(Compatibility.Status.TESTED);
-        assertThat(mid.entry().id()).isEqualTo("claude-code/stream-json/2.1.303-sdk");
         Compatibility.Selection high = c.select(CLAUDE, "claude_stream", "stdout", "2.1.304");
         assertThat(high.status()).isEqualTo(Compatibility.Status.TESTED);
         assertThat(high.entry().id()).isEqualTo("claude-code/stream-json/2.1.304-stdout");
-        assertThat(high.entry()).as("one entry per exactly tested combination").isNotSameAs(low.entry()).isNotSameAs(mid.entry());
-        assertThat(high.entry().contract()).as("the three exact entries share the one reviewed contract and mapper").isEqualTo(low.entry().contract()).isEqualTo(mid.entry().contract());
-        assertThat(low.entry().isRetired()).as("the sdk route is historical evidence only (Owner, 2026-10-22)").isTrue();
-        assertThat(mid.entry().isRetired()).isTrue();
-        assertThat(high.entry().isRetired()).as("raw stdout is the production route").isFalse();
-        assertThat(Compatibility.declaration(low, "stream.jsonl", "reported", 0, "abc").get("retired").text()).contains("historical evidence only");
-        assertThat(Compatibility.declaration(high, "stream.jsonl", "reported", 0, "abc").get("retired")).isNull();
+        Compatibility.Selection original = c.select(CLAUDE, "claude_stream", "sdk_stdio", "2.1.316");
+        assertThat(high.entry()).as("one entry per exactly tested combination").isNotSameAs(original.entry());
+        assertThat(high.entry().contract()).as("the exact stdout entry and the sdk_stdio entry share the one reviewed contract and mapper").isEqualTo(original.entry().contract());
+        assertThat(high.entry().mapper()).isEqualTo(original.entry().mapper());
         Compatibility.Selection codex = c.select(CODEX, "codex_stream", "stdout", "0.160.1");
         assertThat(codex.status()).isEqualTo(Compatibility.Status.TESTED);
         assertThat(codex.entry().id()).isEqualTo("codex-cli/exec-json-stream/0.160.1");
@@ -101,14 +90,13 @@ class CompatibilityTest {
     @Test
     void anUntestedIntermediateVersionOrAnotherRouteIsNoMatchInTheBundledRegistry() {
         Compatibility c = Compatibility.bundled();
-        for (String[] v : new String[][] {{"sdk", "2.1.300"}, {"sdk", "2.1.301"}, {"sdk", "2.1.302"}, {"stdout", "2.1.299"}, {"stdout", "2.1.303"}, {"sdk", "2.1.304"}, {"stdout", "2.1.301"}}) {
+        for (String[] v : new String[][] {{"stdout", "2.1.299"}, {"stdout", "2.1.300"}, {"stdout", "2.1.301"}, {"stdout", "2.1.302"}, {"stdout", "2.1.303"}}) {
             Compatibility.Selection s = c.select(CLAUDE, "claude_stream", v[0], v[1]);
             assertThat(s.status()).as(v[1] + " on " + v[0]).isEqualTo(Compatibility.Status.NO_MATCH);
             assertThat(s.entry()).isNull();
             assertThat(s.detail()).as(v[1] + " on " + v[0]).contains("nearest entry is not selected").contains("route " + v[0]);
         }
-        assertThat(c.select(CLAUDE, "claude_stream", "stdout", "2.1.299").detail()).as("the keyed entries on stdout").contains("claude-code/stream-json/2.1.304-stdout [2.1.304, 2.1.304]").doesNotContain("2.1.299-sdk");
-        assertThat(c.select(CLAUDE, "claude_stream", "sdk", "2.1.301").detail()).contains("claude-code/stream-json/2.1.299-sdk [2.1.299, 2.1.299]").contains("claude-code/stream-json/2.1.303-sdk [2.1.303, 2.1.303]");
+        assertThat(c.select(CLAUDE, "claude_stream", "stdout", "2.1.299").detail()).as("the keyed entries on stdout").contains("claude-code/stream-json/2.1.304-stdout [2.1.304, 2.1.304]");
         for (Compatibility.Entry e : c.entries()) {
             assertThat(e.routes()).as(e.id() + " names one route").hasSize(1);
             if (e.neutral()) {
@@ -127,12 +115,12 @@ class CompatibilityTest {
     @Test
     void aVersionInsideAReviewedRangeThatNoTestedEntryNamesIsInRangeNotTested() {
         Compatibility c = Compatibility.of(Jv.parse(registry("""
-                {"id":"a","cli":"X","profile":"p","routes":["stdout","sdk"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[{"version":"1.0","route":"stdout"}]}""")));
+                {"id":"a","cli":"X","profile":"p","routes":["stdout","stderr"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[{"version":"1.0","route":"stdout"}]}""")));
         Compatibility.Selection s = c.select("X", "p", "stdout", "1.2");
         assertThat(s.status()).isEqualTo(Compatibility.Status.IN_RANGE);
         assertThat(s.entry().id()).isEqualTo("a");
         assertThat(s.detail()).contains("not individually tested");
-        Compatibility.Selection otherRoute = c.select("X", "p", "sdk", "1.0");
+        Compatibility.Selection otherRoute = c.select("X", "p", "stderr", "1.0");
         assertThat(otherRoute.status()).as("1.0 is tested on stdout only").isEqualTo(Compatibility.Status.IN_RANGE);
         assertThat(otherRoute.detail()).contains("another route");
         assertThat(c.select("X", "p", "stdout", "1.0").status()).isEqualTo(Compatibility.Status.TESTED);
@@ -158,7 +146,7 @@ class CompatibilityTest {
         }
         assertThat(c.select(CODEX, "codex_stream", "stdout", "0.160.1").entry().id()).as("an exact entry still wins").isEqualTo("codex-cli/exec-json-stream/0.160.1");
         // a route the entry does not cover is a no match even at a tested version
-        Compatibility.Selection route = c.select(CODEX, "codex_stream", "sdk", "0.160.1");
+        Compatibility.Selection route = c.select(CODEX, "codex_stream", "stderr", "0.160.1");
         assertThat(route.status()).isEqualTo(Compatibility.Status.NO_MATCH);
         assertThat(route.detail()).contains("no entry is keyed on");
         assertThat(c.select(CLAUDE, "claude_stream", null, "2.1.304").status()).as("an unspecified route").isEqualTo(Compatibility.Status.NO_MATCH);
@@ -187,7 +175,7 @@ class CompatibilityTest {
         assertThatThrownBy(() -> Compatibility.of(Jv.parse(two))).isInstanceOf(IllegalStateException.class).hasMessageContaining("overlap").hasMessageContaining("1.5");
         String disjointRoutes = registry("""
                 {"id":"a","cli":"X","profile":"p","routes":["stdout"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[]},
-                {"id":"b","cli":"X","profile":"p","routes":["sdk"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[]}""");
+                {"id":"b","cli":"X","profile":"p","routes":["stderr"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[]}""");
         assertThat(Compatibility.of(Jv.parse(disjointRoutes)).entries()).as("same range on different routes does not overlap").hasSize(2);
         String inverted = registry("""
                 {"id":"a","cli":"X","profile":"p","routes":["stdout"],"min_version":"2.0","max_version":"1.0","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[]}""");
@@ -210,8 +198,8 @@ class CompatibilityTest {
                 {"id":"a","cli":"X","profile":"p","routes":["stdout"],"min_version":"1.0","max_version":"1.5","source_specification":{},"contract":"c","mapper":"m","tested":[]}""");
         assertThatThrownBy(() -> Compatibility.of(Jv.parse(noSchema))).hasMessageContaining("source_specification and schema are required");
         String testedOffRoute = registry("""
-                {"id":"a","cli":"X","profile":"p","routes":["stdout"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[{"version":"1.2","route":"sdk"}]}""");
-        assertThatThrownBy(() -> Compatibility.of(Jv.parse(testedOffRoute))).hasMessageContaining("tested route sdk is not one of the entry's routes [stdout]");
+                {"id":"a","cli":"X","profile":"p","routes":["stdout"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[{"version":"1.2","route":"stderr"}]}""");
+        assertThatThrownBy(() -> Compatibility.of(Jv.parse(testedOffRoute))).hasMessageContaining("tested route stderr is not one of the entry's routes [stdout]");
         String blankId = registry("""
                 {"id":"","cli":"X","profile":"p","routes":["stdout"],"min_version":"1.0","max_version":"1.5","source_specification":{},"schema":{},"contract":"c","mapper":"m","tested":[]}""");
         assertThatThrownBy(() -> Compatibility.of(Jv.parse(blankId))).hasMessageContaining("lacks id");

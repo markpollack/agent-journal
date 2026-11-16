@@ -40,8 +40,9 @@ class SourceAvailabilityTest {
         SPECIMENS.put("junie/session-events/3813.7", List.of("junie-live-3813.7-view/native/session-events.jsonl", "junie-live-3813.7-terminal/native/session-events.jsonl"));
         SPECIMENS.put("junie/json-stream/3813.7", List.of("junie-live-3813.7-view/native/stdout.jsonl", "junie-live-3813.7-terminal/native/stdout.jsonl"));
         SPECIMENS.put("claude-code/session-transcript/2.1.304", List.of("claude-live-2.1.304-mcp-pair/native/transcript.jsonl"));
-        // the Claude stream routes, each against its own specification (D1): sdk 2.1.299, stdout 2.1.304
-        SPECIMENS.put("claude-code/stream-json/2.1.303", List.of("claude-child-2.1.299/native/stream.jsonl", "claude-child-2.1.299-interrupted/native/stream.jsonl"));
+        // the Claude stream specifications (D1): 2.1.303 against the sdk-delivered 2.1.299 stream the pair fixture keeps (the
+        // recording of the retired sdk route, byte-identical to the deleted claude-child-2.1.299 fixture), 2.1.304 against stdout
+        SPECIMENS.put("claude-code/stream-json/2.1.303", List.of("syn-claude-pair-transcript/native/stream.jsonl"));
         SPECIMENS.put("claude-code/stream-json/2.1.304", List.of("claude-live-2.1.304-features/native/stream.jsonl", "claude-live-2.1.304-denial/native/stream.jsonl",
                 "claude-live-2.1.304-cancelled/native/stream.jsonl", "claude-live-2.1.304-mcp/native/stream.jsonl", "claude-live-2.1.304-mcp-pair/native/stream.jsonl"));
     }

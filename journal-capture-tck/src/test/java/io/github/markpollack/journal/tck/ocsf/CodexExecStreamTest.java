@@ -119,21 +119,4 @@ class CodexExecStreamTest {
         assertThat(report.check("whole_record.coverage", STREAM).detail()).contains("record 10: 0 whole-record events");
         assertThat(report.check("reconstruction.coverage", STREAM).detail()).contains("[10]");
     }
-
-    @Test
-    void claudePairCountsRunScopedIdentitiesLogicallyAndSeparatesRepeatsFromIdenticalContent(@TempDir Path work) {
-        Json views = AnalysisViews.all(open(copy(OracleFullSourceTest.PAIR, work)));
-        Json responses = views.member("responses");
-        assertThat(responses.member("identity_count").scalarText()).isEqualTo(responses.member("logical_count").scalarText());
-        assertThat(responses.member("logical_count_basis").text()).startsWith("every identity is a run-scoped reported id");
-        assertThat(responses.member("observation_count").scalarText()).isEqualTo("9"); // 7 stream + 2 transcript occurrences
-        Json exchanges = views.member("tool_exchanges");
-        List<Json> repeated = exchanges.member("repeated_result_observations").elements();
-        assertThat(repeated).hasSize(1);
-        assertThat(repeated.get(0).member("tool_call_uid").text()).isEqualTo("toolu_0183ddwvMmvPzqAU5Jeu5hwZ");
-        assertThat(repeated.get(0).member("occurrences").elements()).extracting(Json::text).containsExactly("stream.jsonl:6", "transcript.jsonl:14");
-        assertThat(repeated.get(0).member("content_equal")).as("the synthetic transcript's result content differs from the stream's").isEqualTo(new Json.JBool(false));
-        assertThat(exchanges.member("identical_content_distinct_owners").elements()).isEmpty();
-        assertThat(views.path("associations", "operations", "observation_count").scalarText()).isEqualTo("0");
-    }
 }

@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CHILD;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.LIVE_FEATURES;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.CODEX;
-import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.SPAWN;
+import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.LIVE_SPAWN;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.copy;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.declaration;
 import static io.github.markpollack.journal.tck.ocsf.OcsfFixtures.declarationLines;
@@ -44,7 +44,7 @@ class StandaloneEventFileTest {
 
     @Test
     void theParentEventFileAloneIsInterpretedFromItsDeclarations(@TempDir Path work) throws IOException {
-        Path fixture = copy(CHILD, work.resolve("src"));
+        Path fixture = copy(LIVE_FEATURES, work.resolve("src"));
         Path alone = alone(pkg(fixture), work.resolve("alone"));
         OcsfPackage p = PackageReader.open(alone.resolve("events.jsonl"));
 
@@ -57,10 +57,10 @@ class StandaloneEventFileTest {
         assertThat(p.manifest.text("package", "derived_from")).contains("declarations");
         assertThat(p.manifest.packageVersion()).isEqualTo("1.0.0");
         assertThat(p.manifest.packageState()).as("the recording declaration finalizes the file").isEqualTo("COMPLETED");
-        assertThat(p.manifest.runUid()).isEqualTo("claude-child-2.1.299");
-        assertThat(p.manifest.sessionUid()).isEqualTo("00000000-0000-4000-8000-000000000000");
+        assertThat(p.manifest.runUid()).isEqualTo("claude-live-2.1.304-features");
+        assertThat(p.manifest.sessionUid()).isEqualTo("00000000-0000-4000-8000-0000000000a1");
         assertThat(p.manifest.eventsSha256()).as("no whole-file hash lives inside the file").isNull();
-        assertThat(p.events).as("27 plus the result record's per-model cost accounting event (ACCT-1)").hasSize(28);
+        assertThat(p.events).as("the main core's events, the result record's per-model cost accounting event (ACCT-1) among them").hasSize(55);
 
         // the actual schema: classes, objects, attributes, types and enumerations, from the file alone
         String model = p.catalog.enumerate();
@@ -79,26 +79,26 @@ class StandaloneEventFileTest {
         Json source = p.manifest.source("stream.jsonl");
         assertThat(source.member("profile").text()).isEqualTo("claude_stream");
         assertThat(source.member("sha256").text()).as("the source end declares the final extent").hasSize(64);
-        assertThat(source.member("records").scalarText()).isEqualTo("27");
+        assertThat(source.member("records").scalarText()).isEqualTo("50");
         assertThat(RunManifest.sourceFinal(source)).isTrue();
         assertThat(p.manifest.children()).hasSize(1);
-        assertThat(SchemaCatalog.text(p.manifest.children().get(0), "spawn_tool_call_uid")).isEqualTo(SPAWN);
+        assertThat(SchemaCatalog.text(p.manifest.children().get(0), "spawn_tool_call_uid")).isEqualTo(LIVE_SPAWN);
         assertThat(p.manifest.sourceScope().member("owner_value").isNull()).isTrue();
         assertThat(p.manifest.text("recording", "acquisition", "status")).isEqualTo("complete");
 
         // representative execution facts and vendor data
         List<Event> requests = p.events("tool_call", 1);
-        assertThat(requests).hasSize(2);
+        assertThat(requests).hasSize(8);
         assertThat(requests.get(0).text("tool_name")).isNotBlank();
         assertThat(requests.get(0).text("tool_call_uid")).startsWith("toolu_");
         assertThat(requests.get(0).get("arguments")).as("the structured arguments travel as a json value").isNotNull();
-        assertThat(requests.get(0).text("tool_name")).isEqualTo("ToolSearch");
+        assertThat(requests.get(0).text("tool_name")).isEqualTo("Write");
         List<Event> results = p.events("tool_call", 2);
         assertThat(results).isNotEmpty();
         assertThat(results.get(0).get("tool_result", "data")).isNotNull();
         Event settings = p.events("session_context", 1).get(0);
-        assertThat(settings.text("settings", "model")).isEqualTo("claude-haiku-4-5-20251001");
-        assertThat(settings.text("settings", "version")).isEqualTo("2.1.299");
+        assertThat(settings.text("settings", "model")).isEqualTo("claude-haiku-5-5");
+        assertThat(settings.text("settings", "version")).isEqualTo("2.1.304");
         List<Event> responses = p.events("model_response");
         assertThat(responses).isNotEmpty();
         assertThat(responses.get(0).elements("usage_observations")).isNotEmpty();
@@ -114,18 +114,18 @@ class StandaloneEventFileTest {
 
     @Test
     void theChildEventFileAloneCarriesItsOwnDeclarationsAndIsJudgedOnItsOwn(@TempDir Path work) throws IOException {
-        Path fixture = copy(CHILD, work.resolve("src"));
+        Path fixture = copy(LIVE_FEATURES, work.resolve("src"));
         Path alone = alone(OcsfFixtures.child(fixture), work.resolve("child-alone"));
         OcsfPackage c = PackageReader.open(alone.resolve("events.jsonl"));
 
         assertThat(c.standalone()).isTrue();
         assertThat(c.refused()).as(c.diagnostics.toString()).isFalse();
         assertThat(c.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
-        assertThat(c.label()).isEqualTo("child:" + SPAWN);
-        assertThat(c.manifest.runUid()).isEqualTo("claude-child-2.1.299/child/" + SPAWN);
-        assertThat(c.manifest.parent().member("run_uid").text()).as("the parent identity travels with the child").isEqualTo("claude-child-2.1.299");
-        assertThat(c.manifest.sourceScope().member("owner_value").text()).isEqualTo(SPAWN);
-        assertThat(c.events).hasSize(4);
+        assertThat(c.label()).isEqualTo("child:" + LIVE_SPAWN);
+        assertThat(c.manifest.runUid()).isEqualTo("claude-live-2.1.304-features/child/" + LIVE_SPAWN);
+        assertThat(c.manifest.parent().member("run_uid").text()).as("the parent identity travels with the child").isEqualTo("claude-live-2.1.304-features");
+        assertThat(c.manifest.sourceScope().member("owner_value").text()).isEqualTo(LIVE_SPAWN);
+        assertThat(c.events).as("records 24, 26, 27, 29 and 30: a prompt, two responses with their requests, two results").hasSize(7);
         assertThat(c.catalog.classes()).containsKeys("agentic_cli/tool_call", "agentic_cli/model_response");
         assertThat(c.catalog.classes()).as("a class no event of this file uses is not declared here").doesNotContainKey("agentic_cli/session_context");
         assertThat(c.manifest.contracts()).containsKey("claude-code/stream-json/2.1.303/1.0.0");
@@ -134,9 +134,9 @@ class StandaloneEventFileTest {
         // judged on its own against the frozen native artifact (the parent's obligations are the parent's)
         OracleReport report = OcsfOracle.verify(c, natives(fixture));
         assertThat(report.defects()).as(report.toString()).isEmpty();
-        assertThat(report.outcome("package.readable", "child:" + SPAWN)).isEqualTo(Check.Outcome.VERIFIED);
-        assertThat(report.outcome("whole_record.coverage", "child:" + SPAWN + "/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
-        assertThat(report.outcome("request.values", "child:" + SPAWN + "/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
+        assertThat(report.outcome("package.readable", "child:" + LIVE_SPAWN)).isEqualTo(Check.Outcome.VERIFIED);
+        assertThat(report.outcome("whole_record.coverage", "child:" + LIVE_SPAWN + "/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
+        assertThat(report.outcome("request.values", "child:" + LIVE_SPAWN + "/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
     }
 
     @Test
@@ -226,7 +226,7 @@ class StandaloneEventFileTest {
         assertThat(ph.rawLines).isNotEmpty();
 
         // (i) an amendment whose base is not declared earlier (the Claude fixture amends metadata and tool_call later in the file)
-        Path i = copy(CHILD, work.resolve("i"));
+        Path i = copy(LIVE_FEATURES, work.resolve("i"));
         assertThat(declaration(declarationLines(pkg(i).resolve("events.jsonl")), "definition:metadata#2")).isNotNull();
         editDeclarations(pkg(i), decls -> decls.remove(declaration(decls, "definition:metadata")));
         OcsfPackage pi = open(alone(pkg(i), work.resolve("i-alone")));

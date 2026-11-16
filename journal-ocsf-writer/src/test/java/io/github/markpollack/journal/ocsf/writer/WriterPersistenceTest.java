@@ -11,8 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStreamStdout;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.manifest;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.nativeOf;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.open;
@@ -33,10 +33,10 @@ class WriterPersistenceTest {
     @Test
     void persistedBytesEventsAndFlushCountFollowTheFileAtEveryFlush(@TempDir Path work) {
         Path core = work.resolve("core");
-        Path stream = nativeOf(PAIR, "stream.jsonl");
+        Path stream = nativeOf(LIVE_FEATURES, "stream.jsonl");
         List<LineFramer.Framed> lines = Replay.lines(WriterTestSupport.bytes(stream));
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
-            SourceInput in = w.source(claudeStream());
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options())) {
+            SourceInput in = w.source(claudeStreamStdout());
             int flushes = 1; // the opening manifest
             for (int k = 0; k < lines.size(); k++) {
                 in.record(lines.get(k).raw(), lines.get(k).ending(), options().clock().instant());
@@ -78,9 +78,9 @@ class WriterPersistenceTest {
                 byType += ((Jv.Num) e.getValue()).value().intValue();
             }
             assertThat(byType).as("events.by_type sums to the event count").isEqualTo(count);
-            assertThat(m.path("synthetic", "label").text()).as("the run's synthetic label is carried").startsWith("LABELLED SYNTHETIC PAIR");
-            assertThat(m.path("run", "launch_settings", "model").text()).isEqualTo("claude-haiku-4-5-20251001");
-            assertThat(m.path("shared", "cli_agent", "instance_uid").text()).isEqualTo(run(PAIR).sessionUid());
+            assertThat(m.path("synthetic", "label").text()).as("the run's synthetic label is carried").startsWith("SANITIZED REAL LIVE RECORDING");
+            assertThat(m.path("run", "launch_settings", "model_requested").text()).isEqualTo("haiku");
+            assertThat(m.path("shared", "cli_agent", "instance_uid").text()).as("the session the stream reports").isEqualTo("00000000-0000-4000-8000-0000000000a1");
             assertThat(m.path("ocsf", "compiled_excerpt_sha256").text()).hasSize(64);
             assertThat(m.path("recording", "interruption_reason")).isNull();
         }
@@ -89,11 +89,11 @@ class WriterPersistenceTest {
     @Test
     void interruptionInsideARecordRetainsTheIncompleteTailAndEndsTheSourceAsInterrupted(@TempDir Path work) {
         Path core = work.resolve("core");
-        Path stream = nativeOf(PAIR, "stream.jsonl");
+        Path stream = nativeOf(LIVE_FEATURES, "stream.jsonl");
         byte[] all = WriterTestSupport.bytes(stream);
         int cut = Replay.prefixBytes(stream, 6).length + 40;
-        OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options());
-        SourceInput in = w.source(claudeStream());
+        OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options());
+        SourceInput in = w.source(claudeStreamStdout());
         Replay.feedBytes(in, all, 13, options().clock(), cut, false);
         assertThat(in.records()).as("the partial seventh record is still in the framer").isEqualTo(6);
         assertThat(w.interrupt("process lost mid-record")).isEqualTo(OcsfRunWriter.State.INTERRUPTED);
@@ -113,8 +113,8 @@ class WriterPersistenceTest {
     @Test
     void mixedInputIsRecordedInTheAcquisitionDetailOfAnInterruptedPackage(@TempDir Path work) {
         Path core = work.resolve("core");
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
-            SourceInput in = w.source(claudeStream());
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options())) {
+            SourceInput in = w.source(claudeStreamStdout());
             in.bytes("{\"type\":\"system\",\"subtype\":\"init\"}\n".getBytes(StandardCharsets.UTF_8), options().clock().instant());
             assertThatThrownBy(() -> in.record(new byte[] {'{', '}'}, "LF", options().clock().instant())).isInstanceOf(IllegalStateException.class);
             w.interrupt("mixed input");
@@ -132,13 +132,13 @@ class WriterPersistenceTest {
                 throw new IOException("injected: manifest write refused");
             }
         });
-        OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), opts);
-        SourceInput in = w.source(claudeStream());
-        byte[] first = Replay.prefixBytes(nativeOf(PAIR, "stream.jsonl"), 5);
+        OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), opts);
+        SourceInput in = w.source(claudeStreamStdout());
+        byte[] first = Replay.prefixBytes(nativeOf(LIVE_FEATURES, "stream.jsonl"), 5);
         Replay.feedBytes(in, first, 1000, opts.clock(), first.length, false);
         w.flush(); // manifest 2
         int confirmed = open(core).events.size();
-        in.bytes(Replay.prefixBytes(nativeOf(PAIR, "stream.jsonl"), 8), first.length, Replay.prefixBytes(nativeOf(PAIR, "stream.jsonl"), 8).length - first.length, opts.clock().instant());
+        in.bytes(Replay.prefixBytes(nativeOf(LIVE_FEATURES, "stream.jsonl"), 8), first.length, Replay.prefixBytes(nativeOf(LIVE_FEATURES, "stream.jsonl"), 8).length - first.length, opts.clock().instant());
         assertThatThrownBy(w::flush).isInstanceOf(UncheckedIOException.class).hasMessageContaining("manifest write refused");
         assertThat(w.state()).isEqualTo(OcsfRunWriter.State.FAILED);
         assertThat(w.failure().get("operation").text()).isEqualTo("flush");
@@ -166,8 +166,8 @@ class WriterPersistenceTest {
                 throw new IOException("injected: fsync failed");
             }
         });
-        OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), opts);
-        Replay.feedBytes(w.source(claudeStream()), nativeOf(PAIR, "stream.jsonl"), 4096, opts.clock());
+        OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), opts);
+        Replay.feedBytes(w.source(claudeStreamStdout()), nativeOf(LIVE_FEATURES, "stream.jsonl"), 4096, opts.clock());
         assertThatThrownBy(w::complete).isInstanceOf(UncheckedIOException.class).hasMessageContaining("fsync failed");
         assertThat(w.state()).isEqualTo(OcsfRunWriter.State.FAILED);
         assertThat(w.complete()).isEqualTo(OcsfRunWriter.State.FAILED);
@@ -190,9 +190,9 @@ class WriterPersistenceTest {
                 throw new IOException("injected: every manifest write refused");
             }
         });
-        OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), opts);
-        SourceInput in = w.source(claudeStream());
-        byte[] first = Replay.prefixBytes(nativeOf(PAIR, "stream.jsonl"), 3);
+        OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), opts);
+        SourceInput in = w.source(claudeStreamStdout());
+        byte[] first = Replay.prefixBytes(nativeOf(LIVE_FEATURES, "stream.jsonl"), 3);
         Replay.feedBytes(in, first, 1000, opts.clock(), first.length, false);
         assertThatThrownBy(w::flush).isInstanceOf(UncheckedIOException.class);
         assertThat(w.state()).isEqualTo(OcsfRunWriter.State.FAILED);

@@ -554,7 +554,7 @@ class CanonicalConformanceTest {
     void aBroadOrRetainedDispositionCannotHideARequiredMapping() {
         Catalog c = CanonicalObligations.read(CATALOG);
         Recording rec = recording(c, CanonicalObligations.FIXTURES.resolve(FEATURES));
-        Binding b = c.bindings().get(1);
+        Binding b = c.bindings().get(0);
         List<Occurrence> occ = CanonicalObligations.occurrences(c, b, FEATURES, rec.art());
         FieldDispositionTest.Catalog dispositions = FieldDispositionTest.catalog("claude_stream");
         assertThat(occ.stream().flatMap(o -> CanonicalObligations.dispositions(o, dispositions).stream())).isEmpty();
@@ -596,19 +596,19 @@ class CanonicalConformanceTest {
         assertThat(judgeAll(c, moved, "claude-code/stream-json/2.1.304-stdout").stream().filter(j -> j.occurrence().obligation().id().endsWith("task-notification")))
                 .singleElement().satisfies(j -> assertThat(j.findings()).anyMatch(f -> f.category() == 3 && f.detail().contains("child:" + OcsfFixtures.LIVE_SPAWN)));
         // usage.values VERIFIED for main, but the child's own result is missing: the child's occurrences are not discharged
-        Recording child = recording(c, CanonicalObligations.FIXTURES.resolve(OcsfFixtures.CHILD));
+        Recording child = recording(c, CanonicalObligations.FIXTURES.resolve(OcsfFixtures.LIVE_FEATURES));
         OracleReport mainOnly = child.report().filtered(ch -> !(ch.property().equals("usage.values") && ch.owner().startsWith("child:")));
         assertThat(mainOnly.checks()).anyMatch(ch -> ch.property().equals("usage.values") && ch.owner().equals("main/stream.jsonl") && ch.outcome() == Check.Outcome.VERIFIED);
-        List<Judged> childOwned = judgeAll(c, new Recording(child.fixture(), child.art(), child.cores(), mainOnly, child.facts()), "claude-code/stream-json/2.1.299-sdk")
+        List<Judged> childOwned = judgeAll(c, new Recording(child.fixture(), child.art(), child.cores(), mainOnly, child.facts()), "claude-code/stream-json/2.1.304-stdout")
                 .stream().filter(j -> j.occurrence().owner().startsWith("child:")).toList();
         assertThat(childOwned).isNotEmpty().noneMatch(Judged::discharged)
                 .allSatisfy(j -> assertThat(j.findings()).anyMatch(f -> f.category() == 4 && f.detail().contains("oracle usage.values [child:")));
         // the earlier disposition gate: one VERIFIED usage.values anywhere satisfied every normalized usage entry
         FieldDispositionTest.Catalog dispositions = FieldDispositionTest.catalog("claude_stream");
         FieldDispositionTest.Entry input = dispositions.entries().stream().filter(e -> e.key().equals("assistant:message.usage.input_tokens")).findFirst().orElseThrow();
-        FieldDispositionTest.Catalog childEvidence = new FieldDispositionTest.Catalog(dispositions.profile(), dispositions.contractFile(), List.of(OcsfFixtures.CHILD),
+        FieldDispositionTest.Catalog childEvidence = new FieldDispositionTest.Catalog(dispositions.profile(), dispositions.contractFile(), List.of(OcsfFixtures.LIVE_FEATURES),
                 dispositions.entries(), dispositions.raw());
-        assertThat(FieldDispositionTest.exercised(input, childEvidence, Map.of(OcsfFixtures.CHILD, mainOnly), java.util.EnumSet.of(Check.Outcome.VERIFIED)))
+        assertThat(FieldDispositionTest.exercised(input, childEvidence, Map.of(OcsfFixtures.LIVE_FEATURES, mainOnly), java.util.EnumSet.of(Check.Outcome.VERIFIED)))
                 .as("the property-level check passes without the child's result").isEmpty();
     }
 
@@ -689,7 +689,7 @@ class CanonicalConformanceTest {
         Report r = generate(withZero, recordings(withZero), FieldDispositionTest.catalog("claude_stream"), obligationEntries());
         assertThat(r.judged()).noneMatch(j -> j.occurrence().obligation().id().endsWith("zero-match"));
         @SuppressWarnings("unchecked")
-        List<Map<String, Object>> rows = (List<Map<String, Object>>) ((Map<String, Object>) ((List<Object>) r.document().get("bindings")).get(1)).get("obligations");
+        List<Map<String, Object>> rows = (List<Map<String, Object>>) ((Map<String, Object>) ((List<Object>) r.document().get("bindings")).get(0)).get("obligations");
         assertThat(rows).filteredOn(row -> "claude.stream.usage.control.zero-match".equals(row.get("id"))).singleElement()
                 .satisfies(row -> assertThat(String.valueOf(row.get("state"))).startsWith("unexercised"));
         // an added vendor field: a top-level token count on task_progress (at 24e8ecc the whole-variant wildcard system/task_progress:* accepted it)
@@ -710,7 +710,7 @@ class CanonicalConformanceTest {
         withWildcard.add(new FieldDispositionTest.Entry("system/task_progress", "*", true, "retained", List.of(), null, "whole_record.coverage", List.of(), "24e8ecc wildcard", null));
         assertThat(FieldDispositionTest.applicable(FieldDispositionTest.withEntries(dispositions, withWildcard), "system/task_progress", "summary_tokens"))
                 .singleElement().satisfies(e -> assertThat(e.key()).isEqualTo("system/task_progress:*"));
-        List<Occurrence> occ = CanonicalObligations.occurrences(c, c.bindings().get(1), FEATURES, added);
+        List<Occurrence> occ = CanonicalObligations.occurrences(c, c.bindings().get(0), FEATURES, added);
         List<Finding> found = CanonicalObligations.tokenMembers(c, added, occ, RawInventory.ProfileRules.forProfile("claude_stream").dataKeyed(), new ArrayList<>());
         assertThat(found).extracting(Finding::id).contains("system/task_progress:summary_tokens",
                 "claude.stream.usage.child-run.task-progress@r2|system/task_progress:usage.cache_read_input_tokens");
@@ -773,8 +773,6 @@ class CanonicalConformanceTest {
         // counts it as a repeated candidate, not an independent recording
         assertThat(CanonicalObligations.registered("claude-code/stream-json/2.1.304-stdout")).extracting(CanonicalObligations.Recording::fixture)
                 .containsExactly("claude-live-2.1.304-cancelled", "claude-live-2.1.304-denial", "claude-live-2.1.304-features", "claude-live-2.1.304-mcp", "claude-live-2.1.304-mcp-pair");
-        assertThat(CanonicalObligations.registered("claude-code/stream-json/2.1.299-sdk")).as("the labelled synthetic pair repeats the child stream: an example, not a recording")
-                .extracting(CanonicalObligations.Recording::fixture).containsExactly("claude-child-2.1.299", "claude-child-2.1.299-interrupted");
     }
 
     @Test
@@ -901,7 +899,7 @@ class CanonicalConformanceTest {
         lines.set(result, lines.get(result).replaceFirst("\"iterations\":\\[\\{\"input_tokens\"", "\"iterations\":[{\"advisor_tokens\":3,\"input_tokens\""));
         Files.write(stream, lines, StandardCharsets.UTF_8);
         NativeArtifact added = NativeArtifact.read(stream);
-        List<Occurrence> occ = CanonicalObligations.occurrences(c, c.bindings().get(1), FEATURES, added);
+        List<Occurrence> occ = CanonicalObligations.occurrences(c, c.bindings().get(0), FEATURES, added);
         List<Finding> found = CanonicalObligations.tokenMembers(c, added, occ, RawInventory.ProfileRules.forProfile("claude_stream").dataKeyed(), new ArrayList<>());
         assertThat(found).extracting(Finding::id).contains("claude.stream.usage.run@r1|result:usage.iterations[].advisor_tokens");
         // a residual added to the catalog changes the reviewed set and is approval debt until an Owner decision approves it
@@ -914,7 +912,7 @@ class CanonicalConformanceTest {
         assertThat(residualKeys(widened)).isNotEqualTo(reviewedResiduals());
         assertThat(CanonicalObligations.semantics(widened)).extracting(Finding::id).contains("approval:residual:user/tool_result:tool_use_result.usage.output_tokens");
         // and a residual never removes an obligation's occurrence: the Agent result's usage is still judged
-        assertThat(CanonicalObligations.occurrences(widened, widened.bindings().get(1), FEATURES, rec(widened).art()))
+        assertThat(CanonicalObligations.occurrences(widened, widened.bindings().get(0), FEATURES, rec(widened).art()))
                 .anyMatch(o -> o.obligation().id().endsWith("agent-result"));
     }
 
@@ -924,7 +922,7 @@ class CanonicalConformanceTest {
         // nested Agent result in child A reusing child B's tool-use id. Expected identities authored from its records
         Catalog c = CanonicalObligations.read(CATALOG);
         Recording rec = recording(c, CanonicalObligations.FIXTURES.resolve(OcsfFixtures.SYN_CHILD_RUNS));
-        Binding stdout = c.bindings().get(1);
+        Binding stdout = c.bindings().get(0);
         List<Judged> judged = CanonicalObligations.occurrences(c, stdout, rec.fixture(), rec.art()).stream()
                 .map(o -> CanonicalObligations.judge(o, rec.cores(), rec.report(), rec.facts())).toList();
         String a = "toolu_01SYNTHETICCHILDRUNAAAAA";
@@ -1048,10 +1046,10 @@ class CanonicalConformanceTest {
         Files.write(stream, lines, StandardCharsets.UTF_8);
         NativeArtifact added = NativeArtifact.read(stream);
         Set<String> dataKeyed = RawInventory.ProfileRules.forProfile("claude_stream").dataKeyed();
-        List<Finding> found = CanonicalObligations.tokenMembers(c, added, CanonicalObligations.occurrences(c, c.bindings().get(1), FEATURES, added), dataKeyed, new ArrayList<>());
+        List<Finding> found = CanonicalObligations.tokenMembers(c, added, CanonicalObligations.occurrences(c, c.bindings().get(0), FEATURES, added), dataKeyed, new ArrayList<>());
         assertThat(found).extracting(Finding::id).containsExactly("user/tool_result:tool_use_result.usage.iterations[]{type=compaction}");
         NativeArtifact original = rec(c).art();
-        assertThat(CanonicalObligations.tokenMembers(c, original, CanonicalObligations.occurrences(c, c.bindings().get(1), FEATURES, original), dataKeyed, new ArrayList<>())).isEmpty();
+        assertThat(CanonicalObligations.tokenMembers(c, original, CanonicalObligations.occurrences(c, c.bindings().get(0), FEATURES, original), dataKeyed, new ArrayList<>())).isEmpty();
     }
 
     static final String STDOUT = "claude-code/stream-json/2.1.304-stdout";

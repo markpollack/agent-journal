@@ -6,7 +6,7 @@
  "frozen": {
   "at": "2026-10-21",
   "by": "sha256 and line count of the committed native artifacts, written before the package was judged; independent of the package's own sources[]",
-  "basis": "the sanitized real stream plus the labelled synthetic transcript (two artifacts) and the one sub-agent split core of the stream"
+  "basis": "the sanitized real stream plus the labelled synthetic transcript (two artifacts); re-expected 2026-11-15 when the sdk route the stream was delivered on was removed from the compatibility registry: no entry is keyed on that route, so the stream is expected retained whole and flagged untested, with no owner split, and the transcript keeps its entry"
  },
  "sources": [
   {
@@ -16,13 +16,8 @@
    "bytes": 24042,
    "records": 27,
    "required": true,
-   "binding": {
-    "entry_id": "claude-code/stream-json/2.1.299-sdk",
-    "version": "2.1.299",
-    "route": "sdk",
-    "source_specification": "schema/vendor/claude-code/stream-json/2.1.303.json",
-    "specification_sha256": "7e8173afd6c9498b21cb23c6546227abb23878c0f6395106458f717ca83f2767"
-   }
+   "compatibility": "no_match",
+   "compatibility_basis": "the stream was delivered on the sdk route (the Java claude-code-sdk's filtered rawJson lines), which the registry no longer keys: the expected behavior is retention flagged untested, with no nearest-entry normalization and no owner split"
   },
   {
    "artifact": "transcript.jsonl",
@@ -40,11 +35,5 @@
    }
   }
  ],
- "children": [
-  {
-   "spawn_tool_call_uid": "toolu_01BnEuCUmZ2Vu1LpADzksmrJ",
-   "artifact": "stream.jsonl",
-   "owner_path": "parent_tool_use_id"
-  }
- ]
+ "children": []
 }

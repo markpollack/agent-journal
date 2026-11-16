@@ -19,10 +19,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.CHILD;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.PAIR;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.SPAWN;
-import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStream;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_CLAUDE_PAIR;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_FEATURES;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.LIVE_SPAWN;
+import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeStreamStdout;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.claudeTranscript;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.manifest;
 import static io.github.markpollack.journal.ocsf.writer.WriterTestSupport.nativeDir;
@@ -43,15 +43,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 class WriterLifecycleTest {
 
-    private static final int STREAM_RECORDS = 27;
+    private static final int STREAM_RECORDS = 50;
 
     @Test
     void persistedPrefixIsReadableAndQueryableBeforeEof(@TempDir Path work) {
         Path core = work.resolve("core");
-        Path stream = nativeOf(PAIR, "stream.jsonl");
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
-            SourceInput in = w.source(claudeStream());
-            byte[] prefix = Replay.prefixBytes(stream, 6);
+        Path stream = nativeOf(LIVE_FEATURES, "stream.jsonl");
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options())) {
+            SourceInput in = w.source(claudeStreamStdout());
+            byte[] prefix = Replay.prefixBytes(stream, 7);
             Replay.feedBytes(in, prefix, 7, options().clock(), prefix.length, false);
             w.flush();
             assertThat(w.state()).isEqualTo(OcsfRunWriter.State.RECORDING);
@@ -65,16 +65,16 @@ class WriterLifecycleTest {
             assertThat(p.manifest.eventsSha256()).isNull();
             assertThat(p.events).isNotEmpty();
             Json views = AnalysisViews.all(p);
-            // record 5 requested ToolSearch, record 6 returned its result: one exchange, request and result present
+            // record 6 requested Write, record 7 returned its result: one exchange, request and result present
             Json calls = views.path("tool_exchanges", "calls");
             assertThat(calls.elements()).hasSize(1);
-            assertThat(calls.elements().get(0).member("tool_call_uid").text()).isEqualTo("toolu_0183ddwvMmvPzqAU5Jeu5hwZ");
+            assertThat(calls.elements().get(0).member("tool_call_uid").text()).isEqualTo("toolu_01LqFQri46W5W1yjZRqLKDVB");
             assertThat(calls.elements().get(0).member("requests").elements()).hasSize(1);
             assertThat(calls.elements().get(0).member("results").elements()).hasSize(1);
             assertThat(views.path("settings_context", "settings_rows").scalarText()).isEqualTo("1");
 
             // the oracle judges the open package against exactly the prefix the writer has seen
-            OracleReport report = verify(core, nativeDir(work, PAIR, "stream.jsonl", 6));
+            OracleReport report = verify(core, nativeDir(work, LIVE_FEATURES, "stream.jsonl", 7));
             assertThat(report.defects()).as(notVerified(report).toString()).isEmpty();
             assertThat(report.outcome("package.state", "main")).isEqualTo(Check.Outcome.UNRESOLVED);
             assertThat(report.outcome("source.inventory", "main/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
@@ -89,7 +89,7 @@ class WriterLifecycleTest {
             byte[] after = WriterTestSupport.bytes(core.resolve("events.jsonl"));
             assertThat(Arrays.copyOf(after, before.length)).isEqualTo(before);
         }
-        OracleReport finalReport = verify(core, nativeDir(work, PAIR, "stream.jsonl", -1));
+        OracleReport finalReport = verify(core, nativeDir(work, LIVE_FEATURES, "stream.jsonl", -1));
         assertThat(finalReport.defects()).as(notVerified(finalReport).toString()).isEmpty();
         assertThat(finalReport.outcome("package.state", "main")).isEqualTo(Check.Outcome.VERIFIED);
     }
@@ -97,11 +97,11 @@ class WriterLifecycleTest {
     @Test
     void eofInsideARecordRetainsTheIncompleteTailHonestly(@TempDir Path work) {
         Path core = work.resolve("core");
-        Path stream = nativeOf(PAIR, "stream.jsonl");
+        Path stream = nativeOf(LIVE_FEATURES, "stream.jsonl");
         byte[] all = WriterTestSupport.bytes(stream);
         int cut = Replay.prefixBytes(stream, 6).length + 40; // 40 bytes into record 7
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
-            SourceInput in = w.source(claudeStream());
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options())) {
+            SourceInput in = w.source(claudeStreamStdout());
             Replay.feedBytes(in, all, 11, options().clock(), cut, true);
             assertThat(in.records()).isEqualTo(7);
             assertThat(w.complete()).isEqualTo(OcsfRunWriter.State.COMPLETED);
@@ -138,9 +138,9 @@ class WriterLifecycleTest {
     @Test
     void interruptionEndsOpenSourcesAndFinalizesWhatWasAcquired(@TempDir Path work) {
         Path core = work.resolve("core");
-        Path stream = nativeOf(PAIR, "stream.jsonl");
-        OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options());
-        SourceInput in = w.source(claudeStream());
+        Path stream = nativeOf(LIVE_FEATURES, "stream.jsonl");
+        OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options());
+        SourceInput in = w.source(claudeStreamStdout());
         byte[] prefix = Replay.prefixBytes(stream, 10);
         Replay.feedBytes(in, prefix, 1000, options().clock(), prefix.length, false);
         assertThat(w.interrupt("operator cancelled")).isEqualTo(OcsfRunWriter.State.INTERRUPTED);
@@ -157,7 +157,7 @@ class WriterLifecycleTest {
         OcsfPackage p = open(core);
         assertThat(p.diagnosticsWithCode("PACKAGE_INTERRUPTED")).hasSize(1);
         assertThat(p.diagnostics(Diagnostic.Severity.DEFECT)).isEmpty();
-        OracleReport report = verify(core, nativeDir(work, PAIR, "stream.jsonl", 10));
+        OracleReport report = verify(core, nativeDir(work, LIVE_FEATURES, "stream.jsonl", 10));
         assertThat(report.defects()).as(notVerified(report).toString()).isEmpty();
         assertThat(report.outcome("package.state", "main")).isEqualTo(Check.Outcome.UNSUPPORTED);
     }
@@ -165,7 +165,7 @@ class WriterLifecycleTest {
     @Test
     void injectedWriteFailureLeavesAnHonestFailedPackage(@TempDir Path work) {
         Path core = work.resolve("core");
-        Path stream = nativeOf(PAIR, "stream.jsonl");
+        Path stream = nativeOf(LIVE_FEATURES, "stream.jsonl");
         AtomicInteger appends = new AtomicInteger();
         WriterOptions opts = options().withFaults((operation, detail) -> {
             // append 1 is the opening flush (format, schema, run and source declarations); append 2 the first events
@@ -173,8 +173,8 @@ class WriterLifecycleTest {
                 throw new IOException("injected: disk full during " + detail);
             }
         });
-        OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), opts);
-        SourceInput in = w.source(claudeStream());
+        OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), opts);
+        SourceInput in = w.source(claudeStreamStdout());
         byte[] all = WriterTestSupport.bytes(stream);
         byte[] first = Replay.prefixBytes(stream, 5);
         Replay.feedBytes(in, first, 1000, opts.clock(), first.length, false);
@@ -197,15 +197,15 @@ class WriterLifecycleTest {
         OcsfPackage p = open(core);
         assertThat(p.diagnosticsWithCode("PACKAGE_FAILED")).hasSize(1);
         assertThat(p.events.size()).isEqualTo(confirmed);
-        OracleReport report = verify(core, nativeDir(work, PAIR, "stream.jsonl", 5));
+        OracleReport report = verify(core, nativeDir(work, LIVE_FEATURES, "stream.jsonl", 5));
         assertThat(report.outcome("package.state", "main")).isEqualTo(Check.Outcome.UNRESOLVED);
     }
 
     @Test
     void finalizationIsIdempotentAndCloseAfterCompletionChangesNothing(@TempDir Path work) {
         Path core = work.resolve("core");
-        OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options());
-        Replay.feedBytes(w.source(claudeStream()), nativeOf(PAIR, "stream.jsonl"), 4096, options().clock());
+        OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options());
+        Replay.feedBytes(w.source(claudeStreamStdout()), nativeOf(LIVE_FEATURES, "stream.jsonl"), 4096, options().clock());
         assertThat(w.complete()).isEqualTo(OcsfRunWriter.State.COMPLETED);
         byte[] manifest1 = WriterTestSupport.bytes(core.resolve("run.json"));
         byte[] events1 = WriterTestSupport.bytes(core.resolve("events.jsonl"));
@@ -225,12 +225,12 @@ class WriterLifecycleTest {
     @Test
     void completeRequiresEveryDeclaredSourceToHaveEndedAndInputsCannotBeMixed(@TempDir Path work) {
         Path core = work.resolve("core");
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(PAIR), SchemaPin.bundled(), options())) {
-            SourceInput in = w.source(claudeStream());
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options())) {
+            SourceInput in = w.source(claudeStreamStdout());
             in.record("{\"type\":\"system\",\"subtype\":\"init\"}".getBytes(StandardCharsets.UTF_8), "LF", options().clock().instant());
             assertThatThrownBy(() -> in.bytes(new byte[] {'{', '}', '\n'}, options().clock().instant())).isInstanceOf(IllegalStateException.class);
             assertThatThrownBy(w::complete).isInstanceOf(IllegalStateException.class).hasMessageContaining("stream.jsonl has not ended");
-            assertThatThrownBy(() -> w.source(claudeStream())).isInstanceOf(IllegalArgumentException.class);
+            assertThatThrownBy(() -> w.source(claudeStreamStdout())).isInstanceOf(IllegalArgumentException.class);
         }
         // try-with-resources closed it without complete(): that is an interruption, recorded as such
         assertThat(manifest(core).path("package", "state").text()).isEqualTo("INTERRUPTED");
@@ -240,36 +240,37 @@ class WriterLifecycleTest {
     @Test
     void childRecordsAreRoutedToTheirOwnCoreAsTheyArrive(@TempDir Path work) {
         Path core = work.resolve("core");
-        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(CHILD), SchemaPin.bundled(), options())) {
-            Replay.feedBytes(w.source(claudeStream()), nativeOf(CHILD, "stream.jsonl"), 512, options().clock());
+        try (OcsfRunWriter w = OcsfRunWriter.open(core, run(LIVE_FEATURES), SchemaPin.bundled(), options())) {
+            Replay.feedBytes(w.source(claudeStreamStdout()), nativeOf(LIVE_FEATURES, "stream.jsonl"), 512, options().clock());
             w.complete();
         }
-        Path child = core.resolve("children").resolve(SPAWN);
+        Path child = core.resolve("children").resolve(LIVE_SPAWN);
         assertThat(child.resolve("events.jsonl")).exists();
         Jv parent = manifest(core);
         assertThat(parent.path("run", "children").elements()).hasSize(1);
-        assertThat(parent.path("run", "children").elements().get(0).member("spawn_tool_call_uid").text()).isEqualTo(SPAWN);
+        assertThat(parent.path("run", "children").elements().get(0).member("spawn_tool_call_uid").text()).isEqualTo(LIVE_SPAWN);
         assertThat(parent.path("run", "source_scope", "owner_value").isNull()).isTrue();
         Jv childManifest = manifest(child);
-        assertThat(childManifest.path("run", "parent", "run_uid").text()).isEqualTo(run(CHILD).runUid());
-        assertThat(childManifest.path("run", "source_scope", "owner_value").text()).isEqualTo(SPAWN);
+        assertThat(childManifest.path("run", "parent", "run_uid").text()).isEqualTo(run(LIVE_FEATURES).runUid());
+        assertThat(childManifest.path("run", "source_scope", "owner_value").text()).isEqualTo(LIVE_SPAWN);
         assertThat(childManifest.path("package", "state").text()).isEqualTo("COMPLETED");
-        // the child owns 3 records (18 user text, 20 assistant tool_use, 21 user tool_result): 4 events (the tool_use yields response + request)
-        assertThat(WriterTestSupport.eventLines(child.resolve("events.jsonl"))).hasSize(4);
+        // the child owns 5 records (24 user text, 26 and 29 assistant tool_use, 27 and 30 user tool_result): 7 events (each tool_use yields response + request)
+        assertThat(WriterTestSupport.eventLines(child.resolve("events.jsonl"))).hasSize(7);
         assertThat(WriterTestSupport.declarationKinds(child.resolve("events.jsonl"))).as("the child file declares its own format, schema, run, contract, source and definitions")
-                .startsWith("format format", "schema schema", "run run:" + run(CHILD).runUid() + "/child/" + SPAWN).contains("source source:stream.jsonl").anyMatch(k -> k.startsWith("definition definition:agentic_cli/tool_call"));
-        OracleReport report = verify(core, nativeDir(work, CHILD, "stream.jsonl", -1));
+                .startsWith("format format", "schema schema", "run run:" + run(LIVE_FEATURES).runUid() + "/child/" + LIVE_SPAWN).contains("source source:stream.jsonl").anyMatch(k -> k.startsWith("definition definition:agentic_cli/tool_call"));
+        OracleReport report = verify(core, nativeDir(work, LIVE_FEATURES, "stream.jsonl", -1));
         assertThat(report.defects()).as(notVerified(report).toString()).isEmpty();
-        assertThat(report.outcome("whole_record.coverage", "child:" + SPAWN + "/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
+        assertThat(report.outcome("whole_record.coverage", "child:" + LIVE_SPAWN + "/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
         assertThat(report.outcome("whole_record.coverage", "main/stream.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
     }
 
     @Test
     void laterSessionEvidenceIsAppendedWithoutChangingEarlierPrefixAnswers(@TempDir Path work) {
         Path core = work.resolve("core");
-        String response = "msg_011Cg2aRQ1iZf8BxQVUnD2jR";
-        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(PAIR), SchemaPin.bundled(), options(), WriterTestSupport.PAIR_LOG)) {
-            Replay.feedBytes(w.source(claudeStream()), nativeOf(PAIR, "stream.jsonl"), 4096, options().clock());
+        String response = "msg_011CgKzSHFoJacdngyy7dCti";
+        String sessionUid = "00000000-0000-4000-8000-0000000000a4";
+        try (OcsfRunWriter w = OcsfRunWriter.openEvidenceLog(core, run(LIVE_CLAUDE_PAIR), SchemaPin.bundled(), options(), WriterTestSupport.PAIR_LOG)) {
+            Replay.feedBytes(w.source(claudeStreamStdout()), nativeOf(LIVE_CLAUDE_PAIR, "stream.jsonl"), 4096, options().clock());
             w.flush();
             byte[] streamOnly = WriterTestSupport.bytes(core.resolve("events.jsonl"));
             Json before = AnalysisViews.usage(open(core));
@@ -277,10 +278,10 @@ class WriterLifecycleTest {
             assertThat(streamGroup).as("the live stream reports only provisional usage for " + response).isNotNull();
             assertThat(streamGroup.member("applicable_final").isNull()).isTrue();
             assertThat(group(before, "Model response", response, "transcript.jsonl")).as("no transcript fact exists in the stream-only prefix").isNull();
-            assertThat(group(before, "Session", run(PAIR).sessionUid(), "transcript.jsonl")).isNull();
+            assertThat(group(before, "Session", sessionUid, "transcript.jsonl")).isNull();
 
             // the saved session file is admitted later through the same writer
-            Replay.feedBytes(w.source(claudeTranscript()), nativeOf(PAIR, "transcript.jsonl"), 4096, options().clock());
+            Replay.feedBytes(w.source(claudeTranscript()), nativeOf(LIVE_CLAUDE_PAIR, "transcript.jsonl"), 4096, options().clock());
             w.complete();
             byte[] all = WriterTestSupport.bytes(core.resolve("events.jsonl"));
             assertThat(Arrays.copyOf(all, streamOnly.length)).as("the earlier persisted bytes are unchanged by the later admission").isEqualTo(streamOnly);
@@ -290,14 +291,14 @@ class WriterLifecycleTest {
         assertThat(streamGroupAfter.member("applicable_final").isNull()).as("the stream group still has no final").isTrue();
         Json transcriptGroup = group(after, "Model response", response, "transcript.jsonl");
         assertThat(transcriptGroup).isNotNull();
-        assertThat(transcriptGroup.path("applicable_final", "output_tokens").scalarText()).isEqualTo("58");
+        assertThat(transcriptGroup.path("applicable_final", "output_tokens").scalarText()).isEqualTo("184");
         assertThat(transcriptGroup.member("final_observations").scalarText()).isEqualTo("2");
         assertThat(transcriptGroup.member("repeated_final_observations").scalarText()).isEqualTo("1");
-        Json session = group(after, "Session", run(PAIR).sessionUid(), "transcript.jsonl");
+        Json session = group(after, "Session", sessionUid, "transcript.jsonl");
         assertThat(session).as("cost-state session accounting from the transcript").isNotNull();
-        assertThat(session.path("applicable_final", "output_tokens").scalarText()).isEqualTo("1362");
-        Path nat = nativeDir(work, PAIR, "stream.jsonl", -1);
-        nativeDir(work, PAIR, "transcript.jsonl", -1);
+        assertThat(session.path("applicable_final", "output_tokens").scalarText()).isEqualTo("425");
+        Path nat = nativeDir(work, LIVE_CLAUDE_PAIR, "stream.jsonl", -1);
+        nativeDir(work, LIVE_CLAUDE_PAIR, "transcript.jsonl", -1);
         OracleReport report = verify(core, nat);
         assertThat(report.defects()).as(notVerified(report).toString()).isEmpty();
         assertThat(report.outcome("population.contexts", "main/transcript.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
@@ -312,18 +313,18 @@ class WriterLifecycleTest {
         Path b = work.resolve("records");
         Clock clockA = WriterTestSupport.ticking();
         Clock clockB = WriterTestSupport.ticking();
-        try (OcsfRunWriter w = OcsfRunWriter.open(a, run(CHILD), SchemaPin.bundled(), options().withClock(clockA))) {
-            Replay.feedBytes(w.source(claudeStream()), nativeOf(CHILD, "stream.jsonl"), 13, clockA);
+        try (OcsfRunWriter w = OcsfRunWriter.open(a, run(LIVE_FEATURES), SchemaPin.bundled(), options().withClock(clockA))) {
+            Replay.feedBytes(w.source(claudeStreamStdout()), nativeOf(LIVE_FEATURES, "stream.jsonl"), 13, clockA);
             w.complete();
         }
-        try (OcsfRunWriter w = OcsfRunWriter.open(b, run(CHILD), SchemaPin.bundled(), options().withClock(clockB))) {
-            Replay.feedRecords(w.source(claudeStream()), nativeOf(CHILD, "stream.jsonl"), clockB);
+        try (OcsfRunWriter w = OcsfRunWriter.open(b, run(LIVE_FEATURES), SchemaPin.bundled(), options().withClock(clockB))) {
+            Replay.feedRecords(w.source(claudeStreamStdout()), nativeOf(LIVE_FEATURES, "stream.jsonl"), clockB);
             w.complete();
         }
         // the event lines are byte-identical; the declarations differ only in arrival/finalization times (a chunked replay reads the clock more often)
         assertThat(WriterTestSupport.eventLines(b.resolve("events.jsonl"))).isEqualTo(WriterTestSupport.eventLines(a.resolve("events.jsonl")));
-        assertThat(WriterTestSupport.eventLines(b.resolve("children").resolve(SPAWN).resolve("events.jsonl")))
-                .isEqualTo(WriterTestSupport.eventLines(a.resolve("children").resolve(SPAWN).resolve("events.jsonl")));
+        assertThat(WriterTestSupport.eventLines(b.resolve("children").resolve(LIVE_SPAWN).resolve("events.jsonl")))
+                .isEqualTo(WriterTestSupport.eventLines(a.resolve("children").resolve(LIVE_SPAWN).resolve("events.jsonl")));
         assertThat(WriterTestSupport.declarationKinds(b.resolve("events.jsonl"))).isEqualTo(WriterTestSupport.declarationKinds(a.resolve("events.jsonl")));
         Jv ma = manifest(a);
         Jv mb = manifest(b);

@@ -26,8 +26,7 @@ class FixtureEvidenceClassTest {
     /** Reproduced on the unchanged a7673e3 LiveScenarioTest.fixtureClass, which read synthetic for both sanitized real streams. */
     @Test
     void eachCommittedFixtureHasExactlyItsStatedClass() throws Exception {
-        assertThat(LiveScenarioTest.fixtureClass(OcsfFixtures.CHILD)).isEqualTo("replay");
-        assertThat(LiveScenarioTest.fixtureClass(OcsfFixtures.INTERRUPTED)).isEqualTo("replay");
+        assertThat(LiveScenarioTest.fixtureClass(OcsfFixtures.LIVE_FEATURES)).isEqualTo("live");
         assertThat(LiveScenarioTest.fixtureClass(OcsfFixtures.LIVE_CODEX_MCP)).isEqualTo("live");
         assertThat(LiveScenarioTest.fixtureClass(OcsfFixtures.CODEX_FAMILIES)).isEqualTo("synthetic");
         try (Stream<Path> dirs = Files.list(fixtures())) {
@@ -47,7 +46,15 @@ class FixtureEvidenceClassTest {
         relabel(live, "SANITIZED REAL LIVE RECORDING", "LABELLED SYNTHETIC RECORDING");
         assertThat(FixtureEvidenceClass.problems(live)).singleElement().asString().contains("labelled SYNTHETIC but carries a frozen live process a live provenance manifest");
 
-        Path real = copyTree(fixtures().resolve(OcsfFixtures.CHILD), work.resolve("real-with-provenance"));
+        // a sanitized real stream recorded outside a live run of this capture (no committed fixture is one since the sdk-route
+        // recordings were deleted): the live recording without its live label, frozen live process and provenance is a replay
+        Path real = copyTree(fixtures().resolve(OcsfFixtures.LIVE_FEATURES), work.resolve("real-with-provenance"));
+        relabel(real, "SANITIZED REAL LIVE RECORDING", "SANITIZED REAL STREAM");
+        Files.delete(real.resolve("provenance.json"));
+        OcsfFixtures.editExpected(real, m -> OcsfFixtures.obj(m.member("frozen")).members().remove("live_process"));
+        assertThat(FixtureEvidenceClass.origin(real)).isEqualTo(FixtureEvidenceClass.Origin.RECORDED_STREAM);
+        assertThat(FixtureEvidenceClass.origin(real).attemptClass).isEqualTo("replay");
+        assertThat(FixtureEvidenceClass.problems(real)).isEmpty();
         Files.copy(fixtures().resolve(OcsfFixtures.LIVE_CODEX_MCP).resolve("provenance.json"), real.resolve("provenance.json"));
         assertThat(FixtureEvidenceClass.problems(real)).singleElement().asString().contains("labelled RECORDED_STREAM but carries a live provenance manifest");
 

@@ -48,7 +48,7 @@ class SchemaCatalogTest {
 
     @Test
     void theDefaultSemanticContractResolvesAgainstEveryFixture(@TempDir Path work) {
-        for (String name : List.of(OcsfFixtures.CODEX, OcsfFixtures.CHILD)) {
+        for (String name : List.of(OcsfFixtures.CODEX, OcsfFixtures.LIVE_FEATURES)) {
             OcsfPackage p = open(copy(name, work.resolve(name)));
             assertThat(SemanticContract.validate(SemanticContract.loadDefault(), p.catalog)).as(name).isEmpty();
             for (OcsfPackage child : p.children) {

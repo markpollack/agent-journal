@@ -1,6 +1,6 @@
 {
   "kind": "agent-journal/conformance-baseline",
-  "version": "0.8",
+  "version": "0.9",
   "catalog": "schema/vendor/claude-code/stream-json/obligations.json",
   "meaning": "the reviewed obligation set (id, revision, meaning digest, relevant digest), the reviewed residual set (variant, path, classification, digest), the judged population (per binding: its entry's admission, every recording with its native stream hash, every occurrence id) and the frozen debt by exact finding identity (category and id) with its reason. CanonicalConformanceTest fails on a new finding, on frozen debt that no longer occurs, and on any changed obligation, residual or population: an edit here is the reviewable change, never its approval. Holding the baseline is not acceptance: category 6 keeps the semantic review state",
   "changes": [
@@ -31,6 +31,10 @@
     {
       "revision": "0.8 (2.0 identifier rename, 2026-11-15)",
       "summary": "The 9 obligations below have new relevant digests and unchanged meaning digests: the Owner-directed 2.0 rename removed version-history wording from the agentic_cli descriptions of rule_uid and uncached_input_tokens and from the Claude stream contract's rule notes and task_lifecycle disposition; no meaning, mapping or value changed. Re-approved at the new digests by OWNER-2026-11-15-JOURNAL-RENAME-REBIND: claude.stream.usage.model-response r1, claude.stream.usage.run r1, claude.stream.usage.run.last-response r1, claude.stream.usage.model r1, claude.stream.usage.child-run.agent-result r3, claude.stream.usage.child-run.task-progress r2, claude.stream.usage.child-run.task-notification r2, claude.stream.child-run.agent-result.status r2, claude.stream.child-run.agent-result.duration r1. The other 4 obligations and the 4 residuals are unchanged."
+    },
+    {
+      "revision": "0.9 (retired sdk route deleted, 2026-11-15)",
+      "summary": "The population frozen in baseline 0.6 (OWNER-2026-10-31-CLAUDE-STREAM-BATCH-ACCEPT) shrinks by the two claude-child-2.1.299 recordings of the retired sdk route (binding claude-code/stream-json/2.1.299-sdk and its 22 occurrences leave with the deleted compatibility entry and fixtures; 98 -> 76 occurrences); every obligation keeps its 2.1.304 occurrences; no approval changes."
     }
   ],
   "obligations": [
@@ -140,44 +144,6 @@
     }
   ],
   "population": [
-    {
-      "compatibility_entry": "claude-code/stream-json/2.1.299-sdk",
-      "recordings": [
-        {
-          "fixture": "claude-child-2.1.299",
-          "sha256": "bf6177b0d1369d16ad4ac2e770bfe6a2920134ef09875dd355bc06ad6c9748fe"
-        },
-        {
-          "fixture": "claude-child-2.1.299-interrupted",
-          "sha256": "981f19b7148d8f820066224b7e61f3f95faf93ae50a2a2e0c804433fc8bbf8d3"
-        }
-      ],
-      "occurrences": [
-        "claude.stream.capacity.contextWindow@r1|claude-child-2.1.299|stream.jsonl:27|/modelUsage/claude-haiku-4-5-20251001/contextWindow|main",
-        "claude.stream.capacity.maxOutputTokens@r1|claude-child-2.1.299|stream.jsonl:27|/modelUsage/claude-haiku-4-5-20251001/maxOutputTokens|main",
-        "claude.stream.child-run.agent-result.duration@r1|claude-child-2.1.299|stream.jsonl:24|/tool_use_result/totalDurationMs|main",
-        "claude.stream.child-run.agent-result.status@r2|claude-child-2.1.299|stream.jsonl:24|/tool_use_result/status|main",
-        "claude.stream.cost.model@r2|claude-child-2.1.299|stream.jsonl:27|/modelUsage/claude-haiku-4-5-20251001/costUSD|main",
-        "claude.stream.run.duration@r1|claude-child-2.1.299|stream.jsonl:27|/duration_ms|main",
-        "claude.stream.usage.child-run.agent-result@r3|claude-child-2.1.299|stream.jsonl:24|/tool_use_result/usage|main",
-        "claude.stream.usage.child-run.task-notification@r2|claude-child-2.1.299|stream.jsonl:23|/usage|main",
-        "claude.stream.usage.child-run.task-progress@r2|claude-child-2.1.299|stream.jsonl:19|/usage|main",
-        "claude.stream.usage.model-response@r1|claude-child-2.1.299-interrupted|stream.jsonl:4|/message/usage|main",
-        "claude.stream.usage.model-response@r1|claude-child-2.1.299-interrupted|stream.jsonl:5|/message/usage|main",
-        "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:14|/message/usage|main",
-        "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:15|/message/usage|main",
-        "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:16|/message/usage|main",
-        "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:20|/message/usage|child:toolu_01BnEuCUmZ2Vu1LpADzksmrJ",
-        "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:25|/message/usage|main",
-        "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:26|/message/usage|main",
-        "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:4|/message/usage|main",
-        "claude.stream.usage.model-response@r1|claude-child-2.1.299|stream.jsonl:5|/message/usage|main",
-        "claude.stream.usage.model@r1|claude-child-2.1.299|stream.jsonl:27|/modelUsage/claude-haiku-4-5-20251001|main",
-        "claude.stream.usage.run.last-response@r1|claude-child-2.1.299|stream.jsonl:27|/usage/iterations/0|main",
-        "claude.stream.usage.run@r1|claude-child-2.1.299|stream.jsonl:27|/usage|main"
-      ],
-      "admission": "historical"
-    },
     {
       "compatibility_entry": "claude-code/stream-json/2.1.304-stdout",
       "recordings": [
