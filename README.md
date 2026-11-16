@@ -68,14 +68,14 @@ java -cp journal-capture-tck.jar:<its dependencies> io.github.markpollack.journa
 The 1.x line (`journal-core`, last release `1.11.0`) is a different record format with no upgrade
 path to 2.0; it lives on branch `1.x`.
 
-## Support in 2.0.0-SNAPSHOT
+## What 2.0.0 records
 
-Support is per CLI and launch route, as recorded in the compatibility registry
+What is recorded depends on the CLI and launch route, as listed in the compatibility registry
 (`journal-ocsf-writer/src/main/resources/ocsf/compatibility.json`). Most entries name one exact CLI
 version. The Claude Code SDK route (stdio stream and session file) and the Codex CLI exec route
 (JSON stream and rollout) are version-neutral: any CLI version selects the entry, and the observed
 version is recorded, not gated. An exact entry wins over a version-neutral one. Input that matches no
-entry is retained whole and not normalized.
+entry is retained whole, flagged untested and not normalized.
 
 Admitted (raw standard output of the CLI, launched and read by `CliCapture`):
 
@@ -88,30 +88,28 @@ profiles that combine them): Claude Code 2.1.299, 2.1.303 and 2.1.304 session tr
 GitHub Copilot CLI 1.0.100 stdout events, session events, OTel file and usage report; Junie 3813.7
 stdout, session events and session summary; Codex CLI 0.160.1 rollout files; the version-neutral
 Claude Code SDK stdio and session-file route (tested on 2.1.316 and 2.1.319); the version-neutral
-Codex CLI exec stream and rollout route (tested on 0.166.0). The retired Claude Code 2.1.299 and 2.1.303
-filtered SDK route has no compatibility entry: a stream recorded on it is retained whole and flagged
-untested.
+Codex CLI exec stream and rollout route (tested on 0.166.0).
 
 Admission means the route's normalization is exercised on recorded live input and checked by the
-independent oracle. It is not approval of every meaning: meanings the catalogs still mark proposed
-stay proposed, and the output states what the source did not establish rather than guessing it.
-Known limits of this snapshot: Copilot's per-response duration and Junie's per-call time carry no
-vendor-stated unit; Junie's cache counters are reported as zero without establishing whether they
-are measured, so its uncached input is conditional; a Claude foreground sub-agent stream that omits
-one of its messages is not yet detected as incomplete against the vendor's own counts.
+independent oracle. It is not approval of every meaning: meanings the catalogs mark proposed are
+recorded as proposed, and the output states what the source did not establish rather than guessing it.
+Known limits: Copilot's per-response duration and Junie's per-call time carry no vendor-stated unit;
+Junie's cache counters are reported as zero without establishing whether they are measured, so its
+uncached input is conditional; a Claude foreground sub-agent stream that omits one of its messages is
+not detected as incomplete against the vendor's own counts.
 
 The experimental fresh Codex one-shot profile uses original UTF-8 stdin, separate raw
 stdout/stderr, and the exact native rollout. `CodexAcquisition.qualify(sealedManifest, newDirectory)`
 in the TCK produces immutable assembly inputs after checking native N/T, original hashes/extents,
-observed closure and matching cumulative terminal usage. Select
-`TerminalReceiver.CODEX_PROFILE` (`client-terminal-codex-exec/1`) in the initial envelope; the Claude
-Code one-shot profile is `TerminalReceiver.CLAUDE_PROFILE` (`client-terminal-claude-sdk/1`). The
-earlier versioned names (`LEGACY_CODEX_PROFILE` = `client-terminal-codex-0.166.0/1`,
-`LEGACY_CLAUDE_PROFILE` = `client-terminal-claude-2.1.316/1`, and the `LEGACY_*` retained names) stay
-readable for recordings of that one version.
-An already qualified acquisition supports an initially complete one-shot association; pending initial
+observed closure and matching cumulative terminal usage. The Codex one-shot terminal profile is
+`TerminalReceiver.CODEX_PROFILE` (`client-terminal-codex-exec/1`); the Claude Code one-shot profile is
+`TerminalReceiver.CLAUDE_PROFILE` (`client-terminal-claude-sdk/1`). The versioned names
+(`LEGACY_CODEX_PROFILE` = `client-terminal-codex-0.166.0/1`, `LEGACY_CLAUDE_PROFILE` =
+`client-terminal-claude-2.1.316/1`, and the `LEGACY_*` retained names) are also accepted, for
+recordings of that one CLI version.
+An already qualified acquisition records an initially complete one-shot association; a pending initial
 acquisition can instead receive an explicit final revision. Both preserve the original accepted
-Client decision and exact retry ACK. Qualification/recording belongs on an independent optional lane.
+Client decision and exact retry ACK. Qualification and recording run on an independent optional lane.
 A producer need not name the CLI: `AcquisitionQualifier.forProfile(profile)` returns the qualifier for
 the sealed manifest's `profile`, whose `terminalProfile()` is the envelope profile to select. It
 resolves the Claude Code (`claude-code-<version>-sdk-stdio-session-file`) and Codex CLI
@@ -119,10 +117,12 @@ resolves the Claude Code (`claude-code-<version>-sdk-stdio-session-file`) and Co
 [the terminal receiver](docs/terminal-receiver.md#qualifier-lookup).
 
 See [the acquisition contract](docs/codex-acquisition.md). Deterministic synthetic tests establish
-the acquisition boundary and the observed command/declaration/settings/reasoning mappings. The current
+the acquisition boundary and the observed command/declaration/settings/reasoning mappings. The
 source-derived onboarding report keeps all ten functional areas visible and labels partial, unexercised,
 unsupported and source-absent slices. It does not establish whole-route, provider or product qualification. Unsupported
 native meanings remain unresolved, and missing observations never become zero or complete.
+
+The release notes for each version are in [`release-notes/`](release-notes/).
 
 
 ## License
