@@ -139,13 +139,7 @@ record OriginComparisons(
                         : Instant.parse(prior).toEpochMilli();
         if (millis != null) {
             origin.field("/time", millis, "source.timestamp_milliseconds/v1");
-            origin.field(
-                    "/time_dt",
-                    new java.time.format.DateTimeFormatterBuilder()
-                            .appendInstant(3)
-                            .toFormatter()
-                            .format(Instant.ofEpochMilli(millis)),
-                    "journal.datetime/v1");
+            origin.field("/time_dt", SourceFacts.millisTime(millis), "journal.datetime/v1");
         }
         origin.field("/source_ref/native_time", time, "source.timestamp/v1");
     }

@@ -3,7 +3,6 @@ package io.github.markpollack.journal.tck.ocsf;
 import io.github.markpollack.journal.tck.verify.Json;
 import io.github.markpollack.journal.tck.verify.NeutralJson;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,7 +33,7 @@ final class CopilotTelemetryReading {
             long ms =
                     SourceProfile.decimal(end.get(0)).longValueExact() * 1000
                             + SourceProfile.decimal(end.get(1)).longValueExact() / 1_000_000;
-            f.nativeTime.put(record, Instant.ofEpochMilli(ms).toString());
+            f.nativeTime.put(record, SourceFacts.millisTime(ms));
         }
         switch (String.valueOf(SourceProfile.text(a, "gen_ai.operation.name"))) {
             case "chat" -> {

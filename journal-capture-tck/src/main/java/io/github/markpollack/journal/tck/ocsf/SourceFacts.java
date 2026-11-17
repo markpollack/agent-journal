@@ -3,6 +3,8 @@ package io.github.markpollack.journal.tck.ocsf;
 import io.github.markpollack.journal.tck.verify.Json;
 
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -221,9 +223,20 @@ final class SourceFacts {
                 text);
     }
 
+    /** RFC 3339 UTC with exactly three fraction digits, also on a whole second. */
+    private static final DateTimeFormatter MILLIS = new DateTimeFormatterBuilder().appendInstant(3).toFormatter();
+
+    /**
+     * The text of a numeric source time (epoch milliseconds), as {@code source.timestamp/v1} records it: RFC 3339 UTC with
+     * exactly three fraction digits, so a whole second reads {@code .000Z}, never the shorter {@code Instant.toString()}.
+     */
+    static String millisTime(long ms) {
+        return MILLIS.format(Instant.ofEpochMilli(ms));
+    }
+
     static void time(ExpectedFacts f, int record, Json timestamp) {
         if (timestamp instanceof Json.JNumber n) {
-            f.nativeTime.put(record, Instant.ofEpochMilli(n.value().longValueExact()).toString());
+            f.nativeTime.put(record, millisTime(n.value().longValueExact()));
         } else if (timestamp instanceof Json.JString s) {
             f.nativeTime.put(record, s.value());
         }

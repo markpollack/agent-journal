@@ -54,15 +54,20 @@ class TerminalJunieProfileTest {
         return dir.resolve("acquisition.json");
     }
 
-    /** A temporary copy of the fixture; {@code summary} replaces the summary's text when not null and the manifest is restated. */
+    /** A temporary copy of the fixture; {@code from} is replaced in the summary's text when not null and the manifest is restated. */
     private Path sealed(String from, String to) throws IOException {
+        return sealed("summary.json", from, to);
+    }
+
+    /** A temporary copy of the fixture; {@code from} is replaced in {@code file}'s text when not null and the manifest is restated. */
+    private Path sealed(String file, String from, String to) throws IOException {
         Path dir = sealed(FIXTURE).getParent();
         if (from != null) {
-            byte[] before = Files.readAllBytes(dir.resolve("summary.json"));
+            byte[] before = Files.readAllBytes(dir.resolve(file));
             String text = new String(before, StandardCharsets.UTF_8);
             assertThat(text).contains(from);
             byte[] after = text.replace(from, to).getBytes(StandardCharsets.UTF_8);
-            Files.write(dir.resolve("summary.json"), after);
+            Files.write(dir.resolve(file), after);
             String manifest = Files.readString(dir.resolve("acquisition.json"))
                     .replace("\"sha256\": \"" + SchemaPin.sha256(before) + "\"", "\"sha256\": \"" + SchemaPin.sha256(after) + "\"")
                     .replace("\"bytes\": " + before.length + ",", "\"bytes\": " + after.length + ",").replace("\"observed\": " + before.length + ",", "\"observed\": " + after.length + ",");
@@ -191,6 +196,18 @@ class TerminalJunieProfileTest {
         assertThat(exit).as(output).isEqualTo(OcsfReaderTool.EXIT_OK);
         assertThat(output).doesNotContain(" DEFECTIVE: ").contains("\"DEFECTIVE\" : 0").contains("acceptance: ACCEPTED");
         assertThat(output.lines().filter(line -> line.contains(" UNRESOLVED")).toList()).isEmpty();
+    }
+
+    /**
+     * A mutation of the real recording: the first session event's {@code timestampMs} moved onto a whole second, as in Agent
+     * Client's live session-261117-115457-1tj6. The writer and the oracle both render it with three fraction digits
+     * ({@code .000Z}), so the archive is still accepted with no defect.
+     */
+    @Test void aTimestampOnAWholeSecondIsRenderedAlikeAndAccepted() throws IOException {
+        Path store = work.resolve("store");
+        Path events = deliver(sealed("events.jsonl", "\"timestampMs\":1792817886007", "\"timestampMs\":1792817886000"), store);
+        accepted(events, work.resolve("qualified/assembly-expectation.json"));
+        assertThat(Files.readString(events)).contains("\"original_time\":\"2026-10-24T04:58:06.000Z\"");
     }
 
     /** A mutation of the real recording: the first model's cost set to 0, a valid observation carried through unchanged. */
