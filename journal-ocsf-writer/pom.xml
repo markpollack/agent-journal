@@ -28,8 +28,8 @@
         <jacoco.minimum.branch>0.76</jacoco.minimum.branch>
         <!-- TEST SCOPE ONLY: Agent Judge's RFC 2119 / EARS readers load the requirement documents for RequirementsAccountingIT
              (the verify-phase accounting of every rule and criterion against this build's executed evidence). Nothing in main
-             depends on it; RULE-23 is checked by parsing this file's dependency scopes. The same release as journal-capture-tck. -->
-        <agent-judge.version>1.0.0</agent-judge.version>
+             depends on it; RULE-23 is checked by parsing this file's dependency scopes. The same version as journal-capture-tck. -->
+        <agent-judge.version>1.1.0-SNAPSHOT</agent-judge.version>
         <maven-failsafe-plugin.version>3.5.2</maven-failsafe-plugin.version>
     </properties>
 

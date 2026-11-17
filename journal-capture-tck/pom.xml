@@ -30,9 +30,10 @@
             enters the writer or capture path. Its parent builds for Java 21, so the tests of this module run on a
             21+ JDK (as CI does) while the module itself still compiles at the project's release level.
 
-            The released 1.0.0 from Maven Central (BOM 1.22.0, wave 3: Journal 2.0.0 builds against Judge 1.0.0).
+            Judge's current main snapshot: on main every AgentWorks dependency names its upstream's -SNAPSHOT, installed
+            locally into ~/.m2 (Portfolio decision 29). A release from main replaces it with the released Judge version.
         -->
-        <agent-judge.version>1.0.0</agent-judge.version>
+        <agent-judge.version>1.1.0-SNAPSHOT</agent-judge.version>
     </properties>
 
     <dependencies>
