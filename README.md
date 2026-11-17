@@ -115,7 +115,8 @@ Client decision and exact retry ACK. Qualification and recording run on an indep
 A producer need not name the CLI: `AcquisitionQualifier.forProfile(profile)` returns the qualifier for
 the sealed manifest's `profile`, whose `terminalProfile()` is the envelope profile to select. It
 resolves the Claude Code (`claude-code-<version>-sdk-stdio-session-file`) and Codex CLI
-(`codex-cli-<version>-exec-stdio-rollout`) one-shot profiles at any version; see
+(`codex-cli-<version>-exec-stdio-rollout`) one-shot profiles at any version, and the Junie ACP one-shot
+profile (`junie-<version>-acp-session-files`), whose qualifier refuses every version except 3813.7; see
 [the terminal receiver](docs/terminal-receiver.md#qualifier-lookup).
 
 See [the acquisition contract](docs/codex-acquisition.md). Deterministic synthetic tests establish
