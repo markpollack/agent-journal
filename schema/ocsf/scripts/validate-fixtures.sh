@@ -4,7 +4,7 @@
 #   validate-fixtures.sh <ocsf-toolkit-binary> <compiled.json> [fixtures-dir] [summaries-out-dir]
 # Record rule (declared in every file's format record): a line whose top-level `declaration` member is an object is a
 # declaration record, validated by the Java reader; every other line is an OCSF execution event and goes to the
-# upstream validator (one JSON object per file, as v0.9.0 requires). RequirementsAccountingIT reads the summaries and
+# upstream validator (one JSON object per file, as v0.9.0 requires). RequirementsAccountingIT (requirements-tck) reads the summaries and
 # establishes UC5-AC11 only when a summary's recorded hash equals the current event file and it reports no error.
 set -uo pipefail
 TK="$1"; SCHEMA="$2"

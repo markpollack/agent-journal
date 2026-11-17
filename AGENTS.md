@@ -10,8 +10,10 @@ Use `./mvnw`, never `mvn`. The normal gate is `./mvnw clean verify`.
 The product is the OCSF-based writer (`journal-ocsf-writer`) and its independently portable
 `events.jsonl`, checked by the independent Java oracle in `journal-capture-tck`. The normative
 requirements are the RFC 2119 rules and EARS criteria under
-`journal-capture-tck/src/test/resources/requirements/agent-journal/`; read them before changing
-capture, mapping or verification behaviour. The 1.x record format (`journal-core`) and its per-CLI
+`requirements-tck/src/test/resources/requirements/agent-journal/`; read them before changing
+capture, mapping or verification behaviour. They are evaluated by the independent requirements TCK, a standalone
+project outside Journal's reactor (Journal names no Agent Judge artifact): after `./mvnw clean verify`, run
+`./mvnw -f requirements-tck/pom.xml clean verify`. The 1.x record format (`journal-core`) and its per-CLI
 capture modules were retired from this line in 2.0; their history is on branch `1.x`, and nothing in
 2.0 depends on them.
 

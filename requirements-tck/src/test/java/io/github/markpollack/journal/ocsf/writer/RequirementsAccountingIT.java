@@ -46,9 +46,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class RequirementsAccountingIT {
 
-    static final Path WRITER = Path.of(System.getProperty("basedir", ".")).toAbsolutePath().normalize();
-    static final Path TCK = WRITER.resolve("..").resolve("journal-capture-tck").normalize();
-    static final Path REQUIREMENTS = TCK.resolve("src/test/resources/requirements/agent-journal");
+    /** This requirements TCK, outside Journal's reactor: its own test results and outputs. */
+    static final Path HERE = Path.of(System.getProperty("basedir", ".")).toAbsolutePath().normalize();
+    /** Journal's checkout whose build is accounted for ({@code -Djournal.root}, by default the parent directory); build it first. */
+    static final Path JOURNAL = Path.of(System.getProperty("journal.root", HERE.resolve("..").toString())).toAbsolutePath().normalize();
+    static final Path WRITER = JOURNAL.resolve("journal-ocsf-writer");
+    static final Path TCK = JOURNAL.resolve("journal-capture-tck");
+    static final Path REQUIREMENTS = HERE.resolve("src/test/resources/requirements/agent-journal");
     static final Path FIXTURES = TCK.resolve("src/test/resources/ocsf/fixtures");
     static final Path VALIDATION = TCK.resolve("src/test/resources/ocsf/validation");
 
@@ -362,7 +366,7 @@ class RequirementsAccountingIT {
         RULES.put("RULE-21", new RuleEvidence(List.of("UC1-AC6", "UC3-AC7", "UC3-AC8", "UC3-AC11", "UC4-AC6"), List.of(junit("OcsfOracleValueCheckTest#sessionOrNativeIdentityCopiedWronglyIsADefect", "native ids in their scope")), ""));
         RULES.put("RULE-22", new RuleEvidence(List.of(), List.of(junit("CodexExecStreamTest#viewsMatchTheIndependentlyAuthoredAnswersAndStateTheirCountUnits", "views are test utilities with stated count units"),
                 junit("AnalysisViewsTest#usageSelectsOneApplicableFinalPerGroupAndNeverSums", "no summed totals")), "the writer computes no counts; enforced by review of the mapper code"));
-        RULES.put("RULE-23", new RuleEvidence(List.of(), List.of(new Item(Kind.JUNIT, "RequirementsEvidenceTest#everyAssessedCriterionIsEstablishedOnAllItsObligationsAndEveryOtherRequirementIsReportedNotAssessed", "writer pom: no evaluation or model dependency outside test scope")), "also checked directly by this accounting (writerPomIsFreeOfRuntimeEvaluationDependencies)"));
+        RULES.put("RULE-23", new RuleEvidence(List.of(), List.of(new Item(Kind.JUNIT, "RequirementsEvidenceTest#everyAssessedCriterionIsEstablishedOnAllItsObligationsAndEveryOtherRequirementIsReportedNotAssessed", "Journal's build files: no evaluation or model dependency in any scope")), "also checked directly by this accounting (journalBuildFilesNameNoEvaluationDependency)"));
         RULES.put("RULE-24", new RuleEvidence(List.of("UC5-AC1", "UC4-AC6"), List.of(), ""));
         RULES.put("RULE-25", new RuleEvidence(List.of("UC5-AC1", "UC5-AC2"), List.of(), ""));
         RULES.put("RULE-26", new RuleEvidence(List.of("UC5-AC1"), List.of(junit("OcsfOracleMutationTest#removedWholeRecordIsAGapInCoverageAndReconstruction", "judged without optional files"),
@@ -465,7 +469,7 @@ class RequirementsAccountingIT {
                     .isEqualTo(documented.getOrDefault(r.getKey(), new java.util.TreeSet<>()));
         }
 
-        Map<String, Surefire> surefire = Surefire.read(List.of(TCK.resolve("target/surefire-reports"), WRITER.resolve("target/surefire-reports")));
+        Map<String, Surefire> surefire = Surefire.read(List.of(TCK.resolve("target/surefire-reports"), WRITER.resolve("target/surefire-reports"), HERE.resolve("target/surefire-reports")));
         Map<String, Map<String, Object>> oracleStatus = oracleStatus();
         Map<String, Outcome> criterionOutcomes = new LinkedHashMap<>();
         Map<String, Status> criterionStatus = new LinkedHashMap<>();
@@ -564,15 +568,16 @@ class RequirementsAccountingIT {
                 + " (" + statusCounts(ruleStatus) + "); semantic claims " + claims.size() + " " + support + "; surefire results of " + surefire.size() + " test classes read");
     }
 
-    /** RULE-23 directly: the writer's build file declares no evaluation or model dependency outside test scope. */
+    /** RULE-23 directly: none of Journal's build files declares an evaluation or model dependency, in any scope. */
     @Test
-    void writerPomIsFreeOfRuntimeEvaluationDependencies() throws IOException {
-        String pom = Files.readString(WRITER.resolve("pom.xml"), StandardCharsets.UTF_8);
-        Matcher m = Pattern.compile("<dependency>(.*?)</dependency>", Pattern.DOTALL).matcher(pom);
-        while (m.find()) {
-            String d = m.group(1);
-            if (d.contains("agent-judge") || d.contains("spring-ai") || d.contains("langchain4j")) {
-                assertThat(d).as("evaluation/model dependency must be test-scoped: " + d.strip()).contains("<scope>test</scope>");
+    void journalBuildFilesNameNoEvaluationDependency() throws IOException {
+        for (String name : List.of("pom.xml", "journal-capture-tck/pom.xml", "journal-ocsf-writer/pom.xml", "journal-mcp-test-server/pom.xml")) {
+            String pom = Files.readString(JOURNAL.resolve(name), StandardCharsets.UTF_8);
+            Matcher m = Pattern.compile("<dependency>(.*?)</dependency>", Pattern.DOTALL).matcher(pom);
+            while (m.find()) {
+                String d = m.group(1);
+                assertThat(d.contains("agent-judge") || d.contains("spring-ai") || d.contains("langchain4j"))
+                        .as(name + " names an evaluation or model dependency: " + d.strip()).isFalse();
             }
         }
     }
@@ -707,7 +712,7 @@ class RequirementsAccountingIT {
 
     /** The requirements reporter's persisted criterion statuses from this build (TCK test phase), read with the writer's own JSON parser. */
     static Map<String, Map<String, Object>> oracleStatus() throws IOException {
-        Path f = TCK.resolve("target/requirements-evidence/criteria-status.json");
+        Path f = HERE.resolve("target/requirements-evidence/criteria-status.json");
         Map<String, Map<String, Object>> out = new LinkedHashMap<>();
         if (!Files.isRegularFile(f)) {
             return out;
@@ -897,7 +902,7 @@ class RequirementsAccountingIT {
         }
         out.put("judgments", judgments);
         ObjectMapper mapper = new ObjectMapper().registerModule(ResultJson.module()).enable(SerializationFeature.INDENT_OUTPUT);
-        Path dir = WRITER.resolve("target/requirements-accounting");
+        Path dir = HERE.resolve("target/requirements-accounting");
         Files.createDirectories(dir);
         Files.writeString(dir.resolve("claim-judgments.json"), mapper.writeValueAsString(out) + "\n", StandardCharsets.UTF_8);
     }
@@ -938,12 +943,12 @@ class RequirementsAccountingIT {
     static void write(List<EarsRequirement> criteria, List<Rfc2119Requirement> rules, Map<String, List<Outcome>> criterionItems, Map<String, Status> criterionStatus,
             Map<String, List<Outcome>> ruleItems, Map<String, Status> ruleStatus, Map<String, String> ruleDetail, Map<String, List<Outcome>> controls, List<ClaimAccount> claims,
             int executed) throws IOException {
-        Path dir = WRITER.resolve("target/requirements-accounting");
+        Path dir = HERE.resolve("target/requirements-accounting");
         Files.createDirectories(dir);
         StringBuilder md = new StringBuilder();
         md.append("# Requirements accounting (this build)\n\n");
         md.append("Produced by `RequirementsAccountingIT` at the verify phase from this build's executed evidence: the requirements reporter's oracle statuses, ")
-                .append(executed).append(" test classes' surefire results across both modules, and the committed upstream-validation summaries tied to the current event files. ")
+                .append(executed).append(" test classes' surefire results across both Journal modules and this TCK, and the committed upstream-validation summaries tied to the current event files. ")
                 .append("NOTE items are scope statements (what was not observed is not claimed); they establish nothing and withhold nothing. ")
                 .append("Evidence classes are kept apart: ORACLE (independent oracle on committed fixtures), JUNIT (deterministic Java checks; stand-in processes are labelled), ")
                 .append("VALIDATOR (pinned ocsf-toolkit, committed result), LIVE (informational pointer to private steward evidence; establishes nothing here), ")

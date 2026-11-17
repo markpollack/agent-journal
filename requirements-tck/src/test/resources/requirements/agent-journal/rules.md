@@ -140,7 +140,7 @@ Tests: `CodexExecStreamTest#viewsMatchTheIndependentlyAuthoredAnswersAndStateThe
 ### RULE-23
 **MUST NOT** depend on Agent Judge, a model runtime or any network service in the writer or the capture path.
 **Reason:** Requirements are inert data evaluated by tests; capture must work offline and remain free of evaluation tooling.
-Tests: the Agent Judge dependency is test-scoped in `journal-capture-tck/pom.xml` and `journal-ocsf-writer/pom.xml` (the accounting IT); neither module declares an evaluation or model dependency in a runtime scope, which the requirements accounting checks directly.
+Tests: Journal's build files (the parent, `journal-capture-tck`, `journal-ocsf-writer`, `journal-mcp-test-server`) declare no evaluation or model dependency in any scope; Agent Judge's requirement readers run only in the independent requirements TCK (`requirements-tck/`, outside Journal's reactor), whose accounting checks the build files directly.
 
 ## Portable output
 
@@ -215,7 +215,7 @@ Tests: `RequirementsEvidenceTest`, `RequirementsReporterReproductionTest`, `Mapp
 ### RULE-37
 **MUST NOT** repeat schema definitions per event, introduce a mapping or transformation language, generate a reader project, or call a model in a routine acceptance gate.
 **Reason:** Each of these adds a second model, a second runtime or an unrepeatable judge; deterministic Java checks over declared definitions are the ordinary acceptance mechanism, and AI assistance stays in review proposals.
-Tests: the RULE-23 build-file inspection in `RequirementsEvidenceTest` covers the writer's freedom from model and evaluation dependencies; the rest is enforced by review.
+Tests: the RULE-23 build-file inspection in `RequirementsEvidenceTest` (requirements TCK) covers Journal's freedom from model and evaluation dependencies; the rest is enforced by review.
 
 ### RULE-38
 **MUST** report a concept or claim as approved support only when a recorded decision approves the exact semantic claim revision and digest, made by the Project Owner or by a reviewer the Owner explicitly delegated for that decision pass and recorded under that delegated identity, and that claim names the CLI, profile, version and route it applies to.

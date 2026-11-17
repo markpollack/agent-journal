@@ -24,16 +24,6 @@
         <!-- java-guardrails JaCoCo floors: measured 2026-10-21 less 2 points (config/guardrails/decisions.md) -->
         <jacoco.minimum.line>0.85</jacoco.minimum.line>
         <jacoco.minimum.branch>0.74</jacoco.minimum.branch>
-        <!--
-            Agent Judge is a test-only dependency: its RFC 2119 / EARS readers and native requirement types load the
-            requirement documents under src/test/resources/requirements/ (see the tck.requirements tests). It never
-            enters the writer or capture path. Its parent builds for Java 21, so the tests of this module run on a
-            21+ JDK (as CI does) while the module itself still compiles at the project's release level.
-
-            Judge's current main snapshot: on main every AgentWorks dependency names its upstream's -SNAPSHOT, installed
-            locally into ~/.m2 (Portfolio decision 29). A release from main replaces it with the released Judge version.
-        -->
-        <agent-judge.version>1.1.0-SNAPSHOT</agent-judge.version>
     </properties>
 
     <dependencies>
@@ -57,12 +47,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.github.markpollack</groupId>
-            <artifactId>agent-judge-ai-core</artifactId>
-            <version>${agent-judge.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

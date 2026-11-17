@@ -331,37 +331,44 @@ class RequirementsEvidenceTest {
         return out;
     }
 
-    /** RULE-23 by inspection of the sibling module's build file when the source tree is present; ABSTAIN otherwise. */
+    /** Journal's checkout, whose build this TCK accounts for: {@code -Djournal.root}, by default the parent directory. */
+    static Path journalRoot() {
+        return Path.of(System.getProperty("journal.root", Path.of(System.getProperty("basedir", ".")).resolve("..").toString())).toAbsolutePath().normalize();
+    }
+
+    /** Journal's build files: the parent and every reactor module. */
+    static final List<String> JOURNAL_POMS = List.of("pom.xml", "journal-capture-tck/pom.xml", "journal-ocsf-writer/pom.xml", "journal-mcp-test-server/pom.xml");
+
+    /**
+     * RULE-23 by inspection of Journal's build files when its source tree is present; ABSTAIN otherwise. No dependency on
+     * an evaluation or model library may appear in any scope: Agent Judge's readers run only in this TCK, outside Journal's
+     * reactor, so Journal names no Agent Judge artifact at all.
+     */
     static Judgment writerIndependence() {
-        Path writerPom = Path.of(System.getProperty("basedir", ".")).resolve("..").resolve("journal-ocsf-writer").resolve("pom.xml").normalize();
-        if (!Files.isRegularFile(writerPom)) {
-            return Judgment.abstain("not assessed: " + writerPom + " is not present in this build");
-        }
-        try {
-            String pom = Files.readString(writerPom);
-            // every dependency naming an evaluation or model library must be test-scoped: a test-only reader is outside the writer and capture path
-            java.util.regex.Matcher m = java.util.regex.Pattern.compile("<dependency>(.*?)</dependency>", java.util.regex.Pattern.DOTALL).matcher(pom);
-            List<String> offending = new ArrayList<>();
-            int testScoped = 0;
-            while (m.find()) {
-                String d = m.group(1);
-                if (d.contains("agent-judge") || d.contains("spring-ai") || d.contains("langchain4j")) {
-                    if (d.contains("<scope>test</scope>")) {
-                        testScoped++;
-                    }
-                    else {
-                        offending.add(d.replaceAll("\\s+", " ").strip());
+        Path root = journalRoot();
+        List<String> offending = new ArrayList<>();
+        for (String name : JOURNAL_POMS) {
+            Path pom = root.resolve(name);
+            if (!Files.isRegularFile(pom)) {
+                return Judgment.abstain("not assessed: " + pom + " is not present");
+            }
+            try {
+                java.util.regex.Matcher m = java.util.regex.Pattern.compile("<dependency>(.*?)</dependency>", java.util.regex.Pattern.DOTALL).matcher(Files.readString(pom));
+                while (m.find()) {
+                    String d = m.group(1);
+                    if (d.contains("agent-judge") || d.contains("spring-ai") || d.contains("langchain4j")) {
+                        offending.add(name + ": " + d.replaceAll("\\s+", " ").strip());
                     }
                 }
             }
-            boolean clean = offending.isEmpty();
-            String detail = writerPom + (clean ? " declares no evaluation or model dependency outside test scope (" + testScoped + " test-scoped)" : " declares an evaluation or model dependency outside test scope: " + offending);
-            return clean ? Judgment.builder().pass().reasoning(detail).checks(List.of(io.github.markpollack.judge.judgment.Check.pass("journal-ocsf-writer/pom.xml", detail))).build()
-                    : Judgment.builder().fail().reasoning(detail).checks(List.of(io.github.markpollack.judge.judgment.Check.fail("journal-ocsf-writer/pom.xml", detail))).build();
+            catch (IOException e) {
+                return Judgment.error("could not read " + pom + ": " + e.getMessage());
+            }
         }
-        catch (IOException e) {
-            return Judgment.error("could not read " + writerPom + ": " + e.getMessage());
-        }
+        boolean clean = offending.isEmpty();
+        String detail = "Journal's build files " + JOURNAL_POMS + (clean ? " declare no evaluation or model dependency in any scope" : " declare an evaluation or model dependency: " + offending);
+        return clean ? Judgment.builder().pass().reasoning(detail).checks(List.of(io.github.markpollack.judge.judgment.Check.pass("journal build files", detail))).build()
+                : Judgment.builder().fail().reasoning(detail).checks(List.of(io.github.markpollack.judge.judgment.Check.fail("journal build files", detail))).build();
     }
 
     /** The owners a property must be reported on for one fixture, from its frozen manifest alone. */
