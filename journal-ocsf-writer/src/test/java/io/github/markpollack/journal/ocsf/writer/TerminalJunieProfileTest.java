@@ -122,13 +122,10 @@ class TerminalJunieProfileTest {
                 .map(store::resolve).findFirst().orElseThrow();
     }
 
-    /** The per-call {@code time} member the frozen 3813.7 session-events specification leaves without a unit (an existing UNRESOLVED meaning). */
-    static final String UNRESOLVED_TIME = "/event/agentEvent/modelUsage/*/time";
-
     /**
-     * Reads the archive with the packaged reader and verifies it with the assembly oracle: no reader defect, no oracle defect,
-     * and nothing unresolved except the session-events specification's unitless per-call time, so acceptance is INCOMPLETE
-     * for that reason alone, as it is for the same recording in FinalAssemblyJunieTest.
+     * Reads the archive with the packaged reader and verifies it with the assembly oracle: no reader defect, no oracle defect
+     * and nothing unresolved, so the archive is ACCEPTED. The per-call {@code modelUsage[].time} is retained as recorded under
+     * Owner decision OWNER-2026-11-16-JUNIE-MODELUSAGE-TIME, with no duration derived.
      */
     private static OcsfReaderTool.Acceptance accepted(Path events, Path expectation) throws IOException {
         OcsfPackage pkg = PackageReader.open(events);
@@ -136,8 +133,9 @@ class TerminalJunieProfileTest {
         var report = new AcquisitionVerification().verify(pkg, events.getParent().resolve("sources"), events.getParent().resolve("sources/acquisition.json"), expectation);
         assertThat(report.defects()).as(report.toString()).isEmpty();
         OcsfReaderTool.Acceptance acceptance = OcsfReaderTool.acceptance(report);
-        assertThat(acceptance.exit()).as(acceptance.toString()).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
-        assertThat(acceptance.reasons()).as(acceptance.toString()).isNotEmpty().allSatisfy(reason -> assertThat(reason).contains("source.meaning").contains(UNRESOLVED_TIME));
+        assertThat(acceptance.exit()).as(acceptance.toString()).isEqualTo(OcsfReaderTool.EXIT_OK);
+        assertThat(acceptance.verdict()).isEqualTo("ACCEPTED");
+        assertThat(acceptance.reasons()).as(acceptance.toString()).isEmpty();
         return acceptance;
     }
 
@@ -177,7 +175,7 @@ class TerminalJunieProfileTest {
         if (regenerate != null) copyTree(store, Path.of(regenerate).resolve("store"), expectation, Path.of(regenerate).resolve("assembly-expectation.json"));
     }
 
-    /** The packaged reader, in a JVM of its own whose class path holds the TCK and its dependencies but no writer class: no defect, the same single unresolved meaning. */
+    /** The packaged reader, in a JVM of its own whose class path holds the TCK and its dependencies but no writer class: no defect, nothing unresolved, accepted. */
     @Test void aSeparateReaderJvmWithoutTheWriterAcceptsTheArchive() throws Exception {
         Path events = deliver(sealed(null, null), work.resolve("store"));
         String classPath = Stream.of(System.getProperty("java.class.path").split(File.pathSeparator))
@@ -190,9 +188,9 @@ class TerminalJunieProfileTest {
         String output;
         int exit = process.waitFor();
         output = Files.readString(work.resolve("reader.out"));
-        assertThat(exit).as(output).isEqualTo(OcsfReaderTool.EXIT_INCOMPLETE);
-        assertThat(output).doesNotContain(" DEFECTIVE: ").contains("\"DEFECTIVE\" : 0").contains("acceptance: INCOMPLETE");
-        assertThat(output.lines().filter(line -> line.contains(" UNRESOLVED")).toList()).isNotEmpty().allMatch(line -> line.contains(UNRESOLVED_TIME));
+        assertThat(exit).as(output).isEqualTo(OcsfReaderTool.EXIT_OK);
+        assertThat(output).doesNotContain(" DEFECTIVE: ").contains("\"DEFECTIVE\" : 0").contains("acceptance: ACCEPTED");
+        assertThat(output.lines().filter(line -> line.contains(" UNRESOLVED")).toList()).isEmpty();
     }
 
     /** A mutation of the real recording: the first model's cost set to 0, a valid observation carried through unchanged. */

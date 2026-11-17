@@ -82,11 +82,7 @@ class ExecutedComparisonTest {
                                     "syn-claude-pair-transcript",
                                     1, // the evidence-log combination of the root (its stream, retained untested on the retired sdk route, splits no child)
                                     "copilot-live-1.0.100-otel",
-                                    5,
-                                    "junie-live-3813.7-view",
-                                    7,
-                                    "junie-live-3813.7-terminal",
-                                    8)
+                                    5)
                             .getOrDefault(name, 0);
             assertThat(report.withOutcome(Check.Outcome.UNRESOLVED))
                     .as(name + " exact unresolved population")
@@ -98,9 +94,7 @@ class ExecutedComparisonTest {
                                             || c.outcome() == Check.Outcome.UNRESOLVED
                                                     && !(List.of(
                                                                                     "syn-codex-counterexamples",
-                                                                                    "copilot-live-1.0.100-otel",
-                                                                                    "junie-live-3813.7-view",
-                                                                                    "junie-live-3813.7-terminal")
+                                                                                    "copilot-live-1.0.100-otel")
                                                                             .contains(name)
                                                                     && c.property()
                                                                             .equals(

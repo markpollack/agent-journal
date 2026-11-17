@@ -1486,17 +1486,17 @@
     {
       "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",
       "path": "event.agentEvent.modelUsage[].time",
-      "disposition": "unresolved",
-      "classification": "unresolved",
+      "disposition": "retained",
+      "classification": "vendor_residual",
       "vendor_declared": true,
       "evidence": {
         "property": "whole_record.coverage"
       },
-      "classification_note": "The frozen empirical specification does not establish the timing unit or interval (and Junie zero may be a default). Whole-record preservation passes independently; semantic completeness does not.",
+      "classification_note": "Owner decision OWNER-2026-11-16-JUNIE-MODELUSAGE-TIME: a client-measured wall-clock time in milliseconds for one LLM request, set only on Junie's LLMOneProxy request path; 0 is the constructor default on every other provider path and means not measured. Retained as is with the whole native record; no duration is derived, and 0 never becomes a zero duration.",
       "tests": [
         "ExecutedComparisonTest#everySelectedFixtureExecutesItsNativeExpectedFacts"
       ],
-      "note": "The frozen empirical specification does not establish the timing unit or interval (and Junie zero may be a default). Whole-record preservation passes independently; semantic completeness does not."
+      "note": "Owner decision OWNER-2026-11-16-JUNIE-MODELUSAGE-TIME: a client-measured wall-clock time in milliseconds for one LLM request, set only on Junie's LLMOneProxy request path; 0 is the constructor default on every other provider path and means not measured. Retained as is with the whole native record; no duration is derived, and 0 never becomes a zero duration."
     },
     {
       "variant": "SessionA2uxEvent/LlmResponseMetadataEvent",

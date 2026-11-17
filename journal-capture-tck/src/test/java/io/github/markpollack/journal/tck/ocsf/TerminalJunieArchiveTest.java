@@ -14,8 +14,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * A Junie ACP one-shot archive read with the TCK alone: {@code ocsf/junie-acp-3813.7-session-files/archive} was delivered by
  * {@code TerminalReceiver} under {@value JunieAcpFamily#TERMINAL_PROFILE} from the real sanitized junie-2 session files and
  * their labelled stand-in manifest (regenerate with {@code -Djunie.acp.archive.regenerate=<dir>} on
- * {@code TerminalJunieProfileTest} in journal-ocsf-writer). The assembly oracle finds no defect; acceptance is INCOMPLETE only
- * because the frozen 3813.7 session-events specification leaves the per-call {@code time} member without a unit.
+ * {@code TerminalJunieProfileTest} in journal-ocsf-writer). The assembly oracle finds no defect and nothing unresolved, so the
+ * archive is ACCEPTED; the per-call {@code time} member is retained as recorded (Owner decision
+ * OWNER-2026-11-16-JUNIE-MODELUSAGE-TIME), with no duration derived.
  */
 class TerminalJunieArchiveTest {
     static final Path CASE = Path.of("src/test/resources/ocsf/junie-acp-3813.7-session-files/archive");
@@ -38,8 +39,8 @@ class TerminalJunieArchiveTest {
                 CASE.resolve("assembly-expectation.json"));
         assertThat(report.defects()).as(report.toString()).isEmpty();
         OcsfReaderTool.Acceptance acceptance = OcsfReaderTool.acceptance(report);
-        assertThat(acceptance.verdict()).isEqualTo("INCOMPLETE");
-        assertThat(acceptance.reasons()).isNotEmpty().allSatisfy(reason -> assertThat(reason).contains("source.meaning").contains("/event/agentEvent/modelUsage/*/time"));
+        assertThat(acceptance.verdict()).isEqualTo("ACCEPTED");
+        assertThat(acceptance.reasons()).isEmpty();
         assertThat(Files.readString(events)).contains("\\\"profile\\\":\\\"client-terminal-junie-acp/1\\\"").contains("\"product\":{\"name\":\"Junie\",\"version\":\"3813.7\"");
     }
 
@@ -60,8 +61,8 @@ class TerminalJunieArchiveTest {
         assertThat(report.checks()).filteredOn(c -> c.property().equals("assembly.partition.association")).isNotEmpty()
                 .allSatisfy(c -> assertThat(c.outcome()).isEqualTo(io.github.markpollack.journal.tck.verify.Check.Outcome.VERIFIED));
         OcsfReaderTool.Acceptance acceptance = OcsfReaderTool.acceptance(report);
-        assertThat(acceptance.verdict()).isEqualTo("INCOMPLETE");
-        assertThat(acceptance.reasons()).isNotEmpty().allSatisfy(reason -> assertThat(reason).contains("source.meaning").contains("/event/agentEvent/modelUsage/*/time"));
+        assertThat(acceptance.verdict()).isEqualTo("ACCEPTED");
+        assertThat(acceptance.reasons()).isEmpty();
         List<Event> answers = pkg.events("model_response", 3);
         assertThat(answers).hasSize(2).extracting(Event::recordIndex).containsExactly(63, 69);
         assertThat(answers).allSatisfy(e -> {

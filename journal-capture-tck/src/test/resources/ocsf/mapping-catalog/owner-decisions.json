@@ -240,6 +240,15 @@
      "relevant_digest": "sha256:94b742ba6add0dc8ae6964ef8cb577cf178f17d0d78991c76e626d0675439d24"
     }
    ]
+  },
+  {
+   "id": "OWNER-2026-11-16-JUNIE-MODELUSAGE-TIME",
+   "date": "2026-11-17",
+   "approver": "Project Owner (markpollack)",
+   "summary": "State the meaning of the Junie 3813.7 session-events member event.agentEvent.modelUsage[].time: client-measured wall-clock milliseconds set only by the JetBrains proxy; 0 means not measured; recorded as is, with no duration derived",
+   "record": "private steward decision record: Junie ACP one-shot qualification order; the Owner's own words in the Portfolio steward session, 2026-11-17, quoted exactly in Portfolio's relay to the Journal steward: \"I approve Journal's proposed meaning for Junie 3813.7 modelUsage time: client-measured wall-clock milliseconds set only by the JetBrains proxy, 0 means not measured, recorded as is, with no duration derived.\" The Owner also approved directly in the Journal steward session, 2026-11-17, in the Owner's own words: \"approve of whatever meanings you've suggested to me in terms of assigning meaning to the Juni fields.\"",
+   "binding": "the disposition of event.agentEvent.modelUsage[].time in the Junie session-events dispositions becomes retained, vendor_residual, with this meaning; the oracle no longer reports that member's meaning as unresolved; no claim, obligation or residual digest is approved, and no duration is derived from the member",
+   "approves": []
   }
  ]
 }

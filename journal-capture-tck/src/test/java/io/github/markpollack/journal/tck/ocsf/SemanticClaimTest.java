@@ -234,6 +234,10 @@ class SemanticClaimTest {
         // a decision whose listed digest differs (it approved another wording)
         List<Json> ds = new ArrayList<>();
         for (Json d : approvedDecisions.member("decisions").elements()) {
+            if (d.member("approves").elements().isEmpty()) {
+                ds.add(d); // a meaning decision that approves no claim digest
+                continue;
+            }
             Json x = d.member("approves").elements().get(0);
             ds.add(with(d, "approves", new Json.JArray(List.of(with(x, "digest", new Json.JString("sha256:" + "1".repeat(64)))))));
         }

@@ -151,7 +151,6 @@ final class JunieProfile implements SourceProfile {
                     "TerminalBlockUpdatedEvent" ->
                     operation(f, record, a);
             case "LlmResponseMetadataEvent" -> {
-                uncertainTime(f, record, a);
                 event(
                         new SourceFacts.Target(f, record, "model_response", 2),
                         "/event/agentEvent",
@@ -183,19 +182,6 @@ final class JunieProfile implements SourceProfile {
                         fields);
             }
             default -> {}
-        }
-    }
-
-    private static void uncertainTime(ExpectedFacts f, int record, Json a) {
-        if (a.member("modelUsage") != null
-                && a.member("modelUsage").elements().stream()
-                        .anyMatch(m -> m.member("time") != null)) {
-            f.unresolvedMeanings.put(
-                    record,
-                    "/event/agentEvent/modelUsage/*/time: the frozen empirical"
-                            + " specification records zero but establishes neither unit nor"
-                            + " whether zero is measured or a default; no duration is"
-                            + " inferred");
         }
     }
 

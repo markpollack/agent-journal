@@ -93,7 +93,9 @@ Codex CLI exec stream and rollout route (tested on 0.166.0).
 Admission means the route's normalization is exercised on recorded live input and checked by the
 independent oracle. It is not approval of every meaning: meanings the catalogs mark proposed are
 recorded as proposed, and the output states what the source did not establish rather than guessing it.
-Known limits: Copilot's per-response duration and Junie's per-call time carry no vendor-stated unit;
+Known limits: Copilot's per-response duration carries no vendor-stated unit; Junie's per-call time is
+retained as recorded (client-measured milliseconds on one provider path, 0 meaning not measured) and no
+duration is derived from it;
 Junie's cache counters are reported as zero without establishing whether they are measured, so its
 uncached input is conditional; a Claude foreground sub-agent stream that omits one of its messages is
 not detected as incomplete against the vendor's own counts.
