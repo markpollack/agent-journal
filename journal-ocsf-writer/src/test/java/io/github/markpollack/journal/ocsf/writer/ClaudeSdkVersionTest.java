@@ -89,6 +89,24 @@ class ClaudeSdkVersionTest {
         assertThat(s.report().outcome("source.compatibility", "main/stdout.jsonl")).isEqualTo(Check.Outcome.VERIFIED);
     }
 
+    /** A labelled edit of the retained recording: entrypoint metadata is not an acceptance condition. */
+    @Test void aCliEntrypointStillProducesAnAcceptedJournalWithToolEvents() throws IOException {
+        Path run = edited(TXBENCH, "cli-entrypoint", true, (dir, m) -> {
+            try {
+                Path transcript = dir.resolve("native/transcript.jsonl");
+                String original = Files.readString(transcript);
+                assertThat(original).contains("\"entrypoint\":\"sdk-java\"");
+                Files.writeString(transcript, original.replace("\"entrypoint\":\"sdk-java\"", "\"entrypoint\":\"sdk-cli\""));
+            }
+            catch (IOException e) { throw new java.io.UncheckedIOException(e); }
+        });
+        RealRecording.Sealed s = RealRecording.seal(run, temp.resolve("cli-entrypoint-sealed"));
+        assertThat(s.acceptance().verdict()).as(s.acceptance().toString()).isEqualTo("ACCEPTED");
+        assertThat(rows(s.events()).stream().filter(r -> r.member("class_uid") != null)
+                .map(r -> r.member("class_name").text() + "/" + r.member("activity_name").text()))
+                .contains("Tool Call/Requested", "Tool Call/Result observed", "Prompt Turn/Turn completed");
+    }
+
     @Test void anUnlistedVersionIsAcceptedAndRecorded() throws IOException {
         RealRecording.Sealed s = RealRecording.seal(relabelled(TXBENCH, "2.1.319", "2.1.317"), temp.resolve("as-2.1.317"));
         assertThat(s.acceptance().verdict()).as(s.acceptance().toString()).isEqualTo("ACCEPTED");

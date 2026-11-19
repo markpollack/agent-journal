@@ -171,8 +171,6 @@ public final class ClaudeAcquisition {
             return "system".equals(RawInventory.text(row, "type")) && "init".equals(RawInventory.text(row, "subtype"))
                     ? row.member("claude_code_version") : null;
         }
-        Json entrypoint = row.member("entrypoint");
-        require(entrypoint == null || "sdk-java".equals(entrypoint.text()), "native entrypoint mismatch");
         return row.member("version");
     }
 
